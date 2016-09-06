@@ -8,7 +8,7 @@ public class AntlrRun {
         //System.out.println(parser.classDeclaration());
 	     ParseTree tree = parser.compilationUnit();
 		  //System.out.println(tree.toStringTree());
-    	  ParseTreeWalker walker = new ParseTreeWalker();
+		  ParseTreeWalker walker = new ParseTreeWalker();
         walker.walk( new Java8Walker(), tree );
     }
 }
