@@ -1164,13 +1164,23 @@ public class Java8Walker extends Java8BaseListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterMethodBody(Java8Parser.MethodBodyContext ctx) { }
+	@Override public void enterMethodBody(Java8Parser.MethodBodyContext ctx) {
+		if(!ctx.getText().equals(";")){
+			print('{');
+		}
+   }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitMethodBody(Java8Parser.MethodBodyContext ctx) { }
+	@Override public void exitMethodBody(Java8Parser.MethodBodyContext ctx) {
+		if(!ctx.getText().equals(";")){
+			print('}');
+		}	else {
+			print(';');		
+		}
+   }
 	/**
 	 * {@inheritDoc}
 	 *
