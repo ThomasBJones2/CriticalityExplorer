@@ -928,8 +928,7 @@ public class Java8Walker extends Java8BaseListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitMethodHeader(Java8Parser.MethodHeaderContext ctx) { 		
-	}
+	@Override public void exitMethodHeader(Java8Parser.MethodHeaderContext ctx) {	}
 	/**
 	 * {@inheritDoc}
 	 *
@@ -957,6 +956,9 @@ public class Java8Walker extends Java8BaseListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitMethodDeclarator(Java8Parser.MethodDeclaratorContext ctx) {
+		if(ctx.dims() != null){ 
+			System.out.print(ctx.dims().getText() + " ");
+		}		
 	}
 	/**
 	 * {@inheritDoc}
@@ -985,14 +987,41 @@ public class Java8Walker extends Java8BaseListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+
+	private void printFormalParameter(Java8Parser.FormalParameterContext ctx){
+		for(int j = 0; j < ctx.variableModifier().size(); j ++){
+			printWSpace(ctx.variableModifier().get(j).getText());
+		}
+		printWSpace(ctx.unannType().getText());
+		printWSpace(ctx.variableDeclaratorId().getText());
+	}
+
+	private void printWSpace(String in){
+		System.out.print(in + ' ');
+	}
+
+	private void print(String in){
+		System.out.print(in);
+	}
+
+	private void print(char in){
+		System.out.print(in);
+	}
+
 	@Override public void exitFormalParameters(Java8Parser.FormalParametersContext ctx) { 
-		for(int i = 0; i < ctx.formalParameter().size(); i ++){		
-			for(int j = 0; j < ctx.formalParameter().get(i).variableModifier().size(); i ++){
-				System.out.print(ctx.formalParameter().get(i).variableModifier().get(j).getText() + ' ');
+		if(ctx.receiverParameter() != null){
+			for(int i = 0; i < ctx.receiverParameter().annotation().size(); i ++){
+				printWSpace(ctx.receiverParameter().annotation().get(i).getText());
 			}
-			System.out.print(ctx.formalParameter().get(i).unannType().getText() + ' ');
-			System.out.print(ctx.formalParameter().get(i).variableDeclaratorId().getText() + ' ');
-			System.out.print(',');
+			printWSpace(ctx.receiverParameter().unannType().getText());
+			if(ctx.receiverParameter().Identifier() != null){
+				print(ctx.receiverParameter().Identifier().getText() + ".");
+			}
+			print("this");
+		}
+		for(int i = 0; i < ctx.formalParameter().size(); i ++){		
+			printFormalParameter(ctx.formalParameter().get(i));
+			print(',');
 		}
 	}
 	/**
@@ -1026,7 +1055,21 @@ public class Java8Walker extends Java8BaseListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterLastFormalParameter(Java8Parser.LastFormalParameterContext ctx) { }
+	@Override public void enterLastFormalParameter(Java8Parser.LastFormalParameterContext ctx) {
+		if(ctx.formalParameter() != null){
+			printFormalParameter(ctx.formalParameter());
+		} else {
+			for(int j = 0; j < ctx.variableModifier().size(); j ++){
+				printWSpace(ctx.variableModifier().get(j).getText());
+			}
+			printWSpace(ctx.unannType().getText());
+			for(int i = 0; i < ctx.annotation().size(); i ++){
+				printWSpace(ctx.annotation().get(i).getText());
+			}
+			print(" ... ");
+			printWSpace(ctx.variableDeclaratorId().getText());
+		}
+	}
 	/**
 	 * {@inheritDoc}
 	 *
@@ -1051,7 +1094,7 @@ public class Java8Walker extends Java8BaseListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void enterThrows_(Java8Parser.Throws_Context ctx) {
-		System.out.print("throws ");
+		print("throws ");
 		System.out.println(ctx.exceptionTypeList().getText() + ' ');
    }
 	/**
