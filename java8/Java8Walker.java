@@ -10,6 +10,36 @@ import org.antlr.v4.runtime.tree.TerminalNode;
  * of the available methods.
  */
 public class Java8Walker extends Java8BaseListener {
+
+	private void printFormalParameter(Java8Parser.FormalParameterContext ctx){
+		for(int j = 0; j < ctx.variableModifier().size(); j ++){
+			print(ctx.variableModifier().get(j).getText() + ' ');
+		}
+		print(ctx.unannType().getText() + ' ');
+		print(ctx.variableDeclaratorId().getText() + ' ');
+	}
+
+
+	private void print(String in){
+		System.out.print(in);
+	}
+
+	private void print(char in){
+		System.out.print(in);
+	}
+
+	private void println(String in){
+		System.out.println(in);
+	}
+
+	private void println(char in){
+		System.out.println(in);
+	}
+
+	private void println(){
+		System.out.println();
+	}
+
 	/**
 	 * {@inheritDoc}
 	 *
@@ -412,14 +442,26 @@ public class Java8Walker extends Java8BaseListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void enterPackageDeclaration(Java8Parser.PackageDeclarationContext ctx) {
-		System.out.println(ctx.getText());
+		for(int i = 0; i < ctx.packageModifier().size(); i ++){
+			print(ctx.packageModifier().get(i).getText() + ' ');
+		}
+		print("package ");
+		for(int i = 0; i < ctx.Identifier().size(); i ++){
+			if(i < ctx.Identifier().size() - 1){
+				print(ctx.Identifier().get(i).getText() + '.');
+			} else {
+				println(ctx.Identifier().get(i).getText() + ';');
+			}
+		} 
   	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitPackageDeclaration(Java8Parser.PackageDeclarationContext ctx) { }
+	@Override public void exitPackageDeclaration(Java8Parser.PackageDeclarationContext ctx) { 
+		println();
+	}
 	/**
 	 * {@inheritDoc}
 	 *
@@ -445,7 +487,9 @@ public class Java8Walker extends Java8BaseListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitImportDeclaration(Java8Parser.ImportDeclarationContext ctx) { }
+	@Override public void exitImportDeclaration(Java8Parser.ImportDeclarationContext ctx) { 
+		println();	
+	}
 	/**
 	 * {@inheritDoc}
 	 *
@@ -988,32 +1032,12 @@ public class Java8Walker extends Java8BaseListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 
-	private void printFormalParameter(Java8Parser.FormalParameterContext ctx){
-		for(int j = 0; j < ctx.variableModifier().size(); j ++){
-			printWSpace(ctx.variableModifier().get(j).getText());
-		}
-		printWSpace(ctx.unannType().getText());
-		printWSpace(ctx.variableDeclaratorId().getText());
-	}
-
-	private void printWSpace(String in){
-		System.out.print(in + ' ');
-	}
-
-	private void print(String in){
-		System.out.print(in);
-	}
-
-	private void print(char in){
-		System.out.print(in);
-	}
-
 	@Override public void exitFormalParameters(Java8Parser.FormalParametersContext ctx) { 
 		if(ctx.receiverParameter() != null){
 			for(int i = 0; i < ctx.receiverParameter().annotation().size(); i ++){
-				printWSpace(ctx.receiverParameter().annotation().get(i).getText());
+				print(ctx.receiverParameter().annotation().get(i).getText() + ' ');
 			}
-			printWSpace(ctx.receiverParameter().unannType().getText());
+			print(ctx.receiverParameter().unannType().getText() + ' ');
 			if(ctx.receiverParameter().Identifier() != null){
 				print(ctx.receiverParameter().Identifier().getText() + ".");
 			}
@@ -1060,14 +1084,14 @@ public class Java8Walker extends Java8BaseListener {
 			printFormalParameter(ctx.formalParameter());
 		} else {
 			for(int j = 0; j < ctx.variableModifier().size(); j ++){
-				printWSpace(ctx.variableModifier().get(j).getText());
+				print(ctx.variableModifier().get(j).getText() + ' ');
 			}
-			printWSpace(ctx.unannType().getText());
+			print(ctx.unannType().getText() + ' ');
 			for(int i = 0; i < ctx.annotation().size(); i ++){
-				printWSpace(ctx.annotation().get(i).getText());
+				print(ctx.annotation().get(i).getText() + ' ');
 			}
 			print(" ... ");
-			printWSpace(ctx.variableDeclaratorId().getText());
+			print(ctx.variableDeclaratorId().getText() + ' ');
 		}
 	}
 	/**
