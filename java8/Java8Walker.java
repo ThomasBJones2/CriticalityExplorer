@@ -647,7 +647,11 @@ public class Java8Walker extends Java8BaseListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterClassMemberDeclaration(Java8Parser.ClassMemberDeclarationContext ctx) { }
+	@Override public void enterClassMemberDeclaration(Java8Parser.ClassMemberDeclarationContext ctx) { 
+		if(ctx.getText().equals(';')){
+			System.out.print(';');
+		}
+	}
 	/**
 	 * {@inheritDoc}
 	 *
@@ -659,13 +663,21 @@ public class Java8Walker extends Java8BaseListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterFieldDeclaration(Java8Parser.FieldDeclarationContext ctx) { }
+	@Override public void enterFieldDeclaration(Java8Parser.FieldDeclarationContext ctx) { 
+		for(int i = 0; i < ctx.fieldModifier().size(); i ++){
+			System.out.print(ctx.fieldModifier().get(i).getText() + ' ');
+		}
+		System.out.print(ctx.unannType().getText() + ' ');
+		System.out.print(ctx.variableDeclaratorList().getText());
+   }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitFieldDeclaration(Java8Parser.FieldDeclarationContext ctx) { }
+	@Override public void exitFieldDeclaration(Java8Parser.FieldDeclarationContext ctx) {
+		System.out.println(';');
+   }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -683,7 +695,7 @@ public class Java8Walker extends Java8BaseListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterVariableDeclaratorList(Java8Parser.VariableDeclaratorListContext ctx) { }
+	@Override public void enterVariableDeclaratorList(Java8Parser.VariableDeclaratorListContext ctx) {}
 	/**
 	 * {@inheritDoc}
 	 *
@@ -875,7 +887,11 @@ public class Java8Walker extends Java8BaseListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterMethodDeclaration(Java8Parser.MethodDeclarationContext ctx) { }
+   @Override public void enterMethodDeclaration(Java8Parser.MethodDeclarationContext ctx) { 
+		for(int i = 0; i < ctx.methodModifier().size(); i ++){
+			System.out.print(ctx.methodModifier().get(i).getText() + " ");
+		}		
+   }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -899,13 +915,21 @@ public class Java8Walker extends Java8BaseListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterMethodHeader(Java8Parser.MethodHeaderContext ctx) { }
+	@Override public void enterMethodHeader(Java8Parser.MethodHeaderContext ctx) {
+		if(ctx.typeParameters() != null) System.out.print(ctx.typeParameters().getText() + " ");
+		for(int i = 0; i < ctx.annotation().size(); i ++){
+			System.out.print(ctx.annotation().get(i).getText() + " ");
+		}
+		System.out.print(ctx.result().getText() + " ");
+		//leave methodDeclarator to the walker to solve on lower levels. 
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitMethodHeader(Java8Parser.MethodHeaderContext ctx) { }
+	@Override public void exitMethodHeader(Java8Parser.MethodHeaderContext ctx) { 		
+	}
 	/**
 	 * {@inheritDoc}
 	 *
@@ -923,25 +947,33 @@ public class Java8Walker extends Java8BaseListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterMethodDeclarator(Java8Parser.MethodDeclaratorContext ctx) { }
+	@Override public void enterMethodDeclarator(Java8Parser.MethodDeclaratorContext ctx) {
+		System.out.print(ctx.Identifier().getText() + ' ');
+
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitMethodDeclarator(Java8Parser.MethodDeclaratorContext ctx) { }
+	@Override public void exitMethodDeclarator(Java8Parser.MethodDeclaratorContext ctx) {
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterFormalParameterList(Java8Parser.FormalParameterListContext ctx) { }
+	@Override public void enterFormalParameterList(Java8Parser.FormalParameterListContext ctx) {
+		System.out.print('(');
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitFormalParameterList(Java8Parser.FormalParameterListContext ctx) { }
+	@Override public void exitFormalParameterList(Java8Parser.FormalParameterListContext ctx) { 
+		System.out.print(')');
+	}
 	/**
 	 * {@inheritDoc}
 	 *
@@ -953,13 +985,24 @@ public class Java8Walker extends Java8BaseListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitFormalParameters(Java8Parser.FormalParametersContext ctx) { }
+	@Override public void exitFormalParameters(Java8Parser.FormalParametersContext ctx) { 
+		for(int i = 0; i < ctx.formalParameter().size(); i ++){		
+			for(int j = 0; j < ctx.formalParameter().get(i).variableModifier().size(); i ++){
+				System.out.print(ctx.formalParameter().get(i).variableModifier().get(j).getText() + ' ');
+			}
+			System.out.print(ctx.formalParameter().get(i).unannType().getText() + ' ');
+			System.out.print(ctx.formalParameter().get(i).variableDeclaratorId().getText() + ' ');
+			System.out.print(',');
+		}
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterFormalParameter(Java8Parser.FormalParameterContext ctx) { }
+	@Override public void enterFormalParameter(Java8Parser.FormalParameterContext ctx) { 
+
+	}
 	/**
 	 * {@inheritDoc}
 	 *
@@ -1007,7 +1050,10 @@ public class Java8Walker extends Java8BaseListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterThrows_(Java8Parser.Throws_Context ctx) { }
+	@Override public void enterThrows_(Java8Parser.Throws_Context ctx) {
+		System.out.print("throws ");
+		System.out.println(ctx.exceptionTypeList().getText() + ' ');
+   }
 	/**
 	 * {@inheritDoc}
 	 *
