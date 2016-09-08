@@ -7,8 +7,11 @@ public class AntlrRun {
         Java8Parser parser = new Java8Parser(new CommonTokenStream(lexer));
         //System.out.println(parser.classDeclaration());
 	     ParseTree tree = parser.compilationUnit();
+		  //System.out.println("the package declaration is: " + tree.packageDeclaration().getText());
 		  //System.out.println(tree.toStringTree());
-		  ParseTreeWalker walker = new ParseTreeWalker();
-        walker.walk( new Java8Walker(), tree );
+		  //ParseTreeWalker walker = new ParseTreeWalker();
+        //walker.walk( new PrettyPrintVisitor(), tree );
+		  PrettyPrintVisitor theVisitor = new PrettyPrintVisitor(); //.visit(tree);
+		  theVisitor.visit(tree);
     }
 }
