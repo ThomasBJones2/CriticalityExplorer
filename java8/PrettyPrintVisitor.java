@@ -737,245 +737,436 @@ public class PrettyPrintVisitor<T> extends AbstractParseTreeVisitor<T> implement
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitFieldDeclaration(Java8Parser.FieldDeclarationContext ctx) { return visitChildren(ctx); }
+	@Override public T visitFieldDeclaration(Java8Parser.FieldDeclarationContext ctx) {
+		safeVisitList(ctx.fieldModifier());
+		visit(ctx.unannType());
+		visit(ctx.variableDeclaratorList());
+		println(";");
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitFieldModifier(Java8Parser.FieldModifierContext ctx) { return visitChildren(ctx); }
+	@Override public T visitFieldModifier(Java8Parser.FieldModifierContext ctx) {
+		if(ctx.annotation() != null){
+			visit(ctx.annotation());
+		} else {
+			print(ctx.getText() + " ");
+		}
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitVariableDeclaratorList(Java8Parser.VariableDeclaratorListContext ctx) { return visitChildren(ctx); }
+	@Override public T visitVariableDeclaratorList(Java8Parser.VariableDeclaratorListContext ctx) {
+		delimitedVisitList(ctx.variableDeclarator(), ", ");
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitVariableDeclarator(Java8Parser.VariableDeclaratorContext ctx) { return visitChildren(ctx); }
+	@Override public T visitVariableDeclarator(Java8Parser.VariableDeclaratorContext ctx) {
+		visit(ctx.variableDeclaratorId());
+		if(ctx.variableInitializer() != null){
+			print(" = ");
+			visit(ctx.variableInitializer());
+		}
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitVariableDeclaratorId(Java8Parser.VariableDeclaratorIdContext ctx) { return visitChildren(ctx); }
+	@Override public T visitVariableDeclaratorId(Java8Parser.VariableDeclaratorIdContext ctx) {
+		print(ctx.Identifier().getText() + " ");
+		safeVisit(ctx.dims());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitVariableInitializer(Java8Parser.VariableInitializerContext ctx) { return visitChildren(ctx); }
+	@Override public T visitVariableInitializer(Java8Parser.VariableInitializerContext ctx) {
+		safeVisit(ctx.expression());
+		safeVisit(ctx.arrayInitializer());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitUnannType(Java8Parser.UnannTypeContext ctx) { return visitChildren(ctx); }
+	@Override public T visitUnannType(Java8Parser.UnannTypeContext ctx) {
+		safeVisit(ctx.unannPrimitiveType());
+		safeVisit(ctx.unannReferenceType());
+		print(" ");		
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitUnannPrimitiveType(Java8Parser.UnannPrimitiveTypeContext ctx) { return visitChildren(ctx); }
+	@Override public T visitUnannPrimitiveType(Java8Parser.UnannPrimitiveTypeContext ctx) {
+		if(ctx.numericType() == null){
+			print("boolean ");
+		} else {
+			visit(ctx.numericType());
+		}
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitUnannReferenceType(Java8Parser.UnannReferenceTypeContext ctx) { return visitChildren(ctx); }
+	@Override public T visitUnannReferenceType(Java8Parser.UnannReferenceTypeContext ctx) { 
+		safeVisit(ctx.unannClassOrInterfaceType());
+		safeVisit(ctx.unannTypeVariable());		
+		safeVisit(ctx.unannArrayType());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitUnannClassOrInterfaceType(Java8Parser.UnannClassOrInterfaceTypeContext ctx) { return visitChildren(ctx); }
+	@Override public T visitUnannClassOrInterfaceType(Java8Parser.UnannClassOrInterfaceTypeContext ctx) {
+		safeVisit(ctx.unannClassType_lfno_unannClassOrInterfaceType());
+		safeVisit(ctx.unannInterfaceType_lfno_unannClassOrInterfaceType());
+		safeVisitList(ctx.unannClassType_lf_unannClassOrInterfaceType());
+		safeVisitList(ctx.unannInterfaceType_lf_unannClassOrInterfaceType());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitUnannClassType(Java8Parser.UnannClassTypeContext ctx) { return visitChildren(ctx); }
+	@Override public T visitUnannClassType(Java8Parser.UnannClassTypeContext ctx) {
+		if(ctx.unannClassOrInterfaceType() != null) {		
+			visit(ctx.unannClassOrInterfaceType());
+			print(".");
+			safeVisitList(ctx.annotation());
+		}
+		print(ctx.Identifier().getText());
+		safeVisit(ctx.typeArguments());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitUnannClassType_lf_unannClassOrInterfaceType(Java8Parser.UnannClassType_lf_unannClassOrInterfaceTypeContext ctx) { return visitChildren(ctx); }
+	@Override public T visitUnannClassType_lf_unannClassOrInterfaceType(Java8Parser.UnannClassType_lf_unannClassOrInterfaceTypeContext ctx) {
+		print(".");
+		safeVisitList(ctx.annotation());
+		print(ctx.Identifier().getText());
+		safeVisit(ctx.typeArguments());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitUnannClassType_lfno_unannClassOrInterfaceType(Java8Parser.UnannClassType_lfno_unannClassOrInterfaceTypeContext ctx) { return visitChildren(ctx); }
+	@Override public T visitUnannClassType_lfno_unannClassOrInterfaceType(Java8Parser.UnannClassType_lfno_unannClassOrInterfaceTypeContext ctx) {
+		print(ctx.Identifier().getText());
+		safeVisit(ctx.typeArguments());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitUnannInterfaceType(Java8Parser.UnannInterfaceTypeContext ctx) { return visitChildren(ctx); }
+	@Override public T visitUnannInterfaceType(Java8Parser.UnannInterfaceTypeContext ctx) { 
+		visit(ctx.unannClassType());
+		return null;
+   }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitUnannInterfaceType_lf_unannClassOrInterfaceType(Java8Parser.UnannInterfaceType_lf_unannClassOrInterfaceTypeContext ctx) { return visitChildren(ctx); }
+	@Override public T visitUnannInterfaceType_lf_unannClassOrInterfaceType(Java8Parser.UnannInterfaceType_lf_unannClassOrInterfaceTypeContext ctx) {
+		visit(ctx.unannClassType_lf_unannClassOrInterfaceType());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitUnannInterfaceType_lfno_unannClassOrInterfaceType(Java8Parser.UnannInterfaceType_lfno_unannClassOrInterfaceTypeContext ctx) { return visitChildren(ctx); }
+	@Override public T visitUnannInterfaceType_lfno_unannClassOrInterfaceType(Java8Parser.UnannInterfaceType_lfno_unannClassOrInterfaceTypeContext ctx) {
+		visit(ctx.unannClassType_lfno_unannClassOrInterfaceType());
+		return null;
+ 	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitUnannTypeVariable(Java8Parser.UnannTypeVariableContext ctx) { return visitChildren(ctx); }
+	@Override public T visitUnannTypeVariable(Java8Parser.UnannTypeVariableContext ctx) {
+		print(ctx.Identifier().getText());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitUnannArrayType(Java8Parser.UnannArrayTypeContext ctx) { return visitChildren(ctx); }
+	@Override public T visitUnannArrayType(Java8Parser.UnannArrayTypeContext ctx) {
+		safeVisit(ctx.unannPrimitiveType());
+		safeVisit(ctx.unannClassOrInterfaceType());
+		safeVisit(ctx.unannTypeVariable());	
+		visit(ctx.dims());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitMethodDeclaration(Java8Parser.MethodDeclarationContext ctx) { return visitChildren(ctx); }
+	@Override public T visitMethodDeclaration(Java8Parser.MethodDeclarationContext ctx) {
+		safeVisitList(ctx.methodModifier());
+		visit(ctx.methodHeader());
+		visit(ctx.methodBody());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitMethodModifier(Java8Parser.MethodModifierContext ctx) { return visitChildren(ctx); }
+	@Override public T visitMethodModifier(Java8Parser.MethodModifierContext ctx) { 
+		if(ctx.annotation() != null){
+			visit(ctx.annotation());
+		} else {
+			print(ctx.getText() + " ");
+		}
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitMethodHeader(Java8Parser.MethodHeaderContext ctx) { return visitChildren(ctx); }
+	@Override public T visitMethodHeader(Java8Parser.MethodHeaderContext ctx) {
+		safeVisit(ctx.typeParameters());
+		safeVisitList(ctx.annotation());
+		visit(ctx.result());
+		visit(ctx.methodDeclarator());
+		safeVisit(ctx.throws_());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitResult(Java8Parser.ResultContext ctx) { return visitChildren(ctx); }
+	@Override public T visitResult(Java8Parser.ResultContext ctx) { 
+		if(ctx.unannType() != null){
+			visit(ctx.unannType());
+		} else {
+			print("void ");
+		}
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitMethodDeclarator(Java8Parser.MethodDeclaratorContext ctx) { return visitChildren(ctx); }
+	@Override public T visitMethodDeclarator(Java8Parser.MethodDeclaratorContext ctx) {
+		print(ctx.Identifier() + " (");
+		safeVisit(ctx.formalParameterList());
+		print(") ");		
+		safeVisit(ctx.dims());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitFormalParameterList(Java8Parser.FormalParameterListContext ctx) { return visitChildren(ctx); }
+	@Override public T visitFormalParameterList(Java8Parser.FormalParameterListContext ctx) { 
+		if(ctx.formalParameters() != null){
+			visit(ctx.formalParameters());
+			print(", ");
+		}
+		visit(ctx.lastFormalParameter());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitFormalParameters(Java8Parser.FormalParametersContext ctx) { return visitChildren(ctx); }
+	@Override public T visitFormalParameters(Java8Parser.FormalParametersContext ctx) {
+		if(ctx.receiverParameter() != null){
+			visit(ctx.receiverParameter());
+			print(", ");
+		}
+		delimitedVisitList(ctx.formalParameter(), ", ");
+		return null;
+
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitFormalParameter(Java8Parser.FormalParameterContext ctx) { return visitChildren(ctx); }
+	@Override public T visitFormalParameter(Java8Parser.FormalParameterContext ctx) {
+		safeVisitList(ctx.variableModifier());
+		visit(ctx.unannType());
+		visit(ctx.variableDeclaratorId());
+		return null;
+   }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitVariableModifier(Java8Parser.VariableModifierContext ctx) { return visitChildren(ctx); }
+	@Override public T visitVariableModifier(Java8Parser.VariableModifierContext ctx) { 
+		if(ctx.annotation() != null){
+			visit(ctx.annotation());
+		} else {
+			print("final ");
+		}
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitLastFormalParameter(Java8Parser.LastFormalParameterContext ctx) { return visitChildren(ctx); }
+	@Override public T visitLastFormalParameter(Java8Parser.LastFormalParameterContext ctx) {
+		if(ctx.formalParameter() != null){
+			visit(ctx.formalParameter());
+		} else {		
+			safeVisitList(ctx.variableModifier());
+			visit(ctx.unannType());
+			safeVisitList(ctx.annotation());
+			print(" ... ");
+			visit(ctx.variableDeclaratorId());
+		}
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitReceiverParameter(Java8Parser.ReceiverParameterContext ctx) { return visitChildren(ctx); }
+	@Override public T visitReceiverParameter(Java8Parser.ReceiverParameterContext ctx) {
+		safeVisitList(ctx.annotation());
+		visit(ctx.unannType());
+		print(ctx.Identifier().getText() + ".this");
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitThrows_(Java8Parser.Throws_Context ctx) { return visitChildren(ctx); }
+	@Override public T visitThrows_(Java8Parser.Throws_Context ctx) {
+		print("throws ");
+		visit(ctx.exceptionTypeList());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitExceptionTypeList(Java8Parser.ExceptionTypeListContext ctx) { return visitChildren(ctx); }
+	@Override public T visitExceptionTypeList(Java8Parser.ExceptionTypeListContext ctx) {
+		delimitedVisitList(ctx.exceptionType(), ", ");
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitExceptionType(Java8Parser.ExceptionTypeContext ctx) { return visitChildren(ctx); }
+	@Override public T visitExceptionType(Java8Parser.ExceptionTypeContext ctx) {
+		safeVisit(ctx.classType());
+		safeVisit(ctx.typeVariable());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitMethodBody(Java8Parser.MethodBodyContext ctx) { return visitChildren(ctx); }
+	@Override public T visitMethodBody(Java8Parser.MethodBodyContext ctx) { 
+		if(ctx.block() == null){
+			println(";");
+		} else {
+			visit(ctx.block());
+		}
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitInstanceInitializer(Java8Parser.InstanceInitializerContext ctx) { return visitChildren(ctx); }
+	@Override public T visitInstanceInitializer(Java8Parser.InstanceInitializerContext ctx) {
+		visit(ctx.block());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitStaticInitializer(Java8Parser.StaticInitializerContext ctx) { return visitChildren(ctx); }
+	@Override public T visitStaticInitializer(Java8Parser.StaticInitializerContext ctx) {
+		print("static ");		
+		visit(ctx.block());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
