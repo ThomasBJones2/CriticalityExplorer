@@ -1,5 +1,6 @@
 // Generated from Java8.g4 by ANTLR 4.5.1
 import org.antlr.v4.runtime.tree.AbstractParseTreeVisitor;
+import org.antlr.v4.runtime.tree.*;
 import java.util.*;
 /**
  *This class visits nodes in the parse tree and pretty prints them
@@ -36,6 +37,13 @@ public class PrettyPrintVisitor<T> extends AbstractParseTreeVisitor<T> implement
 		else {
 			return in;
 		}
+	}
+
+	private T safeVisit(ParseTree in){
+		if(in != null){
+			return visit(in);
+		}
+		return null;
 	}
 
 	/**
@@ -269,13 +277,13 @@ public class PrettyPrintVisitor<T> extends AbstractParseTreeVisitor<T> implement
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
 	@Override public T visitCompilationUnit(Java8Parser.CompilationUnitContext ctx) { 
-		if(ctx.packageDeclaration() != null) {
-			visit(ctx.packageDeclaration());
-		}
-
+		safeVisit(ctx.packageDeclaration());
 		for(Java8Parser.ImportDeclarationContext import_ : makeSafe(ctx.importDeclaration())) {
 			visit(import_);
 		}
+		for(Java8Parser.TypeDeclarationContext typeDec : makeSafe(ctx.typeDeclaration())) {
+			visit(typeDec);
+		}	
 
 		return null;
 	}
@@ -313,63 +321,110 @@ public class PrettyPrintVisitor<T> extends AbstractParseTreeVisitor<T> implement
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitImportDeclaration(Java8Parser.ImportDeclarationContext ctx) { return visitChildren(ctx); }
+	@Override public T visitImportDeclaration(Java8Parser.ImportDeclarationContext ctx) {	
+		print ("import ");
+		safeVisit(ctx.singleTypeImportDeclaration());
+		safeVisit(ctx.typeImportOnDemandDeclaration());
+		safeVisit(ctx.singleStaticImportDeclaration());
+		safeVisit(ctx.staticImportOnDemandDeclaration());
+		println(';'); 
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitSingleTypeImportDeclaration(Java8Parser.SingleTypeImportDeclarationContext ctx) { return visitChildren(ctx); }
+	@Override public T visitSingleTypeImportDeclaration (Java8Parser.SingleTypeImportDeclarationContext ctx) { 
+		print(ctx.typeName().getText());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitTypeImportOnDemandDeclaration(Java8Parser.TypeImportOnDemandDeclarationContext ctx) { return visitChildren(ctx); }
+	@Override public T visitTypeImportOnDemandDeclaration(Java8Parser.TypeImportOnDemandDeclarationContext ctx) {
+		print(ctx.packageOrTypeName().getText() + ".*");
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitSingleStaticImportDeclaration(Java8Parser.SingleStaticImportDeclarationContext ctx) { return visitChildren(ctx); }
+	@Override public T visitSingleStaticImportDeclaration(Java8Parser.SingleStaticImportDeclarationContext ctx) {
+		print("static " + ctx.typeName().getText() + '.' + ctx.Identifier().getText());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitStaticImportOnDemandDeclaration(Java8Parser.StaticImportOnDemandDeclarationContext ctx) { return visitChildren(ctx); }
+	@Override public T visitStaticImportOnDemandDeclaration(Java8Parser.StaticImportOnDemandDeclarationContext ctx) {
+		print("static " + ctx.typeName().getText() + ".*");
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitTypeDeclaration(Java8Parser.TypeDeclarationContext ctx) { return visitChildren(ctx); }
+	@Override public T visitTypeDeclaration(Java8Parser.TypeDeclarationContext ctx) {
+		safeVisit(ctx.classDeclaration());
+		safeVisit(ctx.interfaceDeclaration());
+		if(ctx.classDeclaration() == null && ctx.interfaceDeclaration() == null){
+			println(";");
+		}
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitClassDeclaration(Java8Parser.ClassDeclarationContext ctx) { return visitChildren(ctx); }
+	@Override public T visitClassDeclaration(Java8Parser.ClassDeclarationContext ctx) { 
+		safeVisit(ctx.normalClassDeclaration());
+		safeVisit(ctx.enumDeclaration());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitNormalClassDeclaration(Java8Parser.NormalClassDeclarationContext ctx) { return visitChildren(ctx); }
+	@Override public T visitNormalClassDeclaration(Java8Parser.NormalClassDeclarationContext ctx) { 
+		println();	
+		for(Java8Parser.ClassModifierContext classMod : makeSafe(ctx.classModifier())){
+			visit(classMod);
+		}	
+		print("class ");
+		print(ctx.Identifier().getText());
+		safeVisit(ctx.typeParameters());
+		safeVisit(ctx.superclass());		
+		safeVisit(ctx.superinterfaces());
+		visit(ctx.classBody());
+
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitClassModifier(Java8Parser.ClassModifierContext ctx) { return visitChildren(ctx); }
+	@Override public T visitClassModifier(Java8Parser.ClassModifierContext ctx) {
+		print(ctx.getText() + ' ');
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
