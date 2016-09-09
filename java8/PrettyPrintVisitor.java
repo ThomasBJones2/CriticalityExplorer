@@ -69,6 +69,14 @@ public class PrettyPrintVisitor<T> extends AbstractParseTreeVisitor<T> implement
 		return null;
 	}
 
+	private <M extends ParseTree> T fullDelimitedVisitList(List<M> in, String delimiter){
+		for(int i = 0; i < in.size(); i ++){
+			print(in.get(i).getText());
+			print(delimiter);
+		} 
+		return null;
+	}
+
 	/**
 	 * {@inheritDoc}
 	 *
@@ -102,105 +110,177 @@ public class PrettyPrintVisitor<T> extends AbstractParseTreeVisitor<T> implement
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitPrimitiveType(Java8Parser.PrimitiveTypeContext ctx) { return visitChildren(ctx); }
+	@Override public T visitPrimitiveType(Java8Parser.PrimitiveTypeContext ctx) {
+		safeVisitList(ctx.annotation());
+		safeVisit(ctx.numericType());
+		if(ctx.numericType() == null){
+			print("boolean ");
+		}
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitNumericType(Java8Parser.NumericTypeContext ctx) { return visitChildren(ctx); }
+	@Override public T visitNumericType(Java8Parser.NumericTypeContext ctx) {
+		safeVisit(ctx.integralType());
+		safeVisit(ctx.floatingPointType());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitIntegralType(Java8Parser.IntegralTypeContext ctx) { return visitChildren(ctx); }
+	@Override public T visitIntegralType(Java8Parser.IntegralTypeContext ctx) {
+		print(ctx.getText() + " ");
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitFloatingPointType(Java8Parser.FloatingPointTypeContext ctx) { return visitChildren(ctx); }
+	@Override public T visitFloatingPointType(Java8Parser.FloatingPointTypeContext ctx) {
+		print(ctx.getText() + " ");
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitReferenceType(Java8Parser.ReferenceTypeContext ctx) { return visitChildren(ctx); }
+	@Override public T visitReferenceType(Java8Parser.ReferenceTypeContext ctx) {
+		safeVisit(ctx.classOrInterfaceType());
+		safeVisit(ctx.typeVariable());
+		safeVisit(ctx.arrayType());	
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitClassOrInterfaceType(Java8Parser.ClassOrInterfaceTypeContext ctx) { return visitChildren(ctx); }
+	@Override public T visitClassOrInterfaceType(Java8Parser.ClassOrInterfaceTypeContext ctx) { 
+		safeVisit(ctx.classType_lfno_classOrInterfaceType());
+		safeVisit(ctx.interfaceType_lfno_classOrInterfaceType());
+		safeVisitList(ctx.classType_lf_classOrInterfaceType());
+		safeVisitList(ctx.interfaceType_lf_classOrInterfaceType());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitClassType(Java8Parser.ClassTypeContext ctx) { return visitChildren(ctx); }
+	@Override public T visitClassType(Java8Parser.ClassTypeContext ctx) {
+		if(ctx.classOrInterfaceType() != null){
+			visit(ctx.classOrInterfaceType());
+			print(".");
+		}
+		safeVisitList(ctx.annotation());
+		print(ctx.Identifier().getText() + " ");
+		safeVisit(ctx.typeArguments());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitClassType_lf_classOrInterfaceType(Java8Parser.ClassType_lf_classOrInterfaceTypeContext ctx) { return visitChildren(ctx); }
+	@Override public T visitClassType_lf_classOrInterfaceType(Java8Parser.ClassType_lf_classOrInterfaceTypeContext ctx) {
+		print(".");
+		safeVisitList(ctx.annotation());
+		print(ctx.Identifier().getText() + " ");
+		safeVisit(ctx.typeArguments());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitClassType_lfno_classOrInterfaceType(Java8Parser.ClassType_lfno_classOrInterfaceTypeContext ctx) { return visitChildren(ctx); }
+	@Override public T visitClassType_lfno_classOrInterfaceType(Java8Parser.ClassType_lfno_classOrInterfaceTypeContext ctx) {
+		safeVisitList(ctx.annotation());
+		print(ctx.Identifier().getText() + " ");
+		safeVisit(ctx.typeArguments());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitInterfaceType(Java8Parser.InterfaceTypeContext ctx) { return visitChildren(ctx); }
+	@Override public T visitInterfaceType(Java8Parser.InterfaceTypeContext ctx) { 
+		visit(ctx.classType());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitInterfaceType_lf_classOrInterfaceType(Java8Parser.InterfaceType_lf_classOrInterfaceTypeContext ctx) { return visitChildren(ctx); }
+	@Override public T visitInterfaceType_lf_classOrInterfaceType(Java8Parser.InterfaceType_lf_classOrInterfaceTypeContext ctx) { 
+		visit(ctx.classType_lf_classOrInterfaceType());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitInterfaceType_lfno_classOrInterfaceType(Java8Parser.InterfaceType_lfno_classOrInterfaceTypeContext ctx) { return visitChildren(ctx); }
+	@Override public T visitInterfaceType_lfno_classOrInterfaceType(Java8Parser.InterfaceType_lfno_classOrInterfaceTypeContext ctx) { 
+		visit(ctx.classType_lfno_classOrInterfaceType());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitTypeVariable(Java8Parser.TypeVariableContext ctx) { return visitChildren(ctx); }
+	@Override public T visitTypeVariable(Java8Parser.TypeVariableContext ctx) { 
+		safeVisitList(ctx.annotation());
+		print(ctx.Identifier().getText() + " ");
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitArrayType(Java8Parser.ArrayTypeContext ctx) { return visitChildren(ctx); }
+	@Override public T visitArrayType(Java8Parser.ArrayTypeContext ctx) {
+		safeVisit(ctx.primitiveType());
+		safeVisit(ctx.classOrInterfaceType());
+		safeVisit(ctx.typeVariable());
+		print(" ");
+		safeVisit(ctx.dims());
+		print(" ");
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitDims(Java8Parser.DimsContext ctx) { return visitChildren(ctx); }
+	@Override public T visitDims(Java8Parser.DimsContext ctx) { 
+		fullDelimitedVisitList(ctx.annotation(), "[]");
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
@@ -221,7 +301,7 @@ public class PrettyPrintVisitor<T> extends AbstractParseTreeVisitor<T> implement
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
 	@Override public T visitTypeParameterModifier(Java8Parser.TypeParameterModifierContext ctx) {
-		print(ctx.getText() + ' ');
+		visit(ctx.annotation());
 		return null;
 	}
 	/**
@@ -243,84 +323,169 @@ public class PrettyPrintVisitor<T> extends AbstractParseTreeVisitor<T> implement
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitAdditionalBound(Java8Parser.AdditionalBoundContext ctx) { return visitChildren(ctx); }
+	@Override public T visitAdditionalBound(Java8Parser.AdditionalBoundContext ctx) {
+		print("&");
+		visit(ctx.interfaceType());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitTypeArguments(Java8Parser.TypeArgumentsContext ctx) { return visitChildren(ctx); }
+	@Override public T visitTypeArguments(Java8Parser.TypeArgumentsContext ctx) {
+		print("<");
+		visit(ctx.typeArgumentList());
+		print("> ");
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitTypeArgumentList(Java8Parser.TypeArgumentListContext ctx) { return visitChildren(ctx); }
+	@Override public T visitTypeArgumentList(Java8Parser.TypeArgumentListContext ctx) { 
+		delimitedVisitList(ctx.typeArgument(), ",");
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitTypeArgument(Java8Parser.TypeArgumentContext ctx) { return visitChildren(ctx); }
+	@Override public T visitTypeArgument(Java8Parser.TypeArgumentContext ctx) {
+		safeVisit(ctx.referenceType());
+		safeVisit(ctx.wildcard());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitWildcard(Java8Parser.WildcardContext ctx) { return visitChildren(ctx); }
+	@Override public T visitWildcard(Java8Parser.WildcardContext ctx) { 
+		safeVisitList(ctx.annotation());
+		print("? ");
+		safeVisit(ctx.wildcardBounds());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitWildcardBounds(Java8Parser.WildcardBoundsContext ctx) { return visitChildren(ctx); }
+	@Override public T visitWildcardBounds(Java8Parser.WildcardBoundsContext ctx) {
+		safeVisit(ctx.extendWildcardBounds());
+		safeVisit(ctx.superWildcardBounds());
+		return null;
+	}
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */	
+	@Override public T visitExtendWildcardBounds(Java8Parser.ExtendWildcardBoundsContext ctx) {
+		print("extend ");
+		visit(ctx.referenceType());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitPackageName(Java8Parser.PackageNameContext ctx) { return visitChildren(ctx); }
+	@Override public T visitSuperWildcardBounds(Java8Parser.SuperWildcardBoundsContext ctx) {
+		print("super ");
+		visit(ctx.referenceType());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitTypeName(Java8Parser.TypeNameContext ctx) { return visitChildren(ctx); }
+	@Override public T visitPackageName(Java8Parser.PackageNameContext ctx) { 
+		if(ctx.packageName() != null){
+			visit(ctx.packageName());
+			print(".");
+		}
+		print(ctx.Identifier().getText());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitPackageOrTypeName(Java8Parser.PackageOrTypeNameContext ctx) { return visitChildren(ctx); }
+	@Override public T visitTypeName(Java8Parser.TypeNameContext ctx) { 
+		if(ctx.packageOrTypeName() != null){
+			visit(ctx.packageOrTypeName());
+			print(".");
+		}
+		print(ctx.Identifier().getText());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitExpressionName(Java8Parser.ExpressionNameContext ctx) { return visitChildren(ctx); }
+	@Override public T visitPackageOrTypeName(Java8Parser.PackageOrTypeNameContext ctx) {
+		if(ctx.packageOrTypeName() != null){
+			visit(ctx.packageOrTypeName());
+			print(".");
+		}
+		print(ctx.Identifier().getText());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitMethodName(Java8Parser.MethodNameContext ctx) { return visitChildren(ctx); }
+	@Override public T visitExpressionName(Java8Parser.ExpressionNameContext ctx) { 
+		if(ctx.ambiguousName() != null){
+			visit(ctx.ambiguousName());
+			print(".");
+		}
+		print(ctx.Identifier().getText());
+		return null;
+   }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitAmbiguousName(Java8Parser.AmbiguousNameContext ctx) { return visitChildren(ctx); }
+	@Override public T visitMethodName(Java8Parser.MethodNameContext ctx) { 
+		print(ctx.Identifier().getText());
+		return null;
+   }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */
+	@Override public T visitAmbiguousName(Java8Parser.AmbiguousNameContext ctx) { 
+		if(ctx.ambiguousName() != null){
+			visit(ctx.ambiguousName());
+			print(".");
+		}
+		print(ctx.Identifier().getText());
+		return null;		
+   }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -335,10 +500,9 @@ public class PrettyPrintVisitor<T> extends AbstractParseTreeVisitor<T> implement
 	}
 
 	@Override public T visitPackageDeclaration(Java8Parser.PackageDeclarationContext ctx) {	
-		
 		safeVisitList(ctx.packageModifier());
-		delimitedVisitList(ctx.Identifier(), ".");
 		print("package ");		
+		delimitedVisitList(ctx.Identifier(), ".");
       println(";");
 		println();
 		return null;
@@ -351,7 +515,7 @@ public class PrettyPrintVisitor<T> extends AbstractParseTreeVisitor<T> implement
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
 	@Override public T visitPackageModifier(Java8Parser.PackageModifierContext ctx) {
-		print(ctx.getText() + ' ');		
+		visit(ctx.annotation());		
 		return null;
 	}
 	/**
@@ -376,7 +540,7 @@ public class PrettyPrintVisitor<T> extends AbstractParseTreeVisitor<T> implement
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
 	@Override public T visitSingleTypeImportDeclaration (Java8Parser.SingleTypeImportDeclarationContext ctx) { 
-		print(ctx.typeName().getText());
+		visit(ctx.typeName());
 		return null;
 	}
 	/**
@@ -386,7 +550,8 @@ public class PrettyPrintVisitor<T> extends AbstractParseTreeVisitor<T> implement
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
 	@Override public T visitTypeImportOnDemandDeclaration(Java8Parser.TypeImportOnDemandDeclarationContext ctx) {
-		print(ctx.packageOrTypeName().getText() + ".*");
+		visit(ctx.packageOrTypeName());
+		print(".*");
 		return null;
 	}
 	/**
@@ -396,7 +561,9 @@ public class PrettyPrintVisitor<T> extends AbstractParseTreeVisitor<T> implement
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
 	@Override public T visitSingleStaticImportDeclaration(Java8Parser.SingleStaticImportDeclarationContext ctx) {
-		print("static " + ctx.typeName().getText() + '.' + ctx.Identifier().getText());
+		print("static ");
+		visit(ctx.typeName());
+		print('.' + ctx.Identifier().getText());
 		return null;
 	}
 	/**
@@ -406,7 +573,9 @@ public class PrettyPrintVisitor<T> extends AbstractParseTreeVisitor<T> implement
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
 	@Override public T visitStaticImportOnDemandDeclaration(Java8Parser.StaticImportOnDemandDeclarationContext ctx) {
-		print("static " + ctx.typeName().getText() + ".*");
+		print("static ");
+		visit(ctx.typeName());
+		print(".*");
 		return null;
 	}
 	/**
@@ -525,6 +694,7 @@ public class PrettyPrintVisitor<T> extends AbstractParseTreeVisitor<T> implement
 	@Override public T visitClassBody(Java8Parser.ClassBodyContext ctx) { 
 		println('{');
 		safeVisitList(ctx.classBodyDeclaration());
+		println();
 		println('}');
 		return null;
 	}

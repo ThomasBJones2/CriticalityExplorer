@@ -191,8 +191,16 @@ wildcard
 	;
 
 wildcardBounds
-	:	'extends' referenceType
-	|	'super' referenceType
+	: extendWildcardBounds
+	| superWildcardBounds
+	;
+
+extendWildcardBounds
+	: 'extends' referenceType
+	;
+
+superWildcardBounds
+	: 'super' referenceType
 	;
 
 /*
