@@ -1173,56 +1173,118 @@ public class PrettyPrintVisitor<T> extends AbstractParseTreeVisitor<T> implement
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitConstructorDeclaration(Java8Parser.ConstructorDeclarationContext ctx) { return visitChildren(ctx); }
+	@Override public T visitConstructorDeclaration(Java8Parser.ConstructorDeclarationContext ctx) {
+		safeVisitList(ctx.constructorModifier());
+		visit(ctx.constructorDeclarator());
+		safeVisit(ctx.throws_());
+		visit(ctx.constructorBody());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitConstructorModifier(Java8Parser.ConstructorModifierContext ctx) { return visitChildren(ctx); }
+	@Override public T visitConstructorModifier(Java8Parser.ConstructorModifierContext ctx) {
+		if(ctx.annotation() != null){
+			visit(ctx.annotation());
+		} else {
+			print(ctx.getText() + " ");
+		}
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitConstructorDeclarator(Java8Parser.ConstructorDeclaratorContext ctx) { return visitChildren(ctx); }
+	@Override public T visitConstructorDeclarator(Java8Parser.ConstructorDeclaratorContext ctx) {
+		safeVisit(ctx.typeParameters());
+		visit(ctx.simpleTypeName());
+		print("(");
+		safeVisit(ctx.formalParameterList());
+		print(")");
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitSimpleTypeName(Java8Parser.SimpleTypeNameContext ctx) { return visitChildren(ctx); }
+	@Override public T visitSimpleTypeName(Java8Parser.SimpleTypeNameContext ctx) {
+		print(ctx.getText() + " ");
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitConstructorBody(Java8Parser.ConstructorBodyContext ctx) { return visitChildren(ctx); }
+	@Override public T visitConstructorBody(Java8Parser.ConstructorBodyContext ctx) {
+		println("{");
+		safeVisit(ctx.explicitConstructorInvocation());
+		safeVisit(ctx.blockStatements());
+		println("}");
+		println();
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitExplicitConstructorInvocation(Java8Parser.ExplicitConstructorInvocationContext ctx) { return visitChildren(ctx); }
+	@Override public T visitExplicitConstructorInvocation(Java8Parser.ExplicitConstructorInvocationContext ctx) {
+		safeVisit(ctx.expressionName());
+		safeVisit(ctx.primary());
+		if(ctx.expressionName() != null || ctx.primary() != null){
+			print(".");
+		}
+		safeVisit(ctx.typeArguments());
+		if (ctx.getText().toLowerCase().contains("this")) {
+			print("this ");
+		} else {
+			print("super ");
+		}
+		print("(");
+		safeVisit(ctx.argumentList());
+		print(")");
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitEnumDeclaration(Java8Parser.EnumDeclarationContext ctx) { return visitChildren(ctx); }
+	@Override public T visitEnumDeclaration(Java8Parser.EnumDeclarationContext ctx) {
+		safeVisitList(ctx.classModifier());
+		print("enum " + ctx.Identifier().getText() + " ");
+		safeVisit(ctx.superinterfaces());
+		visit(ctx.enumBody());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitEnumBody(Java8Parser.EnumBodyContext ctx) { return visitChildren(ctx); }
+	@Override public T visitEnumBody(Java8Parser.EnumBodyContext ctx) {
+/*		println("{");
+		safeVisit(ctx.enumConstantList());
+		print(",");
+		safeVisit(ctx.enumBodyDeclarations());
+		println("}");
+		println();
+
+	:	'{' enumConstantList? ','? enumBodyDeclarations? '}'
+*/ return null
+	}
 	/**
 	 * {@inheritDoc}
 	 *
