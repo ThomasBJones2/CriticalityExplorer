@@ -171,21 +171,39 @@ public class PrettyPrintVisitor<T> extends AbstractParseTreeVisitor<T> implement
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitTypeParameter(Java8Parser.TypeParameterContext ctx) { return visitChildren(ctx); }
+	@Override public T visitTypeParameter(Java8Parser.TypeParameterContext ctx) { 
+		for(Java8Parser.TypeParameterModifierContext tPM : makeSafe(ctx.typeParameterModifier())){
+			visit(tPM);
+		}
+		print(ctx.Identifier().getText() + ' ');
+		safeVisit(ctx.typeBound());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitTypeParameterModifier(Java8Parser.TypeParameterModifierContext ctx) { return visitChildren(ctx); }
+	@Override public T visitTypeParameterModifier(Java8Parser.TypeParameterModifierContext ctx) {
+		print(ctx.getText() + ' ');
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitTypeBound(Java8Parser.TypeBoundContext ctx) { return visitChildren(ctx); }
+	@Override public T visitTypeBound(Java8Parser.TypeBoundContext ctx) {
+		print("extends ");
+		safeVisit(ctx.typeVariable());
+		safeVisit(ctx.classOrInterfaceType());
+		for(Java8Parser.AdditionalBoundContext aBC : makeSafe(ctx.additionalBound())){
+			visit(aBC);
+		}
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
@@ -407,7 +425,7 @@ public class PrettyPrintVisitor<T> extends AbstractParseTreeVisitor<T> implement
 			visit(classMod);
 		}	
 		print("class ");
-		print(ctx.Identifier().getText());
+		print(ctx.Identifier().getText() + ' ');
 		safeVisit(ctx.typeParameters());
 		safeVisit(ctx.superclass());		
 		safeVisit(ctx.superinterfaces());
@@ -431,28 +449,49 @@ public class PrettyPrintVisitor<T> extends AbstractParseTreeVisitor<T> implement
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitTypeParameters(Java8Parser.TypeParametersContext ctx) { return visitChildren(ctx); }
+	@Override public T visitTypeParameters(Java8Parser.TypeParametersContext ctx) {
+		print('<');
+		visit(ctx.typeParameterList());
+		print("> ");
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitTypeParameterList(Java8Parser.TypeParameterListContext ctx) { return visitChildren(ctx); }
+	@Override public T visitTypeParameterList(Java8Parser.TypeParameterListContext ctx) {
+		for(int i = 0; i < ctx.typeParameter().size(); i ++){
+			visit(ctx.typeParameter().get(i));
+			if(i < ctx.typeParameter().size() - 1){
+				print(", ");
+			}
+		}
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitSuperclass(Java8Parser.SuperclassContext ctx) { return visitChildren(ctx); }
+	@Override public T visitSuperclass(Java8Parser.SuperclassContext ctx) {
+		print("extends ");
+		visit(ctx.classType());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitSuperinterfaces(Java8Parser.SuperinterfacesContext ctx) { return visitChildren(ctx); }
+	@Override public T visitSuperinterfaces(Java8Parser.SuperinterfacesContext ctx) {
+		print("implements ");
+		visit(ctx.interfaceTypeList());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
