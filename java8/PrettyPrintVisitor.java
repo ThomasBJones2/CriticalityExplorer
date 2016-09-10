@@ -76,6 +76,14 @@ public class PrettyPrintVisitor<T> extends AbstractParseTreeVisitor<T> implement
 		return null;
 	}
 
+	private <M extends ParseTree> T preDelimitedVisitList(List<M> in, String delimiter){
+		for(int i = 0; i < in.size(); i ++){
+			print(delimiter);
+			print(in.get(i).getText());
+		} 
+		return null;
+	}
+
 	private <M extends ParseTree> T fullDelimitedVisitList(List<M> in, String delimiter){
 		for(int i = 0; i < in.size(); i ++){
 			print(in.get(i).getText());
@@ -1308,21 +1316,34 @@ public class PrettyPrintVisitor<T> extends AbstractParseTreeVisitor<T> implement
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitEnumConstant(Java8Parser.EnumConstantContext ctx) { return visitChildren(ctx); }
+	@Override public T visitEnumConstant(Java8Parser.EnumConstantContext ctx) {
+		safeVisitList(ctx.enumConstantModifier());
+		print(ctx.Identifier() + " (");
+		safeVisit(ctx.argumentList());
+		safeVisit(ctx.classBody());
+		println();
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitEnumConstantModifier(Java8Parser.EnumConstantModifierContext ctx) { return visitChildren(ctx); }
+	@Override public T visitEnumConstantModifier(Java8Parser.EnumConstantModifierContext ctx) { 
+		visit(ctx.annotation());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitEnumBodyDeclarations(Java8Parser.EnumBodyDeclarationsContext ctx) { return visitChildren(ctx); }
+	@Override public T visitEnumBodyDeclarations(Java8Parser.EnumBodyDeclarationsContext ctx) {
+		preDelimitedVisitList(ctx.classBodyDeclaration(),";\n"); 
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
