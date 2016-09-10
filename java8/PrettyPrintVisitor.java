@@ -52,6 +52,13 @@ public class PrettyPrintVisitor<T> extends AbstractParseTreeVisitor<T> implement
 		}
 	}
 
+	private String safeGetText(ParseTree in){
+		if(in != null){
+			return in.getText();
+		}
+		return "";
+	}
+
 	private <M extends ParseTree> T safeVisitList(List<M> in){
 		for(ParseTree child : makeSafe(in)){
 			visit(child);
@@ -1275,15 +1282,15 @@ public class PrettyPrintVisitor<T> extends AbstractParseTreeVisitor<T> implement
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
 	@Override public T visitEnumBody(Java8Parser.EnumBodyContext ctx) {
-/*		println("{");
+		println("{");
 		safeVisit(ctx.enumConstantList());
-		print(",");
+		if(ctx.getText().equals(safeGetText(ctx.enumConstantList()) + "," + safeGetText(ctx.enumBodyDeclarations()))) {
+			print(",");
+		}
 		safeVisit(ctx.enumBodyDeclarations());
 		println("}");
 		println();
-
-	:	'{' enumConstantList? ','? enumBodyDeclarations? '}'
-*/ return null
+    	return null;
 	}
 	/**
 	 * {@inheritDoc}
@@ -1291,7 +1298,10 @@ public class PrettyPrintVisitor<T> extends AbstractParseTreeVisitor<T> implement
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitEnumConstantList(Java8Parser.EnumConstantListContext ctx) { return visitChildren(ctx); }
+	@Override public T visitEnumConstantList(Java8Parser.EnumConstantListContext ctx) {
+		delimitedVisitList(ctx.enumConstant(), ",");
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
