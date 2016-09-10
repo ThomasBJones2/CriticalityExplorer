@@ -1564,7 +1564,8 @@ public class PrettyPrintVisitor<T> extends AbstractParseTreeVisitor<T> implement
 	@Override public T visitAnnotation(Java8Parser.AnnotationContext ctx) {
 		safeVisit(ctx.normalAnnotation());
 		safeVisit(ctx.markerAnnotation());
-		safeVisit(ctx.singleElementAnnotation());		
+		safeVisit(ctx.singleElementAnnotation());	
+		println();	
 		return null;
 	}
 	/**
@@ -1635,308 +1636,567 @@ public class PrettyPrintVisitor<T> extends AbstractParseTreeVisitor<T> implement
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitElementValueList(Java8Parser.ElementValueListContext ctx) { return visitChildren(ctx); }
+	@Override public T visitElementValueList(Java8Parser.ElementValueListContext ctx) {
+		delimitedVisitList(ctx.elementValue(), ",");
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitMarkerAnnotation(Java8Parser.MarkerAnnotationContext ctx) { return visitChildren(ctx); }
+	@Override public T visitMarkerAnnotation(Java8Parser.MarkerAnnotationContext ctx) {
+		print("@");
+		visit(ctx.typeName());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitSingleElementAnnotation(Java8Parser.SingleElementAnnotationContext ctx) { return visitChildren(ctx); }
+	@Override public T visitSingleElementAnnotation(Java8Parser.SingleElementAnnotationContext ctx) {
+		print("@");
+		visit(ctx.typeName());
+		print("( ");
+		visit(ctx.elementValue());
+		print(")");
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitArrayInitializer(Java8Parser.ArrayInitializerContext ctx) { return visitChildren(ctx); }
+	@Override public T visitArrayInitializer(Java8Parser.ArrayInitializerContext ctx) {
+		println("{");
+		safeVisit(ctx.variableInitializerList());
+		if(ctx.getText().equals(ctx.variableInitializerList().getText() + ",")) print(",");
+		println();
+		println();
+		println("}");
+		println();
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitVariableInitializerList(Java8Parser.VariableInitializerListContext ctx) { return visitChildren(ctx); }
+	@Override public T visitVariableInitializerList(Java8Parser.VariableInitializerListContext ctx) { 
+		delimitedVisitList(ctx.variableInitializer(), ",");
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitBlock(Java8Parser.BlockContext ctx) { return visitChildren(ctx); }
+	@Override public T visitBlock(Java8Parser.BlockContext ctx) {
+		println("{");
+		safeVisit(ctx.blockStatements());
+		println();
+		println("}");
+		println();
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitBlockStatements(Java8Parser.BlockStatementsContext ctx) { return visitChildren(ctx); }
+	@Override public T visitBlockStatements(Java8Parser.BlockStatementsContext ctx) {
+		safeVisitList(ctx.blockStatement());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitBlockStatement(Java8Parser.BlockStatementContext ctx) { return visitChildren(ctx); }
+	@Override public T visitBlockStatement(Java8Parser.BlockStatementContext ctx) {
+		safeVisit(ctx.localVariableDeclarationStatement());
+		safeVisit(ctx.classDeclaration());
+		safeVisit(ctx.statement());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitLocalVariableDeclarationStatement(Java8Parser.LocalVariableDeclarationStatementContext ctx) { return visitChildren(ctx); }
+	@Override public T visitLocalVariableDeclarationStatement(Java8Parser.LocalVariableDeclarationStatementContext ctx) {
+		visit(ctx.localVariableDeclaration());
+		println(";");
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitLocalVariableDeclaration(Java8Parser.LocalVariableDeclarationContext ctx) { return visitChildren(ctx); }
+	@Override public T visitLocalVariableDeclaration(Java8Parser.LocalVariableDeclarationContext ctx) {
+		safeVisitList(ctx.variableModifier());
+		visit(ctx.unannType());
+		visit(ctx.variableDeclaratorList());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitStatement(Java8Parser.StatementContext ctx) { return visitChildren(ctx); }
+	@Override public T visitStatement(Java8Parser.StatementContext ctx) {
+		safeVisit(ctx.statementWithoutTrailingSubstatement());
+		safeVisit(ctx.labeledStatement());
+		safeVisit(ctx.ifThenStatement());
+		safeVisit(ctx.ifThenElseStatement());
+		safeVisit(ctx.whileStatement());
+		safeVisit(ctx.forStatement());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitStatementNoShortIf(Java8Parser.StatementNoShortIfContext ctx) { return visitChildren(ctx); }
+	@Override public T visitStatementNoShortIf(Java8Parser.StatementNoShortIfContext ctx) {
+		safeVisit(ctx.statementWithoutTrailingSubstatement());
+		safeVisit(ctx.labeledStatementNoShortIf());
+		safeVisit(ctx.ifThenElseStatementNoShortIf());
+		safeVisit(ctx.whileStatementNoShortIf());
+		safeVisit(ctx.forStatementNoShortIf());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitStatementWithoutTrailingSubstatement(Java8Parser.StatementWithoutTrailingSubstatementContext ctx) { return visitChildren(ctx); }
+	@Override public T visitStatementWithoutTrailingSubstatement(Java8Parser.StatementWithoutTrailingSubstatementContext ctx) {
+		safeVisit(ctx.block());
+		safeVisit(ctx.emptyStatement());
+		safeVisit(ctx.expressionStatement());
+		safeVisit(ctx.assertStatement());
+		safeVisit(ctx.switchStatement());
+		safeVisit(ctx.doStatement());
+		safeVisit(ctx.breakStatement());
+		safeVisit(ctx.continueStatement());
+		safeVisit(ctx.returnStatement());
+		safeVisit(ctx.synchronizedStatement());
+		safeVisit(ctx.throwStatement());
+		safeVisit(ctx.tryStatement());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitEmptyStatement(Java8Parser.EmptyStatementContext ctx) { return visitChildren(ctx); }
+	@Override public T visitEmptyStatement(Java8Parser.EmptyStatementContext ctx) { 
+		println(";");
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitLabeledStatement(Java8Parser.LabeledStatementContext ctx) { return visitChildren(ctx); }
+	@Override public T visitLabeledStatement(Java8Parser.LabeledStatementContext ctx) {
+		print(ctx.Identifier() + ":");
+		visit(ctx.statement());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitLabeledStatementNoShortIf(Java8Parser.LabeledStatementNoShortIfContext ctx) { return visitChildren(ctx); }
+	@Override public T visitLabeledStatementNoShortIf(Java8Parser.LabeledStatementNoShortIfContext ctx) {
+		print(ctx.Identifier() + ":");
+		visit(ctx.statementNoShortIf());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitExpressionStatement(Java8Parser.ExpressionStatementContext ctx) { return visitChildren(ctx); }
+	@Override public T visitExpressionStatement(Java8Parser.ExpressionStatementContext ctx) {
+		visit(ctx.statementExpression());	
+		println(";");
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitStatementExpression(Java8Parser.StatementExpressionContext ctx) { return visitChildren(ctx); }
+	@Override public T visitStatementExpression(Java8Parser.StatementExpressionContext ctx) {
+		safeVisit(ctx.assignment());
+		safeVisit(ctx.preIncrementExpression());
+		safeVisit(ctx.preDecrementExpression());
+		safeVisit(ctx.postIncrementExpression());
+		safeVisit(ctx.postDecrementExpression());
+		safeVisit(ctx.methodInvocation());
+		safeVisit(ctx.classInstanceCreationExpression());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitIfThenStatement(Java8Parser.IfThenStatementContext ctx) { return visitChildren(ctx); }
+	@Override public T visitIfThenStatement(Java8Parser.IfThenStatementContext ctx) {
+		print("if (");
+		visit(ctx.expression());
+		println(")");
+		visit(ctx.statement());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitIfThenElseStatement(Java8Parser.IfThenElseStatementContext ctx) { return visitChildren(ctx); }
+	@Override public T visitIfThenElseStatement(Java8Parser.IfThenElseStatementContext ctx) {
+		print("if (");
+		visit(ctx.expression());
+		println(")");
+		visit(ctx.statementNoShortIf());
+		print ("else ");
+		visit(ctx.statement());
+		return null;
+}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitIfThenElseStatementNoShortIf(Java8Parser.IfThenElseStatementNoShortIfContext ctx) { return visitChildren(ctx); }
+	@Override public T visitIfThenElseStatementNoShortIf(Java8Parser.IfThenElseStatementNoShortIfContext ctx) {
+		print("if (");
+		visit(ctx.expression());
+		println(")");
+		safeVisitList(ctx.statementNoShortIf());
+		print ("else ");
+		safeVisitList(ctx.statementNoShortIf());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitAssertStatement(Java8Parser.AssertStatementContext ctx) { return visitChildren(ctx); }
+	@Override public T visitAssertStatement(Java8Parser.AssertStatementContext ctx) {
+		print("assert ");
+		delimitedVisitList(ctx.expression(), ": ");
+		println(";");
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitSwitchStatement(Java8Parser.SwitchStatementContext ctx) { return visitChildren(ctx); }
+	@Override public T visitSwitchStatement(Java8Parser.SwitchStatementContext ctx) {
+		print("switch (");
+		visit(ctx.expression());
+		print(") ");
+		visit(ctx.switchBlock());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitSwitchBlock(Java8Parser.SwitchBlockContext ctx) { return visitChildren(ctx); }
+	@Override public T visitSwitchBlock(Java8Parser.SwitchBlockContext ctx) {
+		println("{");
+		safeVisitList(ctx.switchBlockStatementGroup());
+		safeVisitList(ctx.switchLabel());
+		println();
+		println("{");
+		println();
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitSwitchBlockStatementGroup(Java8Parser.SwitchBlockStatementGroupContext ctx) { return visitChildren(ctx); }
+	@Override public T visitSwitchBlockStatementGroup(Java8Parser.SwitchBlockStatementGroupContext ctx) {
+		visit(ctx.switchLabels());
+		visit(ctx.blockStatements());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitSwitchLabels(Java8Parser.SwitchLabelsContext ctx) { return visitChildren(ctx); }
+	@Override public T visitSwitchLabels(Java8Parser.SwitchLabelsContext ctx) {
+		safeVisitList(ctx.switchLabel());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitSwitchLabel(Java8Parser.SwitchLabelContext ctx) { return visitChildren(ctx); }
+	@Override public T visitSwitchLabel(Java8Parser.SwitchLabelContext ctx) {
+		if(ctx.getText().contains("default")) print("default ");
+		else {
+			print("case ");
+			safeVisit(ctx.constantExpression());
+			safeVisit(ctx.enumConstantName());
+		}
+		print(": ");
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitEnumConstantName(Java8Parser.EnumConstantNameContext ctx) { return visitChildren(ctx); }
+	@Override public T visitEnumConstantName(Java8Parser.EnumConstantNameContext ctx) {
+		print(ctx.Identifier().getText() + " ");
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitWhileStatement(Java8Parser.WhileStatementContext ctx) { return visitChildren(ctx); }
+	@Override public T visitWhileStatement(Java8Parser.WhileStatementContext ctx) {
+		print("while ( ");
+		visit(ctx.expression());
+		print(" )");
+		visit(ctx.statement());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitWhileStatementNoShortIf(Java8Parser.WhileStatementNoShortIfContext ctx) { return visitChildren(ctx); }
+	@Override public T visitWhileStatementNoShortIf(Java8Parser.WhileStatementNoShortIfContext ctx) {
+		print("while ( ");
+		visit(ctx.expression());
+		print(" )");
+		visit(ctx.statementNoShortIf());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitDoStatement(Java8Parser.DoStatementContext ctx) { return visitChildren(ctx); }
+	@Override public T visitDoStatement(Java8Parser.DoStatementContext ctx) {
+		print("do ");
+		visit(ctx.statement());
+		print("while ( ");
+		visit(ctx.expression());
+		print(" );");
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitForStatement(Java8Parser.ForStatementContext ctx) { return visitChildren(ctx); }
+	@Override public T visitForStatement(Java8Parser.ForStatementContext ctx) {
+		safeVisit(ctx.basicForStatement());
+		safeVisit(ctx.enhancedForStatement());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitForStatementNoShortIf(Java8Parser.ForStatementNoShortIfContext ctx) { return visitChildren(ctx); }
+	@Override public T visitForStatementNoShortIf(Java8Parser.ForStatementNoShortIfContext ctx) {
+		safeVisit(ctx.basicForStatementNoShortIf());
+		safeVisit(ctx.enhancedForStatementNoShortIf());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitBasicForStatement(Java8Parser.BasicForStatementContext ctx) { return visitChildren(ctx); }
+	@Override public T visitBasicForStatement(Java8Parser.BasicForStatementContext ctx) {
+		print("for ( ");
+		safeVisit(ctx.forInit());
+		print("; ");
+		safeVisit(ctx.expression());
+		print("; ");
+		safeVisit(ctx.forUpdate());
+		print(") ");
+		visit(ctx.statement());
+		return null;		
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitBasicForStatementNoShortIf(Java8Parser.BasicForStatementNoShortIfContext ctx) { return visitChildren(ctx); }
+	@Override public T visitBasicForStatementNoShortIf(Java8Parser.BasicForStatementNoShortIfContext ctx) {
+		print("for ( ");
+		safeVisit(ctx.forInit());
+		print("; ");
+		safeVisit(ctx.expression());
+		print("; ");
+		safeVisit(ctx.forUpdate());
+		print(") ");
+		visit(ctx.statementNoShortIf());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitForInit(Java8Parser.ForInitContext ctx) { return visitChildren(ctx); }
+	@Override public T visitForInit(Java8Parser.ForInitContext ctx) {
+		safeVisit(ctx.statementExpressionList());
+		safeVisit(ctx.localVariableDeclaration());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitForUpdate(Java8Parser.ForUpdateContext ctx) { return visitChildren(ctx); }
+	@Override public T visitForUpdate(Java8Parser.ForUpdateContext ctx) {
+		visit(ctx.statementExpressionList());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitStatementExpressionList(Java8Parser.StatementExpressionListContext ctx) { return visitChildren(ctx); }
+	@Override public T visitStatementExpressionList(Java8Parser.StatementExpressionListContext ctx) {
+		delimitedVisitList(ctx.statementExpression(), ",");
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitEnhancedForStatement(Java8Parser.EnhancedForStatementContext ctx) { return visitChildren(ctx); }
+	@Override public T visitEnhancedForStatement(Java8Parser.EnhancedForStatementContext ctx) {
+		print("for ( ");
+		safeVisitList(ctx.variableModifier());
+		visit(ctx.unannType());
+		visit(ctx.variableDeclaratorId());
+		print(": ");
+		safeVisit(ctx.expression());
+		print(") ");
+		visit(ctx.statement());
+		return null;
+}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitEnhancedForStatementNoShortIf(Java8Parser.EnhancedForStatementNoShortIfContext ctx) { return visitChildren(ctx); }
+	@Override public T visitEnhancedForStatementNoShortIf(Java8Parser.EnhancedForStatementNoShortIfContext ctx) {
+		print("for ( ");
+		safeVisitList(ctx.variableModifier());
+		visit(ctx.unannType());
+		visit(ctx.variableDeclaratorId());
+		print(": ");
+		safeVisit(ctx.expression());
+		print(") ");
+		visit(ctx.statementNoShortIf());
+		return null;
+}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitBreakStatement(Java8Parser.BreakStatementContext ctx) { return visitChildren(ctx); }
+	@Override public T visitBreakStatement(Java8Parser.BreakStatementContext ctx) {
+		println("break ");
+		safePrint(ctx.Identifier());
+		println(";");
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitContinueStatement(Java8Parser.ContinueStatementContext ctx) { return visitChildren(ctx); }
+	@Override public T visitContinueStatement(Java8Parser.ContinueStatementContext ctx) {
+		println("continue ");
+		safePrint(ctx.Identifier());
+		println(";");
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitReturnStatement(Java8Parser.ReturnStatementContext ctx) { return visitChildren(ctx); }
+	@Override public T visitReturnStatement(Java8Parser.ReturnStatementContext ctx) {
+		println("continue ");
+		safeVisit(ctx.expression());
+		println(";");
+		return null;	
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitThrowStatement(Java8Parser.ThrowStatementContext ctx) { return visitChildren(ctx); }
+	@Override public T visitThrowStatement(Java8Parser.ThrowStatementContext ctx) {
+		println("throw ");
+		visit(ctx.expression());
+		println(";");
+		return null;	}
 	/**
 	 * {@inheritDoc}
 	 *
