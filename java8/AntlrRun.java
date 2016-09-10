@@ -4,9 +4,12 @@ import org.antlr.v4.runtime.tree.*;
 public class AntlrRun {
     public static void main(String[] args) throws Exception {
         Java8Lexer lexer = new Java8Lexer(new ANTLRFileStream("./examples/helloworld.java"));
+			//ANTLRFileStream bob = new ANTLRFileStream("./examples/helloworld.java");
+			//System.out.println(lexer.getInputStream());
         Java8Parser parser = new Java8Parser(new CommonTokenStream(lexer));
         //System.out.println(parser.classDeclaration());
 	     ParseTree tree = parser.compilationUnit();
+			//System.out.println(parser.compilationUnit().getText() + " And that's the text!");
 		  //System.out.println("the package declaration is: " + tree.packageDeclaration().getText());
 		  //System.out.println(tree.toStringTree());
 		  //ParseTreeWalker walker = new ParseTreeWalker();
