@@ -1056,9 +1056,13 @@ primaryNoNewArray_lfno_primary_lfno_arrayAccess_lfno_primary
 	;
 
 classInstanceCreationExpression
-	:	'new' typeArguments? annotation* Identifier ('.' annotation* Identifier)* typeArgumentsOrDiamond? '(' argumentList? ')' classBody?
+	:	'new' typeArguments? annotation* Identifier ('.' annotationIdentifier)* typeArgumentsOrDiamond? '(' argumentList? ')' classBody?
 	|	expressionName '.' 'new' typeArguments? annotation* Identifier typeArgumentsOrDiamond? '(' argumentList? ')' classBody?
 	|	primary '.' 'new' typeArguments? annotation* Identifier typeArgumentsOrDiamond? '(' argumentList? ')' classBody?
+	;
+
+annotationIdentifier
+	:  annotation* Identifier
 	;
 
 classInstanceCreationExpression_lf_primary
@@ -1066,7 +1070,7 @@ classInstanceCreationExpression_lf_primary
 	;
 
 classInstanceCreationExpression_lfno_primary
-	:	'new' typeArguments? annotation* Identifier ('.' annotation* Identifier)* typeArgumentsOrDiamond? '(' argumentList? ')' classBody?
+	:	'new' typeArguments? annotation* Identifier ('.' annotationIdentifier)* typeArgumentsOrDiamond? '(' argumentList? ')' classBody?
 	|	expressionName '.' 'new' typeArguments? annotation* Identifier typeArgumentsOrDiamond? '(' argumentList? ')' classBody?
 	;
 
@@ -1094,23 +1098,27 @@ arrayAccess
 	:	(	expressionName '[' expression ']'
 		|	primaryNoNewArray_lfno_arrayAccess '[' expression ']'
 		)
-		(	primaryNoNewArray_lf_arrayAccess '[' expression ']'
-		)*
+		arrayAccessHelper
 	;
 
 arrayAccess_lf_primary
 	:	(	primaryNoNewArray_lf_primary_lfno_arrayAccess_lf_primary '[' expression ']'
 		)
-		(	primaryNoNewArray_lf_primary_lf_arrayAccess_lf_primary '[' expression ']'
-		)*
+		arrayAccessHelper
 	;
 
 arrayAccess_lfno_primary
 	:	(	expressionName '[' expression ']'
 		|	primaryNoNewArray_lfno_primary_lfno_arrayAccess_lfno_primary '[' expression ']'
 		)
-		(	primaryNoNewArray_lfno_primary_lf_arrayAccess_lfno_primary '[' expression ']'
-		)*
+		arrayAccessHelper
+	;
+
+arrayAccessHelper
+	: 		(	(primaryNoNewArray_lf_arrayAccess |
+				primaryNoNewArray_lf_primary_lf_arrayAccess_lf_primary |
+				primaryNoNewArray_lfno_primary_lf_arrayAccess_lfno_primary )
+			 '[' expression ']')*
 	;
 
 methodInvocation
