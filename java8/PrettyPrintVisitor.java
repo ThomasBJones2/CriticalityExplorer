@@ -92,6 +92,11 @@ public class PrettyPrintVisitor<T> extends AbstractParseTreeVisitor<T> implement
 		return null;
 	}
 
+	int countChars(String in, String in2){
+		int count = in.length() - in.replace(in2, "").length();
+		return count;
+	}
+
 	/**
 	 * {@inheritDoc}
 	 *
@@ -2217,140 +2222,293 @@ public class PrettyPrintVisitor<T> extends AbstractParseTreeVisitor<T> implement
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitTryStatement(Java8Parser.TryStatementContext ctx) { return visitChildren(ctx); }
+	@Override public T visitTryStatement(Java8Parser.TryStatementContext ctx) {
+		if(ctx.tryWithResourcesStatement() != null){
+			visit(ctx.tryWithResourcesStatement());
+		} else {
+			print("try ");
+			visit(ctx.block());
+			safeVisit(ctx.catches());
+			safeVisit(ctx.finally_());			
+		}
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitCatches(Java8Parser.CatchesContext ctx) { return visitChildren(ctx); }
+	@Override public T visitCatches(Java8Parser.CatchesContext ctx) {
+		safeVisitList(ctx.catchClause());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitCatchClause(Java8Parser.CatchClauseContext ctx) { return visitChildren(ctx); }
+	@Override public T visitCatchClause(Java8Parser.CatchClauseContext ctx) {
+		print("catch (");
+		visit(ctx.catchFormalParameter());
+		print(") ");
+		visit(ctx.block());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitCatchFormalParameter(Java8Parser.CatchFormalParameterContext ctx) { return visitChildren(ctx); }
+	@Override public T visitCatchFormalParameter(Java8Parser.CatchFormalParameterContext ctx) {
+		safeVisitList(ctx.variableModifier());
+		visit(ctx.catchType());
+		visit(ctx.variableDeclaratorId());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitCatchType(Java8Parser.CatchTypeContext ctx) { return visitChildren(ctx); }
+	@Override public T visitCatchType(Java8Parser.CatchTypeContext ctx) {
+		visit(ctx.unannClassType());
+		preDelimitedVisitList(ctx.classType(), "|");
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitFinally_(Java8Parser.Finally_Context ctx) { return visitChildren(ctx); }
+	@Override public T visitFinally_(Java8Parser.Finally_Context ctx) {
+		print("finally ");
+		visit(ctx.block());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitTryWithResourcesStatement(Java8Parser.TryWithResourcesStatementContext ctx) { return visitChildren(ctx); }
+	@Override public T visitTryWithResourcesStatement(Java8Parser.TryWithResourcesStatementContext ctx) {
+		print("try ");
+		visit(ctx.resourceSpecification());
+		visit(ctx.block());
+		visit(ctx.catches());
+		visit(ctx.finally_());		
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitResourceSpecification(Java8Parser.ResourceSpecificationContext ctx) { return visitChildren(ctx); }
+	@Override public T visitResourceSpecification(Java8Parser.ResourceSpecificationContext ctx) {
+		print("(");
+		visit(ctx.resourceList());		
+		if(ctx.getText().equals("(" + ctx.resourceList().getText() + ";)")){
+			print(";");
+		}
+		print(")");
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitResourceList(Java8Parser.ResourceListContext ctx) { return visitChildren(ctx); }
+	@Override public T visitResourceList(Java8Parser.ResourceListContext ctx) {
+		delimitedVisitList(ctx.resource(), ";");
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitResource(Java8Parser.ResourceContext ctx) { return visitChildren(ctx); }
+	@Override public T visitResource(Java8Parser.ResourceContext ctx) {
+		safeVisitList(ctx.variableModifier());
+		visit(ctx.unannType());
+		visit(ctx.variableDeclaratorId());
+		print(" = ");
+		visit(ctx.expression());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitPrimary(Java8Parser.PrimaryContext ctx) { return visitChildren(ctx); }
+	@Override public T visitPrimary(Java8Parser.PrimaryContext ctx) {
+		safeVisit(ctx.primaryNoNewArray_lfno_primary());
+		safeVisit(ctx.arrayCreationExpression());
+		safeVisitList(ctx.primaryNoNewArray_lf_primary());
+		return null;
+	}
+
+
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitPrimaryNoNewArray(Java8Parser.PrimaryNoNewArrayContext ctx) { return visitChildren(ctx); }
+	@Override public T visitPrimaryNoNewArray(Java8Parser.PrimaryNoNewArrayContext ctx) {
+		if(ctx.literal() != null){
+			visit(ctx.literal());
+		} else if (ctx.expression() != null) {
+			print ("(");
+			visit(ctx.expression());
+			print(")");
+		} else if(ctx.classInstanceCreationExpression() != null ||
+			ctx.fieldAccess() != null ||
+			ctx.arrayAccess() != null ||
+			ctx.methodInvocation() != null ||
+			ctx.methodReference() != null){
+			safeVisit(ctx.classInstanceCreationExpression());
+			safeVisit(ctx.fieldAccess());
+			safeVisit(ctx.arrayAccess());
+			safeVisit(ctx.methodInvocation());
+			safeVisit(ctx.methodReference());
+		} else {//if (ctx.typeName != null){
+			print(ctx.getText());
+			//int count = countChars(ctx.getText(), "[");
+			//int typeNCount = countChars(ctx.typeName().getText(),"[");
+			//for(int i = 0; i < count - typeNCount; i ++){
+			//	print("[]");
+			//}
+			//print(".class");
+		}
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitPrimaryNoNewArray_lf_arrayAccess(Java8Parser.PrimaryNoNewArray_lf_arrayAccessContext ctx) { return visitChildren(ctx); }
+	@Override public T visitPrimaryNoNewArray_lf_arrayAccess(Java8Parser.PrimaryNoNewArray_lf_arrayAccessContext ctx) {	
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitPrimaryNoNewArray_lfno_arrayAccess(Java8Parser.PrimaryNoNewArray_lfno_arrayAccessContext ctx) { return visitChildren(ctx); }
+	@Override public T visitPrimaryNoNewArray_lfno_arrayAccess(Java8Parser.PrimaryNoNewArray_lfno_arrayAccessContext ctx) {
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitPrimaryNoNewArray_lf_primary(Java8Parser.PrimaryNoNewArray_lf_primaryContext ctx) { return visitChildren(ctx); }
+	@Override public T visitPrimaryNoNewArray_lf_primary(Java8Parser.PrimaryNoNewArray_lf_primaryContext ctx) {
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitPrimaryNoNewArray_lf_primary_lf_arrayAccess_lf_primary(Java8Parser.PrimaryNoNewArray_lf_primary_lf_arrayAccess_lf_primaryContext ctx) { return visitChildren(ctx); }
+	@Override public T visitPrimaryNoNewArray_lf_primary_lf_arrayAccess_lf_primary(Java8Parser.PrimaryNoNewArray_lf_primary_lf_arrayAccess_lf_primaryContext ctx) {
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitPrimaryNoNewArray_lf_primary_lfno_arrayAccess_lf_primary(Java8Parser.PrimaryNoNewArray_lf_primary_lfno_arrayAccess_lf_primaryContext ctx) { return visitChildren(ctx); }
+	@Override public T visitPrimaryNoNewArray_lf_primary_lfno_arrayAccess_lf_primary(Java8Parser.PrimaryNoNewArray_lf_primary_lfno_arrayAccess_lf_primaryContext ctx) {
+		safeVisit(ctx.classInstanceCreationExpression_lf_primary());
+		safeVisit(ctx.fieldAccess_lf_primary());
+		safeVisit(ctx.methodInvocation_lf_primary());
+		safeVisit(ctx.methodReference_lf_primary());	
+		return null;
+   }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitPrimaryNoNewArray_lfno_primary(Java8Parser.PrimaryNoNewArray_lfno_primaryContext ctx) { return visitChildren(ctx); }
+	@Override public T visitPrimaryNoNewArray_lfno_primary(Java8Parser.PrimaryNoNewArray_lfno_primaryContext ctx) {
+		if(ctx.literal() != null){
+			visit(ctx.literal());
+		} else if (ctx.expression() != null) {
+			print ("(");
+			visit(ctx.expression());
+			print(")");
+		} else if(ctx.classInstanceCreationExpression_lfno_primary() != null ||
+			ctx.fieldAccess_lfno_primary() != null ||
+			ctx.arrayAccess_lfno_primary() != null ||
+			ctx.methodInvocation_lfno_primary() != null ||
+			ctx.methodReference_lfno_primary() != null){
+			safeVisit(ctx.classInstanceCreationExpression_lfno_primary());
+			safeVisit(ctx.fieldAccess_lfno_primary());
+			safeVisit(ctx.arrayAccess_lfno_primary());
+			safeVisit(ctx.methodInvocation_lfno_primary());
+			safeVisit(ctx.methodReference_lfno_primary());
+		} else {
+			print(ctx.getText());
+		}
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitPrimaryNoNewArray_lfno_primary_lf_arrayAccess_lfno_primary(Java8Parser.PrimaryNoNewArray_lfno_primary_lf_arrayAccess_lfno_primaryContext ctx) { return visitChildren(ctx); }
+	@Override public T visitPrimaryNoNewArray_lfno_primary_lf_arrayAccess_lfno_primary(Java8Parser.PrimaryNoNewArray_lfno_primary_lf_arrayAccess_lfno_primaryContext ctx) {
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitPrimaryNoNewArray_lfno_primary_lfno_arrayAccess_lfno_primary(Java8Parser.PrimaryNoNewArray_lfno_primary_lfno_arrayAccess_lfno_primaryContext ctx) { return visitChildren(ctx); }
+	@Override public T visitPrimaryNoNewArray_lfno_primary_lfno_arrayAccess_lfno_primary(Java8Parser.PrimaryNoNewArray_lfno_primary_lfno_arrayAccess_lfno_primaryContext ctx) {
+		if(ctx.literal() != null){
+			visit(ctx.literal());
+		} else if (ctx.expression() != null) {
+			print ("(");
+			visit(ctx.expression());
+			print(")");
+		} else if(ctx.classInstanceCreationExpression_lfno_primary() != null ||
+			ctx.fieldAccess_lfno_primary() != null ||
+			ctx.methodInvocation_lfno_primary() != null ||
+			ctx.methodReference_lfno_primary() != null){
+			safeVisit(ctx.classInstanceCreationExpression_lfno_primary());
+			safeVisit(ctx.fieldAccess_lfno_primary());
+			safeVisit(ctx.methodInvocation_lfno_primary());
+			safeVisit(ctx.methodReference_lfno_primary());
+		} else {
+			print(ctx.getText());
+		}
+		return null;
+	}
+	
+
+
+
+
+
 	/**
 	 * {@inheritDoc}
 	 *
