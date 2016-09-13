@@ -2157,7 +2157,7 @@ public class PrettyPrintVisitor<T> extends AbstractParseTreeVisitor<T> implement
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
 	@Override public T visitBreakStatement(Java8Parser.BreakStatementContext ctx) {
-		println("break ");
+		print("break ");
 		safePrint(ctx.Identifier());
 		println(";");
 		return null;
@@ -2169,7 +2169,7 @@ public class PrettyPrintVisitor<T> extends AbstractParseTreeVisitor<T> implement
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
 	@Override public T visitContinueStatement(Java8Parser.ContinueStatementContext ctx) {
-		println("continue ");
+		print("continue ");
 		safePrint(ctx.Identifier());
 		println(";");
 		return null;
@@ -2181,7 +2181,7 @@ public class PrettyPrintVisitor<T> extends AbstractParseTreeVisitor<T> implement
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
 	@Override public T visitReturnStatement(Java8Parser.ReturnStatementContext ctx) {
-		println("continue ");
+		print("return ");
 		safeVisit(ctx.expression());
 		println(";");
 		return null;	
@@ -2193,17 +2193,24 @@ public class PrettyPrintVisitor<T> extends AbstractParseTreeVisitor<T> implement
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
 	@Override public T visitThrowStatement(Java8Parser.ThrowStatementContext ctx) {
-		println("throw ");
+		print("throw ");
 		visit(ctx.expression());
 		println(";");
-		return null;	}
+		return null;	
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitSynchronizedStatement(Java8Parser.SynchronizedStatementContext ctx) { return visitChildren(ctx); }
+	@Override public T visitSynchronizedStatement(Java8Parser.SynchronizedStatementContext ctx) {
+		print("synchronized (");
+		visit(ctx.expression());
+		print(")");
+		visit(ctx.block());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
