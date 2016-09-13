@@ -67,28 +67,34 @@ public class PrettyPrintVisitor<T> extends AbstractParseTreeVisitor<T> implement
 	}
 
 	private <M extends ParseTree> T delimitedVisitList(List<M> in, String delimiter){
-		for(int i = 0; i < in.size(); i ++){
-			print(in.get(i).getText());
-			if(i < in.size() - 1){
-				print(delimiter);
-			}
-		} 
+		if(in != null){
+			for(int i = 0; i < in.size(); i ++){
+				visit(in.get(i));
+				if(i < in.size() - 1){
+					print(delimiter);
+				}
+			} 
+		}
 		return null;
 	}
 
 	private <M extends ParseTree> T preDelimitedVisitList(List<M> in, String delimiter){
-		for(int i = 0; i < in.size(); i ++){
-			print(delimiter);
-			print(in.get(i).getText());
-		} 
+		if(in != null){
+			for(int i = 0; i < in.size(); i ++){
+				print(delimiter);
+				visit(in.get(i));
+			} 
+		}
 		return null;
 	}
 
 	private <M extends ParseTree> T fullDelimitedVisitList(List<M> in, String delimiter){
-		for(int i = 0; i < in.size(); i ++){
-			print(in.get(i).getText());
-			print(delimiter);
-		} 
+		if(in != null){
+			for(int i = 0; i < in.size(); i ++){
+				visit(in.get(i));
+				print(delimiter);
+			} 
+		}
 		return null;
 	}
 
@@ -2738,278 +2744,633 @@ public class PrettyPrintVisitor<T> extends AbstractParseTreeVisitor<T> implement
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitMethodInvocation_lf_primary(Java8Parser.MethodInvocation_lf_primaryContext ctx) { return visitChildren(ctx); }
+	@Override public T visitMethodInvocation_lf_primary(Java8Parser.MethodInvocation_lf_primaryContext ctx) {
+		print(".");
+		safeVisit(ctx.typeArguments());
+		print(ctx.Identifier().getText() + " ");
+		print("(");
+		safeVisit(ctx.argumentList());
+		print(")");
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitMethodInvocation_lfno_primary(Java8Parser.MethodInvocation_lfno_primaryContext ctx) { return visitChildren(ctx); }
+	@Override public T visitMethodInvocation_lfno_primary(Java8Parser.MethodInvocation_lfno_primaryContext ctx) {
+		if(ctx.methodName() != null){
+			visit(ctx.methodName());
+		} else {		
+			safeVisit(ctx.expressionName());
+			if(ctx.getText().contains("super")){
+				if(ctx.typeName() != null){
+					visit(ctx.typeName());
+					print(".");
+				}
+				print("super.");
+			} else {
+				safeVisit(ctx.typeName());
+			}
+			safeVisit(ctx.typeArguments());
+			print(ctx.Identifier().getText() + " ");
+		}
+		print("(");
+		safeVisit(ctx.argumentList());
+		print(")");
+		return null;	
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitArgumentList(Java8Parser.ArgumentListContext ctx) { return visitChildren(ctx); }
+	@Override public T visitArgumentList(Java8Parser.ArgumentListContext ctx) {
+		delimitedVisitList(ctx.expression(), ",");
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitMethodReference(Java8Parser.MethodReferenceContext ctx) { return visitChildren(ctx); }
+	@Override public T visitMethodReference(Java8Parser.MethodReferenceContext ctx) {
+		safeVisit(ctx.expressionName());
+		safeVisit(ctx.referenceType());
+		safeVisit(ctx.primary());
+		if(ctx.getText().contains("super")){
+			if(ctx.typeName() != null){
+				visit(ctx.typeName());
+				print(".");
+			}
+			print("super ");
+		}
+		safeVisit(ctx.classType());
+		safeVisit(ctx.arrayType());			
+		print(":: ");
+		safeVisit(ctx.typeArguments());
+		if(ctx.Identifier() != null){
+			print(ctx.Identifier().getText() + " ");
+		} else {
+			print("new ");
+		}
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitMethodReference_lf_primary(Java8Parser.MethodReference_lf_primaryContext ctx) { return visitChildren(ctx); }
+	@Override public T visitMethodReference_lf_primary(Java8Parser.MethodReference_lf_primaryContext ctx) {		
+		print(":: ");
+		safeVisit(ctx.typeArguments());
+		print(ctx.Identifier().getText() + " ");
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitMethodReference_lfno_primary(Java8Parser.MethodReference_lfno_primaryContext ctx) { return visitChildren(ctx); }
+	@Override public T visitMethodReference_lfno_primary(Java8Parser.MethodReference_lfno_primaryContext ctx) {
+		safeVisit(ctx.expressionName());
+		safeVisit(ctx.referenceType());
+		if(ctx.getText().contains("super")){
+			if(ctx.typeName() != null){
+				visit(ctx.typeName());
+				print(".");
+			}
+			print("super ");
+		}
+		safeVisit(ctx.classType());
+		safeVisit(ctx.arrayType());			
+		print(":: ");
+		safeVisit(ctx.typeArguments());
+		if(ctx.Identifier() != null){
+			print(ctx.Identifier().getText() + " ");
+		} else {
+			print("new ");
+		}
+		return null;
+
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitArrayCreationExpression(Java8Parser.ArrayCreationExpressionContext ctx) { return visitChildren(ctx); }
+	@Override public T visitArrayCreationExpression(Java8Parser.ArrayCreationExpressionContext ctx) {
+		print("new ");
+		safeVisit(ctx.primitiveType());
+		safeVisit(ctx.classOrInterfaceType());
+		safeVisit(ctx.primitiveType());
+		safeVisit(ctx.classOrInterfaceType());
+		safeVisit(ctx.dimExprs());
+		safeVisit(ctx.dims());
+		safeVisit(ctx.arrayInitializer());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitDimExprs(Java8Parser.DimExprsContext ctx) { return visitChildren(ctx); }
+	@Override public T visitDimExprs(Java8Parser.DimExprsContext ctx) { 
+		safeVisitList(ctx.dimExpr());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitDimExpr(Java8Parser.DimExprContext ctx) { return visitChildren(ctx); }
+	@Override public T visitDimExpr(Java8Parser.DimExprContext ctx) {
+		safeVisitList(ctx.annotation());
+		print("[");
+		visit(ctx.expression());
+		print("]");
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitConstantExpression(Java8Parser.ConstantExpressionContext ctx) { return visitChildren(ctx); }
+	@Override public T visitConstantExpression(Java8Parser.ConstantExpressionContext ctx) {
+		visit(ctx.expression());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitExpression(Java8Parser.ExpressionContext ctx) { return visitChildren(ctx); }
+	@Override public T visitExpression(Java8Parser.ExpressionContext ctx) {
+		safeVisit(ctx.lambdaExpression());
+		safeVisit(ctx.assignmentExpression());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitLambdaExpression(Java8Parser.LambdaExpressionContext ctx) { return visitChildren(ctx); }
+	@Override public T visitLambdaExpression(Java8Parser.LambdaExpressionContext ctx) {
+		visit(ctx.lambdaParameters());
+		print("->");
+		visit(ctx.lambdaBody());
+		print(" ");
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitLambdaParameters(Java8Parser.LambdaParametersContext ctx) { return visitChildren(ctx); }
+	@Override public T visitLambdaParameters(Java8Parser.LambdaParametersContext ctx) {
+		if(ctx.Identifier() != null){
+			print(ctx.Identifier().getText() + " ");
+		} else {
+			print("(");
+			safeVisit(ctx.formalParameterList());
+			safeVisit(ctx.inferredFormalParameterList());
+			print(")");
+		}
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitInferredFormalParameterList(Java8Parser.InferredFormalParameterListContext ctx) { return visitChildren(ctx); }
+	@Override public T visitInferredFormalParameterList(Java8Parser.InferredFormalParameterListContext ctx) {
+		delimitedVisitList(ctx.Identifier(), ",");
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitLambdaBody(Java8Parser.LambdaBodyContext ctx) { return visitChildren(ctx); }
+	@Override public T visitLambdaBody(Java8Parser.LambdaBodyContext ctx) {
+		safeVisit(ctx.expression());
+		safeVisit(ctx.block());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitAssignmentExpression(Java8Parser.AssignmentExpressionContext ctx) { return visitChildren(ctx); }
+	@Override public T visitAssignmentExpression(Java8Parser.AssignmentExpressionContext ctx) {
+		safeVisit(ctx.conditionalExpression());
+		safeVisit(ctx.assignment());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitAssignment(Java8Parser.AssignmentContext ctx) { return visitChildren(ctx); }
+	@Override public T visitAssignment(Java8Parser.AssignmentContext ctx) {
+		visit(ctx.leftHandSide());
+		visit(ctx.assignmentOperator());
+		visit(ctx.expression());		
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitLeftHandSide(Java8Parser.LeftHandSideContext ctx) { return visitChildren(ctx); }
+	@Override public T visitLeftHandSide(Java8Parser.LeftHandSideContext ctx) {
+		safeVisit(ctx.expressionName());
+		safeVisit(ctx.fieldAccess());
+		safeVisit(ctx.arrayAccess());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitAssignmentOperator(Java8Parser.AssignmentOperatorContext ctx) { return visitChildren(ctx); }
+	@Override public T visitAssignmentOperator(Java8Parser.AssignmentOperatorContext ctx) {
+		print(" " + ctx.getText() + " ");
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitConditionalExpression(Java8Parser.ConditionalExpressionContext ctx) { return visitChildren(ctx); }
+	@Override public T visitConditionalExpression(Java8Parser.ConditionalExpressionContext ctx) {
+		visit(ctx.conditionalOrExpression());
+		if(ctx.expression() != null){
+			print("? ");
+			visit(ctx.expression());
+			print(":");
+			visit(ctx.conditionalExpression());
+		}
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitConditionalOrExpression(Java8Parser.ConditionalOrExpressionContext ctx) { return visitChildren(ctx); }
+	@Override public T visitConditionalOrExpression(Java8Parser.ConditionalOrExpressionContext ctx) {
+		if(ctx.conditionalOrExpression() != null){
+			visit(ctx.conditionalOrExpression());
+			print(" || ");
+		}
+		visit(ctx.conditionalAndExpression());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitConditionalAndExpression(Java8Parser.ConditionalAndExpressionContext ctx) { return visitChildren(ctx); }
+	@Override public T visitConditionalAndExpression(Java8Parser.ConditionalAndExpressionContext ctx) {
+		if(ctx.conditionalAndExpression() != null){
+			visit(ctx.conditionalAndExpression());
+			print(" && ");
+		}
+		visit(ctx.inclusiveOrExpression());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitInclusiveOrExpression(Java8Parser.InclusiveOrExpressionContext ctx) { return visitChildren(ctx); }
+	@Override public T visitInclusiveOrExpression(Java8Parser.InclusiveOrExpressionContext ctx) {
+		if(ctx.inclusiveOrExpression() != null){
+			visit(ctx.inclusiveOrExpression());
+			print(" | ");
+		}
+		visit(ctx.exclusiveOrExpression());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitExclusiveOrExpression(Java8Parser.ExclusiveOrExpressionContext ctx) { return visitChildren(ctx); }
+	@Override public T visitExclusiveOrExpression(Java8Parser.ExclusiveOrExpressionContext ctx) {
+		if(ctx.exclusiveOrExpression() != null){
+			visit(ctx.exclusiveOrExpression());
+			print(" ^ ");
+		}
+		visit(ctx.andExpression());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitAndExpression(Java8Parser.AndExpressionContext ctx) { return visitChildren(ctx); }
+	@Override public T visitAndExpression(Java8Parser.AndExpressionContext ctx) {
+		if(ctx.andExpression() != null){
+			visit(ctx.andExpression());
+			print(" & ");
+		}
+		visit(ctx.equalityExpression());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitEqualityExpression(Java8Parser.EqualityExpressionContext ctx) { return visitChildren(ctx); }
+	@Override public T visitEqualityExpression(Java8Parser.EqualityExpressionContext ctx) {
+		if(ctx.equalityExpression() != null 
+			&& ctx.getText().equals(ctx.equalityExpression().getText() 
+			+ "==" + ctx.relationalExpression().getText())){
+			visit(ctx.equalityExpression());
+			print(" == ");
+		}
+		if(ctx.equalityExpression() != null 
+			&& ctx.getText().equals(ctx.equalityExpression() + "!=" + ctx.relationalExpression())){
+			visit(ctx.equalityExpression());
+			print(" != ");
+		}
+		visit(ctx.relationalExpression());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitRelationalExpression(Java8Parser.RelationalExpressionContext ctx) { return visitChildren(ctx); }
+	@Override public T visitRelationalExpression(Java8Parser.RelationalExpressionContext ctx) {
+		if(ctx.relationalExpression() != null 
+			&& ctx.getText().equals(ctx.relationalExpression().getText() 
+			+ "<" + ctx.shiftExpression().getText())){
+			visit(ctx.relationalExpression());
+			print(" < ");
+		}
+		if(ctx.relationalExpression() != null 
+			&& ctx.getText().equals(ctx.relationalExpression().getText() 
+			+ ">" + ctx.shiftExpression().getText())){
+			visit(ctx.relationalExpression());
+			print(" > ");
+		}
+		if(ctx.relationalExpression() != null 
+			&& ctx.getText().equals(ctx.relationalExpression().getText() 
+			+ "<=" + ctx.shiftExpression().getText())){
+			visit(ctx.relationalExpression());
+			print(" <= ");
+		}
+		if(ctx.relationalExpression() != null 
+			&& ctx.getText().equals(ctx.relationalExpression() 
+			+ ">=" + ctx.shiftExpression().getText())){
+			visit(ctx.relationalExpression());
+			print(" >= ");
+		}
+		if(ctx.referenceType() != null){
+			visit(ctx.relationalExpression());
+			print(" instanceof ");
+			visit(ctx.referenceType());
+		}
+		safeVisit(ctx.shiftExpression());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitShiftExpression(Java8Parser.ShiftExpressionContext ctx) { return visitChildren(ctx); }
+	@Override public T visitShiftExpression(Java8Parser.ShiftExpressionContext ctx) {
+		if(ctx.shiftExpression() != null 
+			&& ctx.getText().equals(ctx.shiftExpression().getText() 
+			+ "<<" + ctx.additiveExpression().getText())){
+			visit(ctx.shiftExpression());
+			print(" << ");
+		}
+		if(ctx.shiftExpression() != null 
+			&& ctx.getText().equals(ctx.shiftExpression().getText() 
+			+ ">>" + ctx.additiveExpression().getText())){
+			visit(ctx.shiftExpression());
+			print(" >> ");
+		}
+		if(ctx.shiftExpression() != null 
+			&& ctx.getText().equals(ctx.shiftExpression() 
+			+ ">>>" + ctx.additiveExpression().getText())){
+			visit(ctx.shiftExpression());
+			print(" >>> ");
+		}
+		safeVisit(ctx.additiveExpression());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitAdditiveExpression(Java8Parser.AdditiveExpressionContext ctx) { return visitChildren(ctx); }
+	@Override public T visitAdditiveExpression(Java8Parser.AdditiveExpressionContext ctx) {
+		if(ctx.additiveExpression() != null 
+			&& ctx.getText().equals(ctx.additiveExpression().getText() 
+			+ "+" + ctx.multiplicativeExpression().getText())){
+			visit(ctx.additiveExpression());
+			print(" + ");
+		}
+		if(ctx.additiveExpression() != null 
+			&& ctx.getText().equals(ctx.additiveExpression().getText() 
+			+ "-" + ctx.multiplicativeExpression().getText())){
+			visit(ctx.additiveExpression());
+			print(" - ");
+		}
+		visit(ctx.multiplicativeExpression());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitMultiplicativeExpression(Java8Parser.MultiplicativeExpressionContext ctx) { return visitChildren(ctx); }
+	@Override public T visitMultiplicativeExpression(Java8Parser.MultiplicativeExpressionContext ctx) { 
+		if(ctx.multiplicativeExpression() != null 
+			&& ctx.getText().equals(ctx.multiplicativeExpression().getText() 
+			+ "*" + ctx.unaryExpression().getText())){
+			visit(ctx.multiplicativeExpression());
+			print(" * ");
+		}
+		if(ctx.multiplicativeExpression() != null 
+			&& ctx.getText().equals(ctx.multiplicativeExpression().getText() 
+			+ "/" + ctx.unaryExpression().getText())){
+			visit(ctx.multiplicativeExpression());
+			print(" / ");
+		}
+		if(ctx.multiplicativeExpression() != null 
+			&& ctx.getText().equals(ctx.multiplicativeExpression().getText() 
+			+ "%" + ctx.unaryExpression().getText())){
+			visit(ctx.multiplicativeExpression());
+			print(" % ");
+		}
+		visit(ctx.unaryExpression());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitUnaryExpression(Java8Parser.UnaryExpressionContext ctx) { return visitChildren(ctx); }
+	@Override public T visitUnaryExpression(Java8Parser.UnaryExpressionContext ctx) {
+		safeVisit(ctx.preIncrementExpression());
+		safeVisit(ctx.preDecrementExpression());
+		if(ctx.unaryExpression() != null){
+			if(ctx.getText().equals("+" + ctx.unaryExpression().getText())){
+				print("+");
+			}			
+			if(ctx.getText().equals("-" + ctx.unaryExpression().getText())){
+				print("-");
+			}	
+			visit(ctx.unaryExpression());
+		}
+		safeVisit(ctx.unaryExpressionNotPlusMinus());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitPreIncrementExpression(Java8Parser.PreIncrementExpressionContext ctx) { return visitChildren(ctx); }
+	@Override public T visitPreIncrementExpression(Java8Parser.PreIncrementExpressionContext ctx) {
+		print("++");
+		visit(ctx.unaryExpression());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitPreDecrementExpression(Java8Parser.PreDecrementExpressionContext ctx) { return visitChildren(ctx); }
+	@Override public T visitPreDecrementExpression(Java8Parser.PreDecrementExpressionContext ctx) {
+		print("--");
+		visit(ctx.unaryExpression());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitUnaryExpressionNotPlusMinus(Java8Parser.UnaryExpressionNotPlusMinusContext ctx) { return visitChildren(ctx); }
+	@Override public T visitUnaryExpressionNotPlusMinus(Java8Parser.UnaryExpressionNotPlusMinusContext ctx) {
+		safeVisit(ctx.postfixExpression());
+		if(ctx.unaryExpression() != null){
+			if(ctx.getText().equals("~" + ctx.unaryExpression().getText())) {
+				print("~");
+			}
+			if(ctx.getText().equals("!" + ctx.unaryExpression().getText())) {
+				print("!");
+			}
+			visit(ctx.unaryExpression());
+		}
+		safeVisit(ctx.castExpression());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitPostfixExpression(Java8Parser.PostfixExpressionContext ctx) { return visitChildren(ctx); }
+	@Override public T visitPostfixExpression(Java8Parser.PostfixExpressionContext ctx) {
+		safeVisit(ctx.primary());
+		safeVisit(ctx.expressionName());
+		safeVisitList(ctx.postIncrementExpression_lf_postfixExpression());
+		safeVisitList(ctx.postDecrementExpression_lf_postfixExpression());
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitPostIncrementExpression(Java8Parser.PostIncrementExpressionContext ctx) { return visitChildren(ctx); }
+	@Override public T visitPostIncrementExpression(Java8Parser.PostIncrementExpressionContext ctx) {
+		visit(ctx.postfixExpression());
+		print(" ++ ");
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitPostIncrementExpression_lf_postfixExpression(Java8Parser.PostIncrementExpression_lf_postfixExpressionContext ctx) { return visitChildren(ctx); }
+	@Override public T visitPostIncrementExpression_lf_postfixExpression(Java8Parser.PostIncrementExpression_lf_postfixExpressionContext ctx) {
+		print(" ++ ");
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitPostDecrementExpression(Java8Parser.PostDecrementExpressionContext ctx) { return visitChildren(ctx); }
+	@Override public T visitPostDecrementExpression(Java8Parser.PostDecrementExpressionContext ctx) {		visit(ctx.postfixExpression());
+		print(" -- ");
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitPostDecrementExpression_lf_postfixExpression(Java8Parser.PostDecrementExpression_lf_postfixExpressionContext ctx) { return visitChildren(ctx); }
+	@Override public T visitPostDecrementExpression_lf_postfixExpression(Java8Parser.PostDecrementExpression_lf_postfixExpressionContext ctx) { 
+		print(" -- ");
+		return null;
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitCastExpression(Java8Parser.CastExpressionContext ctx) { return visitChildren(ctx); }
+	@Override public T visitCastExpression(Java8Parser.CastExpressionContext ctx) {
+		print("(");
+		safeVisit(ctx.primitiveType());
+		safeVisit(ctx.referenceType());
+		safeVisitList(ctx.additionalBound());
+		print(")");
+		safeVisit(ctx.unaryExpression());
+		safeVisit(ctx.lambdaExpression());
+		return null;
+ 	}
 }
