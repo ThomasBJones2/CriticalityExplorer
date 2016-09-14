@@ -66,6 +66,38 @@ public class PrettyPrintVisitor<T> extends AbstractParseTreeVisitor<T> implement
 		return null;
 	}
 
+	private T delimitedVisitListTerm(List<TerminalNode> in, String delimiter){
+		if(in != null){
+			for(int i = 0; i < in.size(); i ++){
+				print(in.get(i).getText());
+				if(i < in.size() - 1){
+					print(delimiter);
+				}
+			} 
+		}
+		return null;
+	}
+
+	private T preDelimitedVisitListTerm(List<TerminalNode> in, String delimiter){
+		if(in != null){
+			for(int i = 0; i < in.size(); i ++){
+				print(delimiter);
+				print(in.get(i).getText());
+			} 
+		}
+		return null;
+	}
+
+	private T fullDelimitedVisitListTerm(List<TerminalNode> in, String delimiter){
+		if(in != null){
+			for(int i = 0; i < in.size(); i ++){
+				print(in.get(i).getText());
+				print(delimiter);
+			} 
+		}
+		return null;
+	}
+
 	private <M extends ParseTree> T delimitedVisitList(List<M> in, String delimiter){
 		if(in != null){
 			for(int i = 0; i < in.size(); i ++){
@@ -528,7 +560,7 @@ public class PrettyPrintVisitor<T> extends AbstractParseTreeVisitor<T> implement
 	@Override public T visitPackageDeclaration(Java8Parser.PackageDeclarationContext ctx) {	
 		safeVisitList(ctx.packageModifier());
 		print("package ");		
-		delimitedVisitList(ctx.Identifier(), ".");
+		delimitedVisitListTerm(ctx.Identifier(), ".");
       println(";");
 		println();
 		return null;
@@ -2957,7 +2989,7 @@ public class PrettyPrintVisitor<T> extends AbstractParseTreeVisitor<T> implement
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
 	@Override public T visitInferredFormalParameterList(Java8Parser.InferredFormalParameterListContext ctx) {
-		delimitedVisitList(ctx.Identifier(), ",");
+		delimitedVisitListTerm(ctx.Identifier(), ",");
 		return null;
 	}
 	/**
