@@ -4,6 +4,7 @@ public class Graph{
 		ArrayList<GraphNode> nodes;	
 
 		Graph(int n){
+			nodes = new ArrayList<>();
 			for(int i = 0; i < n; i ++){
 				nodes.add(new GraphNode(i, this));
 			}
@@ -36,26 +37,45 @@ public class Graph{
 				node.lookBack = null;
 			}
 		}
+
+		void print() {
+			System.out.println("This is the Graph");
+			System.out.println("The number of nodes is " + nodes.size());
+			System.out.println("the nodes are: ");
+			for (GraphNode node : nodes){
+				System.out.print(node.name + ": ");
+				for(GraphLink link : node.links){
+					System.out.print(link.getTarget().name + "," + link.getWeight() + " ");
+				} 
+				System.out.println();
+				System.out.println();
+			}
+		}
 	
 		double findPathValueAndDecrement(){
 			clearLookBack();			
-			nodes.get(0).lookBack.setWeight(Double.MAX_VALUE);
+			nodes.get(0).lookBack = new GraphLink(nodes.get(0), Double.MAX_VALUE);
 			ArrayList<GraphNode> queue = new ArrayList<>();
 			queue.add(nodes.get(0));
 			while(queue.size() > 0){
 				GraphNode nextNode = queue.get(0);
 				queue.remove(0);
 				for(GraphLink link : nextNode.links){
-					GraphNode targetNode = link.getTarget();
-					if(targetNode.lookBack == null && !queue.contains(targetNode)){
-						queue.add(targetNode);
-						targetNode.lookBack = new GraphLink(nextNode, Math.max(0, 
-							Math.min(link.getWeight(), 
-								nextNode.lookBack.getWeight())));
+						if(link.getWeight() > 0) {
+						GraphNode targetNode = link.getTarget();
+						if(targetNode.lookBack == null && !queue.contains(targetNode)){
+							queue.add(targetNode);
+							targetNode.lookBack = new GraphLink(nextNode, Math.max(0, 
+								Math.min(link.getWeight(), 
+									nextNode.lookBack.getWeight())));
+						}
 					}
 				}
 			}
-			double out = nodes.get(nodes.size() - 1).lookBack.getWeight();
+			double out = 0;
+			if(nodes.get(nodes.size() - 1).lookBack != null) {
+				out = nodes.get(nodes.size() - 1).lookBack.getWeight();
+			}	
 			decrementAlongPath(out);
 			return out;	
 		}
@@ -65,13 +85,15 @@ public class Graph{
 			if(out <= 0){
 				return;
 			} else {
-				while(curNode.name != 0){
+				while(curNode.name != nodes.get(0).name){
 					GraphNode prevNode = curNode;
 					curNode = curNode.lookBack.getTarget();
+					//System.out.println("looping infinitely." + prevNode.name + " " + curNode.name + " " + out);
 					GraphLink link = curNode.getLinkFromNode(prevNode);
 					link.setWeight(link.getWeight() - out);
 				}
 			}
+			//this.print();
 		}
 
 		void deduct(double n){
@@ -113,11 +135,12 @@ public class Graph{
 			}
 
 			GraphLink getLinkFromNode(GraphNode in){
+				GraphLink out = null;
 				for(GraphLink link : links){
-					if(link.getTarget().name == in.name)
-						return link;
+					if(link.getTarget().name == in.name && (out == null || link.getWeight() >= out.getWeight()))
+						out = link;
 				}
-				return null;
+				return out;
 			}
 		
 			void randomize(Random rand){
