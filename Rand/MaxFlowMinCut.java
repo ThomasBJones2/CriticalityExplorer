@@ -1,38 +1,15 @@
 import java.util.*;
 
 public class MaxFlowMinCut{
-	private class GraphNode{
-		ArrayList<GraphLink> links;
 
-		GraphNode(ArrayList<GraphLink> links){
-			this.links = new ArrayList<>();
-			for(GraphLink in : links){
-				this.links.add(new GraphLink(in));
-			}
+/*	double maxFlowFF(GraphNode in, GraphNode out){
+		double auxFlow = 1;
+		double out = 0;		
+		while(auxFlow > 0) {
+			int auxFlow = findPath(in, out);		
+			out += auxFlow;
 		}
-		
-		void generate(int n){
-
-		}
-	}
-	
-	private class GraphLink{
-		private double weight;
-		GraphNode target;
-	
-		//@RandMethod(getRandomWeight())
-		double getWeight() {
-			return weight;
-		}
-
-		GraphLink(GraphLink in){
-			this.target = in.target;
-			this.weight = in.weight;
-		}
-	}
-
-	double maxFlow(){
-		return 0.0;
-	}
+		return out;
+	}*/
 
 }
