@@ -2,14 +2,14 @@ import java.util.*;
 
 public class MaxFlowMinCut{
 
-/*	double maxFlowFF(GraphNode in, GraphNode out){
-		double auxFlow = 1;
+	double maxFlowFF(Graph inGraph){
+		auxFlow = 1;
 		double out = 0;		
 		while(auxFlow > 0) {
-			int auxFlow = findPath(in, out);		
+			int auxFlow = inGraph.findPathValue();		
 			out += auxFlow;
+			inGraph.deduct(auxFlow);
 		}
 		return out;
-	}*/
-
+	}
 }

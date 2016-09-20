@@ -19,12 +19,59 @@ public class Graph{
 		Graph(Graph in){
 			this(in.nodes.size());
 			for(int i = 0; i < nodes.size(); i ++){
+				nodes.get(i).links = copyLinksInGraph(in.nodes.get(i).links);
+			}
+		}
 
+		ArrayList<GraphLink> copyLinksInGraph(ArrayList<GraphLink> in){
+			ArrayList<GraphLink> out = new ArrayList<>();
+			for(int i = 0; i < in.size(); i ++){
+				out.add(new GraphLink(nodes.get(in.get(i).getTarget().getName()), in.get(i).getWeight()));
+			}
+			return out;
+		}
+
+		void clearLookBack(){
+			for(GraphNode node : nodes){
+				node.lookBack = null;
 			}
 		}
 	
-		int findPath(GraphNode in, GraphNode out){
-			return 0;
+		double findPathValueAndDecrement(){
+			clearLookBack();			
+			nodes.get(0).lookBack.setWeight(Double.MAX_VALUE);
+			ArrayList<GraphNode> queue = new ArrayList<>();
+			queue.add(nodes.get(0));
+			while(queue.size() > 0){
+				GraphNode nextNode = queue.get(0);
+				queue.remove(0);
+				for(GraphLink link : nextNode.links){
+					GraphNode targetNode = link.getTarget();
+					if(targetNode.lookBack == null && !queue.contains(targetNode)){
+						queue.add(targetNode);
+						targetNode.lookBack = new GraphLink(nextNode, Math.max(0, 
+							Math.min(link.getWeight(), 
+								nextNode.lookBack.getWeight())));
+					}
+				}
+			}
+			double out = nodes.get(nodes.size() - 1).lookBack.getWeight();
+			decrementAlongPath(out);
+			return out;	
+		}
+
+		void decrementAlongPath(double out){
+			GraphNode curNode = nodes.get(nodes.size() - 1);
+			if(out <= 0){
+				return;
+			} else {
+				while(curNode.name != 0){
+					GraphNode prevNode = curNode;
+					curNode = curNode.lookBack.getTarget();
+					GraphLink link = curNode.getLinkFromNode(prevNode);
+					link.setWeight(link.getWeight() - out);
+				}
+			}
 		}
 
 		void deduct(double n){
@@ -37,8 +84,11 @@ public class Graph{
 
 		private class GraphNode{
 			int name;
+
 			ArrayList<GraphLink> links;
-			Graph theGraph;
+			Graph theGraph;			
+
+			GraphLink lookBack;
 
 			GraphNode(int name, ArrayList<GraphLink> inLinks, Graph inGraph){
 				this.links = new ArrayList<>();
@@ -61,6 +111,14 @@ public class Graph{
 				this.name = in;
 				this.theGraph = graph;
 			}
+
+			GraphLink getLinkFromNode(GraphNode in){
+				for(GraphLink link : links){
+					if(link.getTarget().name == in.name)
+						return link;
+				}
+				return null;
+			}
 		
 			void randomize(Random rand){
 				this.name = rand.nextInt();
@@ -73,16 +131,17 @@ public class Graph{
 					links.add(nextLink);
 				}
 			}
+
+			int getName(){
+				return this.name;
+			}
 		}
 	
 		private class GraphLink{
 			private double weight;
 			GraphNode target;
 	
-			//@RandMethod(getRandomWeight())
-			double getWeight() {
-				return weight;
-			}
+
 
 			GraphLink(GraphLink in){
 				this.target = in.target;
@@ -92,6 +151,27 @@ public class Graph{
 			GraphLink(GraphNode target, double weight){
 				this.target = target;
 				this.weight = weight;
+			}
+			
+			GraphNode getTarget(){
+				return this.target;
+			}
+
+			void setTarget(GraphNode in){
+				this.target = in;
+			}
+
+			//@RandMethod(getRandomWeight())
+			double getWeight(){
+				return this.weight;
+			}
+
+			void setWeight(double weight){
+				this.weight = weight;
+			}
+			
+			double rand_getWeight(Random rand){
+				return rand.nextDouble();
 			}
 
 			void deduct(double n){
