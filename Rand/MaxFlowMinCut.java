@@ -13,7 +13,7 @@ public class MaxFlowMinCut{
 	}
 
 	public static void main(String args[]){
-		Graph theGraph = new Graph(100);
+		Graph theGraph = new Graph(10);
 		Random rand = new Random();
 		theGraph.randomize(rand);
 		theGraph.print();
