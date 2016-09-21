@@ -8,7 +8,6 @@ public class Graph{
 			for(int i = 0; i < n; i ++){
 				nodes.add(new GraphNode(i, this));
 			}
-
 		}
 		
 		void randomize(Random rand){
@@ -20,7 +19,7 @@ public class Graph{
 		Graph(Graph in){
 			this(in.nodes.size());
 			for(int i = 0; i < nodes.size(); i ++){
-				nodes.get(i).links = copyLinksInGraph(in.nodes.get(i).links);
+				nodes.get(i).setLinks(copyLinksInGraph(in.nodes.get(i).getLinks()));
 			}
 		}
 
@@ -44,7 +43,7 @@ public class Graph{
 			System.out.println("the nodes are: ");
 			for (GraphNode node : nodes){
 				System.out.print(node.name + ": ");
-				for(GraphLink link : node.links){
+				for(GraphLink link : node.getLinks()){
 					System.out.print(link.getTarget().name + "," + link.getWeight() + " ");
 				} 
 				System.out.println();
@@ -60,7 +59,7 @@ public class Graph{
 			while(queue.size() > 0){
 				GraphNode nextNode = queue.get(0);
 				queue.remove(0);
-				for(GraphLink link : nextNode.links){
+				for(GraphLink link : nextNode.getLinks()){
 						if(link.getWeight() > 0) {
 						GraphNode targetNode = link.getTarget();
 						if(targetNode.lookBack == null && !queue.contains(targetNode)){
@@ -88,18 +87,16 @@ public class Graph{
 				while(curNode.name != nodes.get(0).name){
 					GraphNode prevNode = curNode;
 					curNode = curNode.lookBack.getTarget();
-					//System.out.println("looping infinitely." + prevNode.name + " " + curNode.name + " " + out);
 					GraphLink link = curNode.getLinkFromNode(prevNode);
 					link.setWeight(link.getWeight() - out);
 				}
 			}
-			//this.print();
 		}
 
 		void deduct(double n){
 			for(int i = 0; i < nodes.size(); i ++){
-				for(int j = 0; j < nodes.get(i).links.size(); j ++){
-					nodes.get(i).links.get(j).deduct(n);
+				for(int j = 0; j < nodes.get(i).getLinks().size(); j ++){
+					nodes.get(i).getLinks().get(j).deduct(n);
 				}
 			}
 		}
@@ -158,13 +155,19 @@ public class Graph{
 			int getName(){
 				return this.name;
 			}
+
+			ArrayList<GraphLink> getLinks(){
+				return this.links;
+			}
+
+			void setLinks(ArrayList<GraphLink> inList){
+				this.links = inList;
+			}
 		}
 	
 		private class GraphLink{
 			private double weight;
 			GraphNode target;
-	
-
 
 			GraphLink(GraphLink in){
 				this.target = in.target;
@@ -184,9 +187,13 @@ public class Graph{
 				this.target = in;
 			}
 
-			//@RandMethod(getRandomWeight())
+			@RandomMethod(replacementMethod = "getRandomWeight(Random)")
 			double getWeight(){
 				return this.weight;
+			}
+
+			double getRandomWeight(Random rand){
+				return rand.nextDouble();
 			}
 
 			void setWeight(double weight){
