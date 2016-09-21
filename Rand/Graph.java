@@ -201,7 +201,7 @@ public class Graph{
 				this.weight = weight;
 			}
 
-			void setWeightRand(Random rand){
+			void setWeightRand(Random rand, Double weight){
 				this.weight = rand.nextDouble();
 			}
 			
