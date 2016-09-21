@@ -187,7 +187,7 @@ public class Graph{
 				this.target = in;
 			}
 
-			//@RandomMethod(replacementMethod = "getRandomWeight(Random)")
+			@Randomize
 			double getWeight(){
 				return this.weight;
 			}
@@ -195,12 +195,17 @@ public class Graph{
 			double getRandomWeight(Random rand){
 				return rand.nextDouble();
 			}
-
+			
+			@Randomize
 			void setWeight(double weight){
 				this.weight = weight;
 			}
+
+			void setWeightRand(Random rand){
+				this.weight = rand.nextDouble();
+			}
 			
-			double rand_getWeight(Random rand){
+			double getWeightRand(Random rand){
 				return rand.nextDouble();
 			}
 
