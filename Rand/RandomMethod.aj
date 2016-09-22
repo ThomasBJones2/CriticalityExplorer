@@ -4,7 +4,49 @@ import java.lang.reflect.*;
 public aspect RandomMethod{
 	Random rand = new Random();
 
+	int timeCount = 0;
+
+	private class MethodTimeCount {
+		String methodName;
+		int timeCount;
+
+		MethodTimeCount(String mName){
+			methodName = mName;
+			timeCount = 0;
+		}
+
+		MethodTimeCount(String mName, int tCount){
+			methodName = mName;
+			timeCount = tCount;
+		}
+
+		@Override
+		public boolean equals(Object in){
+			if(this == in) return true;
+			if(in == null) return false;
+			if(!(in instanceof MethodTimeCount)) return false;
+			MethodTimeCount inMTC = (MethodTimeCount)in;
+			return methodName.equals(inMTC.methodName);
+		}
+
+		void increment(){
+			timeCount ++;
+		}
+	}
+
+	ArrayList<MethodTimeCount> mTimeCount = new ArrayList<>();
+
 	pointcut Randomize(): call(@Randomize * *(..));
+
+	pointcut PrintAspect() : call(void *.printAspect());
+
+	after() : PrintAspect() {
+		System.out.println("The time count is: " + timeCount);
+		for(MethodTimeCount mTC : mTimeCount){
+		System.out.println("The time count on method " + mTC.methodName + 
+			" is " + mTC.timeCount);
+		}
+	}
 
 	Object around() : Randomize() {
 		Object targetObject = thisJoinPoint.getTarget();    	
@@ -29,7 +71,22 @@ public aspect RandomMethod{
 			System.out.println(m.toString());
 		}*/
 
-		if(rand.nextDouble() < 0.75)
+		//incrememnt the time count, i.e. how often a randomizable object has been called.
+		timeCount ++;
+
+		String methodName = thisJoinPointStaticPart.getSignature().getDeclaringTypeName()
+		+ "." + thisJoinPointStaticPart.getSignature().getName();
+		
+		MethodTimeCount handle = new MethodTimeCount(methodName);		
+
+		if(mTimeCount.contains(handle)){
+			mTimeCount.get(mTimeCount.indexOf(handle)).increment();
+
+		} else {
+			mTimeCount.add(new MethodTimeCount(methodName, 1));
+		}
+
+		if(rand.nextDouble() < -1)
 		try {
 			Class[] types = new Class[args.length + 1];
 			types[0] = Random.class;

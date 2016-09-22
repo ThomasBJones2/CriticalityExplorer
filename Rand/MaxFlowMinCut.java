@@ -12,6 +12,8 @@ public class MaxFlowMinCut{
 		return out;
 	}
 
+	static void printAspect(){}
+
 	public static void main(String args[]){
 		Graph theGraph = new Graph(10);
 		Random rand = new Random();
@@ -19,6 +21,7 @@ public class MaxFlowMinCut{
 		theGraph.print();
 		double maxFlow = maxFlowFF(theGraph);
 		System.out.println("The MaxFlow is: " + maxFlow);
+		printAspect();
 	}
 
 }
