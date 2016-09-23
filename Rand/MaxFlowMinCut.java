@@ -24,8 +24,11 @@ public class MaxFlowMinCut implements Experiment<Graph, MaxFlowMinCut>{
 			throw new IllegalArgumentException();
 	}
 
-	public double score(MaxFlowMinCut correctObject, MaxFlowMinCut errorObject){
-		return Math.abs(errorObject.flow - correctObject.flow)/correctObject.flow; 
+	public Score[] scores(MaxFlowMinCut correctObject){
+		Score[] out = new Score [2];
+		out[0] = new Score(Math.abs(this.flow - correctObject.flow), "Absolute Value"); 
+		out[1] = new Score(Math.abs(this.flow - correctObject.flow)/correctObject.flow, "Absolute Percent Value"); 
+		return out; 
 	}
 
 
