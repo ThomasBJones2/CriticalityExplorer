@@ -2,8 +2,10 @@ import java.util.*;
 
 public class Graph implements Input<Graph>{
 		ArrayList<GraphNode> nodes;	
+		
+		public Graph(){}
 
-		Graph(int n){
+		public Graph(int n){
 			nodes = new ArrayList<>();
 			for(int i = 0; i < n; i ++){
 				nodes.add(new GraphNode(i, this));
@@ -23,7 +25,7 @@ public class Graph implements Input<Graph>{
 		public void copy(Graph in) {
 			nodes = new ArrayList<>();
 			for(int i = 0; i < in.nodes.size(); i ++){
-				nodes.add(new GraphNode(i, this));
+				nodes.add(new GraphNode(in.nodes.get(i).getName(), this));
 			}
 			for(int i = 0; i < nodes.size(); i ++){
 				nodes.get(i).setLinks(copyLinksInGraph(in.nodes.get(i).getLinks()));
@@ -33,7 +35,10 @@ public class Graph implements Input<Graph>{
 		ArrayList<GraphLink> copyLinksInGraph(ArrayList<GraphLink> in){
 			ArrayList<GraphLink> out = new ArrayList<>();
 			for(int i = 0; i < in.size(); i ++){
-				out.add(new GraphLink(nodes.get(in.get(i).getTarget().getName()), in.get(i).getWeight()));
+				GraphNode nextNodeProxy = new GraphNode(in.get(i).getTarget().getName());
+				int nextNodeIndex = nodes.indexOf(nextNodeProxy);
+				GraphNode nextNode = nodes.get(nextNodeIndex);
+				out.add(new GraphLink(nextNode, in.get(i).getWeight()));
 			}
 			return out;
 		}
@@ -115,6 +120,19 @@ public class Graph implements Input<Graph>{
 			Graph theGraph;			
 
 			GraphLink lookBack;
+
+			GraphNode(int in){
+				this.name = in;
+			}
+
+			@Override
+			public boolean equals(Object in){				
+				if(in == null)
+					return false;
+				if(!(in instanceof GraphNode))
+					return false;
+				return name == ((GraphNode) in).name;
+			}
 
 			GraphNode(int name, ArrayList<GraphLink> inLinks, Graph inGraph){
 				this.links = new ArrayList<>();

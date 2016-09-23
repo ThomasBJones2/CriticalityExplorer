@@ -15,16 +15,13 @@ public class MaxFlowMinCut implements Experiment<Graph, MaxFlowMinCut>{
 
 	static void printAspect(){}
 
-	public MaxFlowMinCut experiment(Graph input){
-		if(input instanceof Graph) {
-			flow = maxFlowFF((Graph) input);
-			return this;
-		}
-		else 
-			throw new IllegalArgumentException();
+	public void experiment(Graph input){
+		//input.print();
+		flow = maxFlowFF((Graph) input);
 	}
 
 	public Score[] scores(MaxFlowMinCut correctObject){
+		//if(correctObject instanceof MaxFlowMinCut
 		Score[] out = new Score [2];
 		out[0] = new Score(Math.abs(this.flow - correctObject.flow), "Absolute Value"); 
 		out[1] = new Score(Math.abs(this.flow - correctObject.flow)/correctObject.flow, "Absolute Percent Value"); 
