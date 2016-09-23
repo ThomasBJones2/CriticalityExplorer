@@ -1,6 +1,6 @@
 import java.util.*;
 
-public class MaxFlowMinCut{
+public class MaxFlowMinCut implements Experiment{
 
 	static double maxFlowFF(Graph inGraph){
 		double auxFlow = 1;
@@ -14,7 +14,7 @@ public class MaxFlowMinCut{
 
 	static void printAspect(){}
 
-	public static void main(String args[]){
+	public void experiment(){
 		Graph theGraph = new Graph(10);
 		Random rand = new Random();
 		theGraph.randomize(rand);
