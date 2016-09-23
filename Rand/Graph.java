@@ -1,6 +1,6 @@
 import java.util.*;
 
-public class Graph{
+public class Graph implements Input<Graph>{
 		ArrayList<GraphNode> nodes;	
 
 		Graph(int n){
@@ -10,14 +10,21 @@ public class Graph{
 			}
 		}
 		
-		void randomize(Random rand){
+		public void randomize(Random rand){
 			for(int i = 0; i < nodes.size(); i ++){
 				nodes.get(i).randomize(rand);
 			}
 		}
 
 		Graph(Graph in){
-			this(in.nodes.size());
+			this.copy(in);
+		}
+
+		public void copy(Graph in) {
+			nodes = new ArrayList<>();
+			for(int i = 0; i < in.nodes.size(); i ++){
+				nodes.add(new GraphNode(i, this));
+			}
 			for(int i = 0; i < nodes.size(); i ++){
 				nodes.get(i).setLinks(copyLinksInGraph(in.nodes.get(i).getLinks()));
 			}
@@ -140,7 +147,7 @@ public class Graph{
 				return out;
 			}
 		
-			void randomize(Random rand){
+			public void randomize(Random rand){
 				this.name = rand.nextInt();
 				int newLinkCount = rand.nextInt(theGraph.nodes.size());
 				this.links = new ArrayList<>();				
