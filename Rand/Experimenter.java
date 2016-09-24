@@ -5,33 +5,71 @@ import java.lang.Thread;
 public class Experimenter implements Runnable {
 
 	String inputClassName, experimentClassName;
+	int errorPoint, runName;
 
-	Experimenter(String inputClassName, String experimentClassName){
+	public static ArrayList<RunID> runIDs;
+
+	public static synchronized void addID(RunID inID){
+		runIDs.add(inID);
+	}
+
+	public static synchronized void removeID(RunID inID){
+		runIDs.remove(runIDs.indexOf(inID));
+	}
+
+	Experimenter(String inputClassName, 
+		String experimentClassName,
+		int runName, 
+		int errorPoint){
 		this.inputClassName = inputClassName;
 		this.experimentClassName = experimentClassName;
+		this.errorPoint = errorPoint;
+		this.runName = runName;
+	}
+
+	private Experiment runObject(Input input, Experiment experiment, Random rand, boolean errorful){
+		RunID curID = new RunID(runName, 
+			errorful, 
+			errorPoint, 
+			Thread.currentThread().getId(), 
+			rand);
+		addID(curID);
+		experiment.experiment(input);
+		removeID(curID);
+		return experiment;
 	}
 
 	@Override
 	public void run() {
 		long seed = new Random().nextLong();
+		long inputSeed = new Random().nextLong();
 		System.out.println("Starting " + 
-			Thread.currentThread().getId() + "on seed: " + seed);
+			Thread.currentThread().getId() + 
+			" on seed: " + seed + " and input seed " + inputSeed);
+		Random rand = new Random(inputSeed);
 		Random rand1 = new Random(seed);
 		Random rand2 = new Random(seed);
+
 		Experiment errorObject = (Experiment)getNewObject(experimentClassName);
 		Experiment correctObject = (Experiment)getNewObject(experimentClassName);
 		Input iObject1 = (Input)getNewInputObject(inputClassName,10);
 		Input iObject2 = (Input)getNewObject(inputClassName);
 		iObject1.randomize(rand);
 		iObject2.copy(iObject1);
-		correctObject.experiment(iObject1);
-		errorObject.experiment(iObject2);
+
+		correctObject = runObject(iObject1, correctObject, rand1, false);
+		errorObject = runObject(iObject2, errorObject, rand2, true);
+
+		System.out.println("The error was: " + errorObject.scores(correctObject)[0].getScore());
+		
 		System.out.println("Done " + Thread.currentThread().getId());
 	}
 
 	public static void main(String[] args){
 		String inputClassName = args[0]; 
-		String experimentClassName = args[1];			
+		String experimentClassName = args[1];	
+
+		Experimenter.runIDs = new ArrayList<>();		
 
 		try{
 			Object inputClass = getNewObject(inputClassName);
@@ -49,7 +87,7 @@ public class Experimenter implements Runnable {
 			ArrayList<Thread> threads = new ArrayList<>();
 			for(int i = 0; i < 10; i ++){
 				Experimenter exp = new Experimenter(inputClassName,
-					experimentClassName);
+					experimentClassName, i, i);
 				Thread thread = new Thread(exp);
 				threads.add(thread);
 				thread.start();

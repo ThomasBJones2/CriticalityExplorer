@@ -86,7 +86,7 @@ public aspect RandomMethod{
 			mTimeCount.add(new MethodTimeCount(methodName, 1));
 		}
 
-		if(false){ //rand.nextDouble() < ) {
+		if(rand.nextDouble() < 0.1) {
 			try {
 				Class[] types = new Class[args.length + 1];
 				types[0] = Random.class;
