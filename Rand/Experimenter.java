@@ -13,8 +13,11 @@ public class Experimenter implements Runnable {
 
 	@Override
 	public void run() {
-		System.out.println("Starting " + Thread.currentThread().getId());
-		Random rand = new Random();
+		long seed = new Random().nextLong();
+		System.out.println("Starting " + 
+			Thread.currentThread().getId() + "on seed: " + seed);
+		Random rand1 = new Random(seed);
+		Random rand2 = new Random(seed);
 		Experiment errorObject = (Experiment)getNewObject(experimentClassName);
 		Experiment correctObject = (Experiment)getNewObject(experimentClassName);
 		Input iObject1 = (Input)getNewInputObject(inputClassName,10);
