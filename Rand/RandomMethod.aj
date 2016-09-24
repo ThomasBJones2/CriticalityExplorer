@@ -86,29 +86,30 @@ public aspect RandomMethod{
 			mTimeCount.add(new MethodTimeCount(methodName, 1));
 		}
 
-		if(rand.nextDouble() < -1)
-		try {
-			Class[] types = new Class[args.length + 1];
-			types[0] = Random.class;
-			for(int i = 1; i < args.length + 1; i ++){
-				types[i] = args[i - 1].getClass();
+		if(false){ //rand.nextDouble() < ) {
+			try {
+				Class[] types = new Class[args.length + 1];
+				types[0] = Random.class;
+				for(int i = 1; i < args.length + 1; i ++){
+					types[i] = args[i - 1].getClass();
+				}
+
+				Object[] arguments = new Object[args.length + 1];
+				arguments[0] = rand;
+				for(int i = 1; i < args.length + 1; i ++){
+					arguments[i] = args[i - 1];
+				}
+
+				Method m = targetObject.getClass().getDeclaredMethod(thisJoinPointStaticPart.getSignature().getName() + "Rand", types);
+
+				return m.invoke(targetObject, arguments);
+			} catch (IllegalAccessException e) {
+				System.out.println("IllegalAccessException " + e);
+			} catch (InvocationTargetException e) {
+				System.out.println("InvocationTargetException " + e);
+			} catch (NoSuchMethodException e) {
+				System.out.println("NoSuchMethodException " + e);
 			}
-
-			Object[] arguments = new Object[args.length + 1];
-			arguments[0] = rand;
-			for(int i = 1; i < args.length + 1; i ++){
-				arguments[i] = args[i - 1];
-			}
-
-			Method m = targetObject.getClass().getDeclaredMethod(thisJoinPointStaticPart.getSignature().getName() + "Rand", types);
-
-			return m.invoke(targetObject, arguments);
-		} catch (IllegalAccessException e) {
-			System.out.println("IllegalAccessException " + e);
-		} catch (InvocationTargetException e) {
-			System.out.println("InvocationTargetException " + e);
-		} catch (NoSuchMethodException e) {
-			System.out.println("NoSuchMethodException " + e);
 		}
 
 

@@ -1,15 +1,40 @@
 import java.util.*;
 import java.lang.reflect.*;
+import java.lang.Thread;
 
-public class Experimenter {
+public class Experimenter implements Runnable {
+
+	String inputClassName, experimentClassName;
+
+	Experimenter(String inputClassName, String experimentClassName){
+		this.inputClassName = inputClassName;
+		this.experimentClassName = experimentClassName;
+	}
+
+	@Override
+	public void run() {
+		System.out.println("Starting " + Thread.currentThread().getId());
+		Random rand = new Random();
+		Experiment errorObject = (Experiment)getNewObject(experimentClassName);
+		Experiment correctObject = (Experiment)getNewObject(experimentClassName);
+		Input iObject1 = (Input)getNewInputObject(inputClassName,10);
+		Input iObject2 = (Input)getNewObject(inputClassName);
+		iObject1.randomize(rand);
+		iObject2.copy(iObject1);
+		correctObject.experiment(iObject1);
+		errorObject.experiment(iObject2);
+		System.out.println("Done " + Thread.currentThread().getId());
+	}
 
 	public static void main(String[] args){
 		String inputClassName = args[0]; 
-		String experimentClassName = args[1];
-		Random rand = new Random();
+		String experimentClassName = args[1];			
+
 		try{
 			Object inputClass = getNewObject(inputClassName);
 			Object experimentClass = getNewObject(experimentClassName);
+			System.out.println(inputClass.getClass());
+			System.out.println(experimentClass.getClass());
 			if(!(experimentClass instanceof Experiment)) {
 				throw new IllegalArgumentException();
 			}
@@ -18,22 +43,25 @@ public class Experimenter {
 			}
 
 			long avgRunTime = System.nanoTime();
+			ArrayList<Thread> threads = new ArrayList<>();
 			for(int i = 0; i < 10; i ++){
-				Experiment errorObject = (Experiment)getNewObject(experimentClassName);
-				Experiment correctObject = (Experiment)getNewObject(experimentClassName);
-				Input iObject1 = (Input)getNewInputObject(inputClassName,100);
-				Input iObject2 = (Input)getNewObject(inputClassName);
-				iObject1.randomize(rand);
-				iObject2.copy(iObject1);
-				correctObject.experiment(iObject1);
-				errorObject.experiment(iObject2);
+				Experimenter exp = new Experimenter(inputClassName,
+					experimentClassName);
+				Thread thread = new Thread(exp);
+				threads.add(thread);
+				thread.start();
+			}
+			for(Thread t : threads){
+				t.join();
 			}
 			avgRunTime = (System.nanoTime() - avgRunTime)/10; 
 			System.out.println("The average run time is: " + avgRunTime);
 
 
 		} catch (IllegalArgumentException E){
-			System.out.println("The object " + experimentClassName + " is not experimentable, please extend the experiment class.");
+			System.out.println(E);
+		} catch (InterruptedException E){
+			System.out.println(E);
 		}
 
 	}
