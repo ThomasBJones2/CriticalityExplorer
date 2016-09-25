@@ -4,37 +4,56 @@ import java.lang.Thread;
 
 public aspect RandomMethod{
 
-	int timeCount = 0;
+	ArrayList<Distances> 
 
-	private class MethodTimeCount {
-		String methodName;
-		int timeCount;
-
-		MethodTimeCount(String mName){
-			methodName = mName;
-			timeCount = 0;
+	public class Distances{
+		int runName;
+		long threadId;
+		int timeCount = 0;
+		ArrayList<MethodTimeCount> mTimeCount = new ArrayList<>();
+		
+		Distances(int runName, long threadId){
+			this.runName = runName;
+			this.threadId = threadId;
 		}
 
-		MethodTimeCount(String mName, int tCount){
-			methodName = mName;
-			timeCount = tCount;
+		private class MethodTimeCount {
+			String methodName;
+			int timeCount;
+
+			MethodTimeCount(String mName){
+				methodName = mName;
+				timeCount = 0;
+			}
+
+			MethodTimeCount(String mName, int tCount){
+				methodName = mName;
+				timeCount = tCount;
+			}
+
+			@Override
+			public boolean equals(Object in){
+				if(this == in) return true;
+				if(in == null) return false;
+				if(!(in instanceof MethodTimeCount)) return false;
+				MethodTimeCount inMTC = (MethodTimeCount)in;
+				return methodName.equals(inMTC.methodName);
+			}
+
+			void increment(){
+				timeCount ++;
+			}
 		}
 
 		@Override
 		public boolean equals(Object in){
-			if(this == in) return true;
 			if(in == null) return false;
-			if(!(in instanceof MethodTimeCount)) return false;
-			MethodTimeCount inMTC = (MethodTimeCount)in;
-			return methodName.equals(inMTC.methodName);
-		}
-
-		void increment(){
-			timeCount ++;
+			if(!(in instanceof Distances)) return false;
+			return threadId == ((RunId) in).threadId; 
 		}
 	}
 
-	ArrayList<MethodTimeCount> mTimeCount = new ArrayList<>();
+
 
 	pointcut Randomize(): call(@Randomize * *(..));
 

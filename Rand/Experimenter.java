@@ -32,7 +32,7 @@ public class Experimenter implements Runnable {
 	}
 
 	private Experiment runObject(Input input, Experiment experiment, Random rand, boolean errorful){
-		RunId curId = new RunId(runName, 
+		RunId curId = new RunId(2*runName + errorFul?1:0, 
 			true,
 			errorful, 
 			errorPoint, 
