@@ -21,7 +21,7 @@ public aspect RandomMethod{
 		public boolean equals(Object in){
 			if(in == null) return false;
 			if(!(in instanceof Distance)) return false;
-			return threadId == ((RunId) in).threadId; 
+			return threadId == ((Distance) in).threadId; 
 		}
 	}
 
@@ -59,16 +59,21 @@ public aspect RandomMethod{
 
 	pointcut PrintAspect() : call(void *.printAspect());
 
-	/*after() : PrintAspect() {
-		System.out.println("The time count is: " + timeCount);
-		for(MethodTimeCount mTC : mTimeCount){
+	after() : PrintAspect() {
+		RunId curId = new RunId(Thread.currentThread().getId());
+		curId = Experimenter.getId(curId);
+		Distance theDistance = getDistance(curId);
+
+		System.out.println("On thread: " + curId.getThreadId() + ": ");
+		System.out.println("The time count is: " + theDistance.timeCount);
+		for(MethodTimeCount mTC : theDistance.mTimeCount){
 		System.out.println("The time count on method " + mTC.methodName + 
 			" is " + mTC.timeCount);
 		}
-	}*/
+	}
 
 	private synchronized Distance getDistance(RunId curId){
-		Distance checkDistance = new Distance(curId.getRunName(), Thread.currentThread().getId());
+		Distance checkDistance = new Distance(curId.getRunName(), curId.getThreadId());
 		while(distances.indexOf(checkDistance) != -1 &&
 			distances.get(distances.indexOf(checkDistance)).runName != curId.getRunName()){
 			distances.remove(distances.indexOf(checkDistance));

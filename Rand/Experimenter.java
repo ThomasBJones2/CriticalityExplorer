@@ -31,6 +31,8 @@ public class Experimenter implements Runnable {
 		this.runName = runName;
 	}
 
+	private void printAspect(){}
+
 	private Experiment runObject(Input input, Experiment experiment, Random rand, boolean errorful){
 		RunId curId = new RunId(2*runName + (errorful?1:0), 
 			true,
@@ -40,6 +42,7 @@ public class Experimenter implements Runnable {
 			rand);
 		addId(curId);
 		experiment.experiment(input);
+		printAspect();
 		removeId(curId);
 		return experiment;
 	}
