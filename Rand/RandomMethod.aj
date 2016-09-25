@@ -4,52 +4,52 @@ import java.lang.Thread;
 
 public aspect RandomMethod{
 
-	ArrayList<Distances> 
+	ArrayList<Distance> distances = new ArrayList<>();
 
-	public class Distances{
+	private class Distance{
 		int runName;
 		long threadId;
 		int timeCount = 0;
 		ArrayList<MethodTimeCount> mTimeCount = new ArrayList<>();
 		
-		Distances(int runName, long threadId){
+		Distance(int runName, long threadId){
 			this.runName = runName;
 			this.threadId = threadId;
-		}
-
-		private class MethodTimeCount {
-			String methodName;
-			int timeCount;
-
-			MethodTimeCount(String mName){
-				methodName = mName;
-				timeCount = 0;
-			}
-
-			MethodTimeCount(String mName, int tCount){
-				methodName = mName;
-				timeCount = tCount;
-			}
-
-			@Override
-			public boolean equals(Object in){
-				if(this == in) return true;
-				if(in == null) return false;
-				if(!(in instanceof MethodTimeCount)) return false;
-				MethodTimeCount inMTC = (MethodTimeCount)in;
-				return methodName.equals(inMTC.methodName);
-			}
-
-			void increment(){
-				timeCount ++;
-			}
 		}
 
 		@Override
 		public boolean equals(Object in){
 			if(in == null) return false;
-			if(!(in instanceof Distances)) return false;
+			if(!(in instanceof Distance)) return false;
 			return threadId == ((RunId) in).threadId; 
+		}
+	}
+
+	private class MethodTimeCount {
+		String methodName;
+		int timeCount;
+
+		MethodTimeCount(String mName){
+			methodName = mName;
+			timeCount = 0;
+		}
+
+		MethodTimeCount(String mName, int tCount){
+			methodName = mName;
+			timeCount = tCount;
+		}
+
+		@Override
+		public boolean equals(Object in){
+			if(this == in) return true;
+			if(in == null) return false;
+			if(!(in instanceof MethodTimeCount)) return false;
+			MethodTimeCount inMTC = (MethodTimeCount)in;
+			return methodName.equals(inMTC.methodName);
+		}
+
+		void increment(){
+			timeCount ++;
 		}
 	}
 
@@ -59,12 +59,26 @@ public aspect RandomMethod{
 
 	pointcut PrintAspect() : call(void *.printAspect());
 
-	after() : PrintAspect() {
+	/*after() : PrintAspect() {
 		System.out.println("The time count is: " + timeCount);
 		for(MethodTimeCount mTC : mTimeCount){
 		System.out.println("The time count on method " + mTC.methodName + 
 			" is " + mTC.timeCount);
 		}
+	}*/
+
+	private synchronized Distance getDistance(RunId curId){
+		Distance checkDistance = new Distance(curId.getRunName(), Thread.currentThread().getId());
+		while(distances.indexOf(checkDistance) != -1 &&
+			distances.get(distances.indexOf(checkDistance)).runName != curId.getRunName()){
+			distances.remove(distances.indexOf(checkDistance));
+		}
+
+		if(distances.indexOf(checkDistance) == -1){
+			distances.add(checkDistance);
+		}
+		
+		return distances.get(distances.indexOf(checkDistance));
 	}
 
 	Object around() : Randomize() {
@@ -75,6 +89,7 @@ public aspect RandomMethod{
 		curId = Experimenter.getId(curId);
 		if(curId.getExperiment() == true){
 			Random rand = curId.getRand();
+			Distance theDistance = getDistance(curId);
 
 
 	/*		for(Object arg : args){
@@ -98,18 +113,18 @@ public aspect RandomMethod{
 			}*/
 
 			//incrememnt the time count, i.e. how often a randomizable object has been called.
-			timeCount ++;
+			theDistance.timeCount ++;
 
 			String methodName = thisJoinPointStaticPart.getSignature().getDeclaringTypeName()
 			+ "." + thisJoinPointStaticPart.getSignature().getName();
 		
 			MethodTimeCount handle = new MethodTimeCount(methodName);		
 
-			if(mTimeCount.contains(handle)){
-				mTimeCount.get(mTimeCount.indexOf(handle)).increment();
+			if(theDistance.mTimeCount.contains(handle)){
+				theDistance.mTimeCount.get(theDistance.mTimeCount.indexOf(handle)).increment();
 
 			} else {
-				mTimeCount.add(new MethodTimeCount(methodName, 1));
+				theDistance.mTimeCount.add(new MethodTimeCount(methodName, 1));
 			}
 
 			if(rand.nextDouble() < 0.1) {
