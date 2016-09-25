@@ -7,14 +7,18 @@ public class Experimenter implements Runnable {
 	String inputClassName, experimentClassName;
 	int errorPoint, runName;
 
-	public static ArrayList<RunID> runIDs;
+	public static ArrayList<RunId> runIds;
 
-	public static synchronized void addID(RunID inID){
-		runIDs.add(inID);
+	public static synchronized RunId getId(RunId inId){
+		return runIds.get(runIds.indexOf(inId));
 	}
 
-	public static synchronized void removeID(RunID inID){
-		runIDs.remove(runIDs.indexOf(inID));
+	public static synchronized void addId(RunId inId){
+		runIds.add(inId);
+	}
+
+	public static synchronized void removeId(RunId inId){
+		runIds.remove(runIds.indexOf(inId));
 	}
 
 	Experimenter(String inputClassName, 
@@ -28,14 +32,15 @@ public class Experimenter implements Runnable {
 	}
 
 	private Experiment runObject(Input input, Experiment experiment, Random rand, boolean errorful){
-		RunID curID = new RunID(runName, 
+		RunId curId = new RunId(runName, 
+			true,
 			errorful, 
 			errorPoint, 
 			Thread.currentThread().getId(), 
 			rand);
-		addID(curID);
+		addId(curId);
 		experiment.experiment(input);
-		removeID(curID);
+		removeId(curId);
 		return experiment;
 	}
 
@@ -50,12 +55,17 @@ public class Experimenter implements Runnable {
 		Random rand1 = new Random(seed);
 		Random rand2 = new Random(seed);
 
+		RunId curId = new RunId(Thread.currentThread().getId());
+		curId.setExperiment(false);
+		addId(curId);
 		Experiment errorObject = (Experiment)getNewObject(experimentClassName);
 		Experiment correctObject = (Experiment)getNewObject(experimentClassName);
 		Input iObject1 = (Input)getNewInputObject(inputClassName,10);
 		Input iObject2 = (Input)getNewObject(inputClassName);
 		iObject1.randomize(rand);
 		iObject2.copy(iObject1);
+		removeId(curId);
+	
 
 		correctObject = runObject(iObject1, correctObject, rand1, false);
 		errorObject = runObject(iObject2, errorObject, rand2, true);
@@ -69,7 +79,7 @@ public class Experimenter implements Runnable {
 		String inputClassName = args[0]; 
 		String experimentClassName = args[1];	
 
-		Experimenter.runIDs = new ArrayList<>();		
+		Experimenter.runIds = new ArrayList<>();		
 
 		try{
 			Object inputClass = getNewObject(inputClassName);
