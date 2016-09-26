@@ -68,7 +68,6 @@ public class Experimenter implements Runnable {
 		iObject1.randomize(rand);
 		iObject2.copy(iObject1);
 		removeId(curId);
-	
 
 		correctObject = runObject(iObject1, correctObject, rand1, false);
 		errorObject = runObject(iObject2, errorObject, rand2, true);
@@ -78,7 +77,7 @@ public class Experimenter implements Runnable {
 		System.out.println("Done " + Thread.currentThread().getId());
 	}
 
-	public static void main(String[] args){
+	public static void main(String args[]){
 		String inputClassName = args[0]; 
 		String experimentClassName = args[1];	
 

@@ -86,6 +86,14 @@ public aspect RandomMethod{
 		return distances.get(distances.indexOf(checkDistance));
 	}
 
+	boolean forcedError(int timeCount, RunId curId){
+		return timeCount == curId.errorPoint && curId.errorful;
+	}
+
+	boolean unForcedError(int timeCount, RunId curId){
+		return timeCount != curId.errorPoint;
+	}
+
 	Object around() : Randomize() {
 		Object targetObject = thisJoinPoint.getTarget();    	
 		final Object[] args = thisJoinPoint.getArgs();
@@ -132,7 +140,9 @@ public aspect RandomMethod{
 				theDistance.mTimeCount.add(new MethodTimeCount(methodName, 1));
 			}
 
-			if(rand.nextDouble() < 0.1) {
+			if((rand.nextDouble() < 0.1 && 
+					unForcedError(theDistance.timeCount, curId)) || 
+					forcedError(theDistance.timeCount, curId)) {
 				try {
 					Class[] types = new Class[args.length + 1];
 					types[0] = Random.class;
