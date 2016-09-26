@@ -1,24 +1,34 @@
 import java.util.*;
 import java.lang.reflect.*;
 import java.lang.Thread;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class Experimenter implements Runnable {
 
 	String inputClassName, experimentClassName;
 	int errorPoint, runName;
 
+	public static ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock(); 
+
 	public static ArrayList<RunId> runIds;
 
-	public static synchronized RunId getId(RunId inId){
-		return runIds.get(runIds.indexOf(inId));
+	public static RunId getId(RunId inId){
+		rwLock.readLock().lock();
+		RunId theId = runIds.get(runIds.indexOf(inId));
+		rwLock.readLock().unlock();
+		return theId;
 	}
 
-	public static synchronized void addId(RunId inId){
+	public static void addId(RunId inId){
+		rwLock.writeLock().lock();
 		runIds.add(inId);
+		rwLock.writeLock().unlock();
 	}
 
-	public static synchronized void removeId(RunId inId){
+	public static void removeId(RunId inId){
+		rwLock.writeLock().lock();
 		runIds.remove(runIds.indexOf(inId));
+		rwLock.writeLock().unlock();
 	}
 
 	Experimenter(String inputClassName, 
