@@ -2,11 +2,27 @@ import java.util.*;
 import java.lang.reflect.*;
 import java.lang.Thread;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.*;
 
 public class Experimenter implements Runnable {
 
 	String inputClassName, experimentClassName;
-	int errorPoint, runName;
+	int errorPoint, runName, experimentSize;	
+
+	static final int numThreads = 16;
+
+
+	Experimenter(String inputClassName, 
+		String experimentClassName,
+		int runName, 
+		int errorPoint,
+		int experimentSize){
+		this.inputClassName = inputClassName;
+		this.experimentClassName = experimentClassName;
+		this.errorPoint = errorPoint;
+		this.runName = runName;
+		this.experimentSize = experimentSize;
+	}
 
 	public static ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock(); 
 
@@ -31,15 +47,7 @@ public class Experimenter implements Runnable {
 		rwLock.writeLock().unlock();
 	}
 
-	Experimenter(String inputClassName, 
-		String experimentClassName,
-		int runName, 
-		int errorPoint){
-		this.inputClassName = inputClassName;
-		this.experimentClassName = experimentClassName;
-		this.errorPoint = errorPoint;
-		this.runName = runName;
-	}
+
 
 	private void printAspect(){}
 
@@ -52,7 +60,8 @@ public class Experimenter implements Runnable {
 			rand);
 		addId(curId);
 		experiment.experiment(input);
-		printAspect();
+		//printAspect();		
+		RandomMethod.registerTimeCount();
 		removeId(curId);
 		return experiment;
 	}
@@ -61,9 +70,9 @@ public class Experimenter implements Runnable {
 	public void run() {
 		long seed = new Random().nextLong();
 		long inputSeed = new Random().nextLong();
-		System.out.println("Starting " + 
+		/*System.out.println("Starting " + 
 			Thread.currentThread().getId() + 
-			" on seed: " + seed + " and input seed " + inputSeed);
+			" on seed: " + seed + " and input seed " + inputSeed);*/
 		Random rand = new Random(inputSeed);
 		Random rand1 = new Random(seed);
 		Random rand2 = new Random(seed);
@@ -73,7 +82,7 @@ public class Experimenter implements Runnable {
 		addId(curId);
 		Experiment errorObject = (Experiment)getNewObject(experimentClassName);
 		Experiment correctObject = (Experiment)getNewObject(experimentClassName);
-		Input iObject1 = (Input)getNewInputObject(inputClassName,10);
+		Input iObject1 = (Input)getNewInputObject(inputClassName, experimentSize);
 		Input iObject2 = (Input)getNewObject(inputClassName);
 		iObject1.randomize(rand);
 		iObject2.copy(iObject1);
@@ -82,9 +91,78 @@ public class Experimenter implements Runnable {
 		correctObject = runObject(iObject1, correctObject, rand1, false);
 		errorObject = runObject(iObject2, errorObject, rand2, true);
 
-		System.out.println("The error was: " + errorObject.scores(correctObject)[0].getScore());
+		//System.out.println("The error was: " + errorObject.scores(correctObject)[0].getScore());
 		
-		System.out.println("Done " + Thread.currentThread().getId());
+		//System.out.println("Done " + Thread.currentThread().getId());
+	}
+
+	
+	static void changeToExperimentTime(Pair<Long>[] in){
+		for(int i = 0; i < in.length; i ++){
+			in[i].runTime = Math.min(60*60*1000/(in[i].runTime*in[i].errorPoints), (long)1000);
+		}
+	}
+
+	static Pair<Long>[] getRunTimes(String inputClassName, String experimentClassName) throws InterruptedException{
+		Pair<Long>[] out = new Pair[3];
+
+		for(int q = 10, c = 0; q <= 1000; q *= 10, c ++){		
+			long avgRunTime = System.currentTimeMillis();
+			ArrayList<Thread> threads = new ArrayList<>();
+			for(int i = 0; i < 10; i ++){
+				Experimenter exp = new Experimenter(inputClassName,
+					experimentClassName, i, i, q);
+				Thread thread = new Thread(exp);
+				threads.add(thread);
+				thread.start();
+			}
+			for(Thread t : threads){
+				t.join();
+			}
+			avgRunTime = (System.currentTimeMillis() - avgRunTime)/10;
+			out[c] = new Pair<>();
+			out[c].runTime = avgRunTime;
+			out[c].errorPoints = (long) RandomMethod.getAverageTimeCount();;
+			System.out.println("The average run time is: " + avgRunTime);
+		}
+
+		return out;
+	}
+
+	static void runExperiments(String inputClassName, String experimentClassName, Pair<Long>[] rTimes) throws InterruptedException{
+		Pair<Long>[] out = new Pair[3];
+
+		for(int q = 10, c = 0; q <= 1000; q *= 10, c ++){	
+			System.out.println("Experimenting on size: " + q);	
+
+			ArrayBlockingQueue<Runnable> threadQueue = 
+				new ArrayBlockingQueue<Runnable>(100);
+			ThreadPoolExecutor thePool = 
+				new ThreadPoolExecutor(numThreads,
+					numThreads,
+					0, 
+					TimeUnit.SECONDS,
+					threadQueue);
+			for(int i = 0; i < rTimes[c].runTime; i ++){
+				for(int j = 0; j < rTimes[c].errorPoints; j ++){
+					long runName = i*rTimes[c].errorPoints + j;
+					if(runName % ((rTimes[c].runTime*rTimes[c].errorPoints)/10) == 0){
+						System.out.println("Now on runtime: " + i + " and errorPoint " + j);
+					}
+					while(threadQueue.size() >= 100){					
+					}
+
+					Experimenter exp = new Experimenter(inputClassName,
+						experimentClassName, 
+						(int) runName, j, q);
+					thePool.execute(exp);
+
+					//Thread thread = new Thread(exp);
+					//threads.add(thread);
+					//thread.start();
+				}
+			}
+		}
 	}
 
 	public static void main(String args[]){
@@ -105,21 +183,9 @@ public class Experimenter implements Runnable {
 				throw new IllegalArgumentException();
 			}
 
-			long avgRunTime = System.nanoTime();
-			ArrayList<Thread> threads = new ArrayList<>();
-			for(int i = 0; i < 10; i ++){
-				Experimenter exp = new Experimenter(inputClassName,
-					experimentClassName, i, i);
-				Thread thread = new Thread(exp);
-				threads.add(thread);
-				thread.start();
-			}
-			for(Thread t : threads){
-				t.join();
-			}
-			avgRunTime = (System.nanoTime() - avgRunTime)/10; 
-			System.out.println("The average run time is: " + avgRunTime);
-
+			Pair<Long>[] rTime = getRunTimes(inputClassName, experimentClassName);
+			changeToExperimentTime(rTime);
+			runExperiments(inputClassName, experimentClassName, rTime);
 
 		} catch (IllegalArgumentException E){
 			System.out.println(E);

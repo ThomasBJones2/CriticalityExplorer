@@ -4,75 +4,48 @@ import java.lang.Thread;
 
 public aspect RandomMethod{
 
-	ArrayList<Distance> distances = new ArrayList<>();
+	static ArrayList<Distance> distances = new ArrayList<>();
 
-	private class Distance{
-		int runName;
-		long threadId;
-		int timeCount = 0;
-		ArrayList<MethodTimeCount> mTimeCount = new ArrayList<>();
-		
-		Distance(int runName, long threadId){
-			this.runName = runName;
-			this.threadId = threadId;
-		}
+	static ArrayList<Integer> timeCounts = new ArrayList<>();
 
-		@Override
-		public boolean equals(Object in){
-			if(in == null) return false;
-			if(!(in instanceof Distance)) return false;
-			return threadId == ((Distance) in).threadId; 
-		}
+
+	public static synchronized void registerTimeCount(){
+		RunId curId = new RunId(Thread.currentThread().getId());
+		curId = Experimenter.getId(curId);
+		Distance theDistance = getDistance(curId);
+		timeCounts.add(theDistance.timeCount);
 	}
 
-	private class MethodTimeCount {
-		String methodName;
-		int timeCount;
-
-		MethodTimeCount(String mName){
-			methodName = mName;
-			timeCount = 0;
+	public static int getAverageTimeCount(){
+		double out = 0;
+		for(int i = 0; i < timeCounts.size(); i ++){
+			out += ((double) timeCounts.get(i) / (double) timeCounts.size());
 		}
-
-		MethodTimeCount(String mName, int tCount){
-			methodName = mName;
-			timeCount = tCount;
-		}
-
-		@Override
-		public boolean equals(Object in){
-			if(this == in) return true;
-			if(in == null) return false;
-			if(!(in instanceof MethodTimeCount)) return false;
-			MethodTimeCount inMTC = (MethodTimeCount)in;
-			return methodName.equals(inMTC.methodName);
-		}
-
-		void increment(){
-			timeCount ++;
-		}
+		return (int)out;
 	}
 
-
-
-	pointcut Randomize(): call(@Randomize * *(..));
-
-	pointcut PrintAspect() : call(void *.printAspect());
-
-	after() : PrintAspect() {
+	public void printThisAspect(){
 		RunId curId = new RunId(Thread.currentThread().getId());
 		curId = Experimenter.getId(curId);
 		Distance theDistance = getDistance(curId);
 
 		System.out.println("On thread: " + curId.getThreadId() + ": ");
 		System.out.println("The time count is: " + theDistance.timeCount);
-		for(MethodTimeCount mTC : theDistance.mTimeCount){
+		for(MethodTimeCount mTC : theDistance.getMethodTimeCounts()){
 		System.out.println("The time count on method " + mTC.methodName + 
 			" is " + mTC.timeCount);
 		}
 	}
 
-	private synchronized Distance getDistance(RunId curId){
+	pointcut Randomize(): call(@Randomize * *(..));
+
+	pointcut PrintAspect() : call(void *.printAspect());
+
+	after() : PrintAspect() {
+		printThisAspect();
+	}
+
+	private static synchronized Distance getDistance(RunId curId){
 		Distance checkDistance = new Distance(curId.getRunName(), curId.getThreadId());
 		while(distances.indexOf(checkDistance) != -1 &&
 			distances.get(distances.indexOf(checkDistance)).runName != curId.getRunName()){
