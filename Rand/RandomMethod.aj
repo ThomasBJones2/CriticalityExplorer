@@ -37,6 +37,7 @@ public aspect RandomMethod{
 		}
 	}
 
+
 	pointcut Randomize(): call(@Randomize * *(..));
 
 	pointcut PrintAspect() : call(void *.printAspect());
@@ -45,7 +46,7 @@ public aspect RandomMethod{
 		printThisAspect();
 	}
 
-	private static synchronized Distance getDistance(RunId curId){
+	public static synchronized Distance getDistance(RunId curId){
 		Distance checkDistance = new Distance(curId.getRunName(), curId.getThreadId());
 		while(distances.indexOf(checkDistance) != -1 &&
 			distances.get(distances.indexOf(checkDistance)).runName != curId.getRunName()){
@@ -111,6 +112,10 @@ public aspect RandomMethod{
 
 			} else {
 				theDistance.mTimeCount.add(new MethodTimeCount(methodName, 1));
+			}
+
+			if(forcedError(theDistance.timeCount, curId)){
+				theDistance.burnIn();
 			}
 
 			if((rand.nextDouble() < 0.1 && 

@@ -9,6 +9,10 @@ public class Experimenter implements Runnable {
 	String inputClassName, experimentClassName;
 	int errorPoint, runName, experimentSize;	
 
+	boolean experimentRunning;
+
+	Distance locDistance;
+
 	static final int numThreads = 16;
 
 
@@ -16,12 +20,14 @@ public class Experimenter implements Runnable {
 		String experimentClassName,
 		int runName, 
 		int errorPoint,
-		int experimentSize){
+		int experimentSize,
+		boolean experimentRunning){
 		this.inputClassName = inputClassName;
 		this.experimentClassName = experimentClassName;
 		this.errorPoint = errorPoint;
 		this.runName = runName;
 		this.experimentSize = experimentSize;
+		this.experimentRunning = experimentRunning;
 	}
 
 	public static ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock(); 
@@ -51,7 +57,7 @@ public class Experimenter implements Runnable {
 
 	private void printAspect(){}
 
-	private Experiment runObject(Input input, Experiment experiment, Random rand, boolean errorful){
+	private Experiment runObject(Input input, Experiment experiment, Random rand, boolean errorful, Experimenter exper){
 		RunId curId = new RunId(2*runName + (errorful?1:0), 
 			true,
 			errorful, 
@@ -62,8 +68,17 @@ public class Experimenter implements Runnable {
 		experiment.experiment(input);
 		//printAspect();		
 		RandomMethod.registerTimeCount();
+		exper.locDistance = RandomMethod.getDistance(curId);
 		removeId(curId);
 		return experiment;
+	}
+
+	void printDistancesAndScores(Experiment correctObject, Experiment errorObject){
+		locDistance.print();		
+		Score[] scores = errorObject.scores(correctObject);
+		for(Score s : scores){
+			s.print();
+		}
 	}
 
 	@Override
@@ -88,8 +103,11 @@ public class Experimenter implements Runnable {
 		iObject2.copy(iObject1);
 		removeId(curId);
 
-		correctObject = runObject(iObject1, correctObject, rand1, false);
-		errorObject = runObject(iObject2, errorObject, rand2, true);
+		correctObject = runObject(iObject1, correctObject, rand1, false, this);
+		errorObject = runObject(iObject2, errorObject, rand2, true, this);
+		if(experimentRunning){
+			printDistancesAndScores(correctObject, errorObject);
+		}
 
 		//System.out.println("The error was: " + errorObject.scores(correctObject)[0].getScore());
 		
@@ -111,7 +129,7 @@ public class Experimenter implements Runnable {
 			ArrayList<Thread> threads = new ArrayList<>();
 			for(int i = 0; i < 10; i ++){
 				Experimenter exp = new Experimenter(inputClassName,
-					experimentClassName, i, i, q);
+					experimentClassName, i, i, q, false);
 				Thread thread = new Thread(exp);
 				threads.add(thread);
 				thread.start();
@@ -154,7 +172,7 @@ public class Experimenter implements Runnable {
 
 					Experimenter exp = new Experimenter(inputClassName,
 						experimentClassName, 
-						(int) runName, j, q);
+						(int) runName, j, q, true);
 					thePool.execute(exp);
 
 					//Thread thread = new Thread(exp);

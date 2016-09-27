@@ -24,7 +24,9 @@ public class MaxFlowMinCut implements Experiment<Graph, MaxFlowMinCut>{
 		//if(correctObject instanceof MaxFlowMinCut
 		Score[] out = new Score [2];
 		out[0] = new Score(Math.abs(this.flow - correctObject.flow), "Absolute Value"); 
-		out[1] = new Score(Math.abs(this.flow - correctObject.flow)/correctObject.flow, "Absolute Percent Value"); 
+		out[1] = new Score(correctObject.flow > 0?
+			Math.abs(this.flow - correctObject.flow)/correctObject.flow:0, 
+			"Absolute Percent Value"); 
 		return out; 
 	}
 
