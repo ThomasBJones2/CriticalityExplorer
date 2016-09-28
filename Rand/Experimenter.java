@@ -11,10 +11,15 @@ public class Experimenter implements Runnable {
 
 	boolean experimentRunning;
 
+	static ArrayList<Distance> finalDistancesWithScores = new ArrayList<>();
+
 	Distance locDistance;
 
 	static final int numThreads = 16;
 
+	private static synchronized void addDistanceWithScores(Distance in){
+		finalDistancesWithScores.add(in);
+	}
 
 	Experimenter(String inputClassName, 
 		String experimentClassName,
@@ -66,7 +71,6 @@ public class Experimenter implements Runnable {
 			rand);
 		addId(curId);
 		experiment.experiment(input);
-		//printAspect();		
 		RandomMethod.registerTimeCount();
 		exper.locDistance = RandomMethod.getDistance(curId);
 		removeId(curId);
@@ -105,9 +109,9 @@ public class Experimenter implements Runnable {
 
 		correctObject = runObject(iObject1, correctObject, rand1, false, this);
 		errorObject = runObject(iObject2, errorObject, rand2, true, this);
-		if(experimentRunning){
-			printDistancesAndScores(correctObject, errorObject);
-		}
+		this.locDistance.addScores(errorObject.scores(correctObject));
+		addDistanceWithScores(locDistance);
+
 
 		//System.out.println("The error was: " + errorObject.scores(correctObject)[0].getScore());
 		
@@ -183,6 +187,8 @@ public class Experimenter implements Runnable {
 		}
 	}
 
+
+
 	public static void main(String args[]){
 		String inputClassName = args[0]; 
 		String experimentClassName = args[1];	
@@ -190,16 +196,7 @@ public class Experimenter implements Runnable {
 		Experimenter.runIds = new ArrayList<>();		
 
 		try{
-			Object inputClass = getNewObject(inputClassName);
-			Object experimentClass = getNewObject(experimentClassName);
-			System.out.println(inputClass.getClass());
-			System.out.println(experimentClass.getClass());
-			if(!(experimentClass instanceof Experiment)) {
-				throw new IllegalArgumentException();
-			}
-			if(!(inputClass instanceof Input)){
-				throw new IllegalArgumentException();
-			}
+			testInputObjects(inputClassName, experimentClassName);
 
 			Pair<Long>[] rTime = getRunTimes(inputClassName, experimentClassName);
 			changeToExperimentTime(rTime);
@@ -211,6 +208,19 @@ public class Experimenter implements Runnable {
 			System.out.println(E);
 		}
 
+	}
+
+	private static void testInputObjects(String inputClassName, String experimentClassName) throws IllegalArgumentException {
+		Object inputClass = getNewObject(inputClassName);
+		Object experimentClass = getNewObject(experimentClassName);
+		System.out.println(inputClass.getClass());
+		System.out.println(experimentClass.getClass());
+		if(!(experimentClass instanceof Experiment)) {
+			throw new IllegalArgumentException();
+		}
+		if(!(inputClass instanceof Input)){
+			throw new IllegalArgumentException();
+		}
 	}
 
 	static Object getNewInputObject(String inName, int size){
