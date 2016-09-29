@@ -28,8 +28,20 @@ public class DefinedDistance {
 		return name.equals(inMTC.name);
 	}
 
-	void increment(){
+	public void increment(){
 		distance ++;
+	}
+
+	public double getDistance(){
+		return distance;
+	}
+
+	public String getName(){
+		return name;
+	}
+
+	public void setDistance(double distance){
+		this.distance = distance;
 	}
 
 	public void print(){

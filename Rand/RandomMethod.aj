@@ -68,16 +68,36 @@ public aspect RandomMethod{
 		return timeCount != curId.errorPoint;
 	}
 
-	void updateDistances(Distance theDistance, RunId curId, String methodName){
+	void updateSingleDistance(Distance theDistance, DefinedDistance handle){
+		if(theDistance.dDistances.contains(handle)){
+			theDistance.dDistances.get(theDistance.dDistances.indexOf(handle)).setDistance(handle.getDistance());
+		} else {
+			theDistance.dDistances.add(new DefinedDistance(handle));
+		}
+	}
+
+	void incrementSingleDistance(Distance theDistance, DefinedDistance handle){
+		if(theDistance.dDistances.contains(handle)){
+			theDistance.dDistances.get(theDistance.dDistances.indexOf(handle)).increment();
+		} else {
+			theDistance.dDistances.add(new DefinedDistance(handle.getName(), 1));
+		}
+	}
+
+	void updateDistances(Distance theDistance, 
+			RunId curId, 
+			String methodName, 
+			AbstractDistance distances){
+
 			theDistance.timeCount ++;
 			DefinedDistance handle = new DefinedDistance(methodName);		
 
-			if(theDistance.dDistances.contains(handle)){
-				theDistance.dDistances.get(theDistance.dDistances.indexOf(handle)).increment();
-			} else {
-				theDistance.dDistances.add(new DefinedDistance(methodName, 1));
+			incrementSingleDistance(theDistance, handle);
+			ArrayList<DefinedDistance> absDistances = distances.getCurrentDistances();
+			for(DefinedDistance d : absDistances){
+				updateSingleDistance(theDistance, d);
 			}
-
+	
 			if(forcedError(theDistance.timeCount, curId)){
 				theDistance.burnIn();
 			}
@@ -100,7 +120,7 @@ public aspect RandomMethod{
 				getSignature().
 				getName();
 		
-			updateDistances(theDistance, curId, methodName);
+			updateDistances(theDistance, curId, methodName, (AbstractDistance) targetObject);
 			String randMethodName = thisJoinPointStaticPart.
 				getSignature().
 				getName() + "Rand";

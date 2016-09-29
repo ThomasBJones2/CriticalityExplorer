@@ -3,6 +3,8 @@ import java.util.*;
 public class MaxFlowMinCut implements Experiment<Graph, MaxFlowMinCut>{
 	double flow;
 
+	Graph theGraph;
+
 	public double maxFlowFF(Graph inGraph){
 		double auxFlow = 1;
 		double out = 0;		
@@ -16,8 +18,12 @@ public class MaxFlowMinCut implements Experiment<Graph, MaxFlowMinCut>{
 	static void printAspect(){}
 
 	public void experiment(Graph input){
-		//input.print();
+		theGraph = input;
 		flow = maxFlowFF((Graph) input);
+	}
+
+	public ArrayList<DefinedDistance> getCurrentDistances(){
+		return theGraph.getCurrentDistances();
 	}
 
 	public Score[] scores(MaxFlowMinCut correctObject){

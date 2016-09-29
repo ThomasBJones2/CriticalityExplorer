@@ -1,3 +1,5 @@
-public interface AbstractDistance(){
-	ArrayList<DefinedDistance>[] getCurrentDistances();
+import java.util.*;
+
+public interface AbstractDistance{
+	ArrayList<DefinedDistance> getCurrentDistances();
 }

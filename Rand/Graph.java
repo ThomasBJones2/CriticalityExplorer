@@ -5,6 +5,11 @@ public class Graph implements Input<Graph>{
 		
 		public Graph(){}
 
+		public ArrayList<DefinedDistance> getCurrentDistances(){
+			return new ArrayList<DefinedDistance>();
+		}
+
+
 		public Graph(int n){
 			nodes = new ArrayList<>();
 			for(int i = 0; i < n; i ++){
@@ -38,7 +43,7 @@ public class Graph implements Input<Graph>{
 				GraphNode nextNodeProxy = new GraphNode(in.get(i).getTarget().getName());
 				int nextNodeIndex = nodes.indexOf(nextNodeProxy);
 				GraphNode nextNode = nodes.get(nextNodeIndex);
-				out.add(new GraphLink(nextNode, in.get(i).getWeight()));
+				out.add(new GraphLink(nextNode, in.get(i).getWeight(), this));
 			}
 			return out;
 		}
@@ -65,7 +70,7 @@ public class Graph implements Input<Graph>{
 	
 		double findPathValueAndDecrement(){
 			clearLookBack();			
-			nodes.get(0).lookBack = new GraphLink(nodes.get(0), Double.MAX_VALUE);
+			nodes.get(0).lookBack = new GraphLink(nodes.get(0), Double.MAX_VALUE, this);
 			ArrayList<GraphNode> queue = new ArrayList<>();
 			queue.add(nodes.get(0));
 			while(queue.size() > 0){
@@ -78,7 +83,7 @@ public class Graph implements Input<Graph>{
 							queue.add(targetNode);
 							targetNode.lookBack = new GraphLink(nextNode, Math.max(0, 
 								Math.min(link.getWeight(), 
-									nextNode.lookBack.getWeight())));
+									nextNode.lookBack.getWeight())), this);
 						}
 					}
 				}
@@ -113,27 +118,24 @@ public class Graph implements Input<Graph>{
 			}
 		}
 
-		private class GraphNode{
+		GraphNode randomNode(Random rand){
+			return nodes.get(rand.nextInt() % nodes.size());
+		}
+
+		private class GraphNode implements Input{
 			int name;
 
 			ArrayList<GraphLink> links;
 			Graph theGraph;			
 
 			GraphLink lookBack;
+		
+			GraphNode(){}
 
 			GraphNode(int in){
 				this.name = in;
 			}
-
-			@Override
-			public boolean equals(Object in){				
-				if(in == null)
-					return false;
-				if(!(in instanceof GraphNode))
-					return false;
-				return name == ((GraphNode) in).name;
-			}
-
+			
 			GraphNode(int name, ArrayList<GraphLink> inLinks, Graph inGraph){
 				this.links = new ArrayList<>();
 				for(GraphLink in : inLinks){
@@ -144,6 +146,22 @@ public class Graph implements Input<Graph>{
 			}			
 
 			GraphNode(GraphNode in){
+				this();
+				this.copy(in);
+			}
+
+			GraphNode(int in, Graph graph){
+				this.name = in;
+				this.theGraph = graph;
+			}
+
+			public void copy(Input in){
+				if((in instanceof GraphNode)){
+					copy((GraphNode) in);
+				}
+			}
+		
+			public void copy(GraphNode in){
 				this.name = in.name;
 				for(int i = 0; i < in.links.size(); i ++){
 					this.links.add(new GraphLink(in.links.get(i)));
@@ -151,9 +169,17 @@ public class Graph implements Input<Graph>{
 				this.theGraph = in.theGraph;
 			}
 
-			GraphNode(int in, Graph graph){
-				this.name = in;
-				this.theGraph = graph;
+			public ArrayList<DefinedDistance> getCurrentDistances(){
+				return new ArrayList<DefinedDistance>();
+			}
+			
+			@Override
+			public boolean equals(Object in){				
+				if(in == null)
+					return false;
+				if(!(in instanceof GraphNode))
+					return false;
+				return name == ((GraphNode) in).name;
 			}
 
 			GraphLink getLinkFromNode(GraphNode in){
@@ -172,7 +198,8 @@ public class Graph implements Input<Graph>{
 				for(int i = 0; i < newLinkCount; i ++){
 					GraphLink nextLink = new GraphLink(
 						theGraph.nodes.get(rand.nextInt(theGraph.nodes.size())),
-						rand.nextDouble());
+						rand.nextDouble(),
+						theGraph);
 					links.add(nextLink);
 				}
 			}
@@ -190,23 +217,50 @@ public class Graph implements Input<Graph>{
 			}
 		}
 	
-		private class GraphLink{
+		private class GraphLink implements Input{
 			private double weight;
 			GraphNode target;
+			Graph theGraph;
 
+			GraphLink(){}
+			
 			GraphLink(GraphLink in){
-				this.target = in.target;
-				this.weight = in.weight;
+				this();
+				this.copy(in);
 			}
 
-			GraphLink(GraphNode target, double weight){
+			GraphLink(GraphNode target, double weight, Graph inGraph){
 				this.target = target;
 				this.weight = weight;
+				this.theGraph = inGraph;
 			}
 			
+			public ArrayList<DefinedDistance> getCurrentDistances(){
+				return new ArrayList<DefinedDistance>();
+			}			
+
+			public void copy(Input in){
+				if(in instanceof GraphLink){
+					copy((GraphLink) in);
+				}
+			}
+
+			public void copy(GraphLink in){
+				this.target = in.target;
+				this.weight = in.weight;
+				this.theGraph = in.theGraph;
+			}
+
 			GraphNode getTarget(){
 				return this.target;
 			}
+
+			public void randomize(Random rand){
+				this.weight = rand.nextDouble();
+				this.target = theGraph.randomNode(rand);
+			}
+
+
 
 			void setTarget(GraphNode in){
 				this.target = in;
