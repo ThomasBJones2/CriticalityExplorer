@@ -1,5 +1,5 @@
 import java.util.*;
-
+ 
 public class Graph implements Input<Graph>{
 		ArrayList<GraphNode> nodes;	
 		
