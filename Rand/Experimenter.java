@@ -112,9 +112,15 @@ public class Experimenter implements Runnable {
 		this.locDistance.addScores(errorObject.scores(correctObject));
 		addDistanceWithScores(locDistance);
 
-
-		//System.out.println("The error was: " + errorObject.scores(correctObject)[0].getScore());
-		
+		/* This is how you print scores out here...
+		 *
+		System.out.println("The errors were: \n");
+		for(int q = 0; q < errorObject.scores(correctObject).length; q ++)
+			System.out.println(	
+				errorObject.scores(correctObject)[q].getName() + " " + 
+				errorObject.scores(correctObject)[q].getScore()
+				);
+		*/
 		//System.out.println("Done " + Thread.currentThread().getId());
 	}
 
