@@ -46,17 +46,20 @@ public aspect RandomMethod{
 		printThisAspect();
 	}
 
-	public static synchronized Distance getDistance(RunId curId){
+	public static synchronized void clearDistance(RunId curId){
 		Distance checkDistance = new Distance(curId.getRunName(), curId.getThreadId());
-		while(distances.indexOf(checkDistance) != -1 &&
-			distances.get(distances.indexOf(checkDistance)).runName != curId.getRunName()){
+    while(distances.indexOf(checkDistance) != -1){
 			distances.remove(distances.indexOf(checkDistance));
 		}
+	}
 
-		if(distances.indexOf(checkDistance) == -1){
-			distances.add(checkDistance);
-		}
-		
+	public static synchronized void createDistance(RunId curId){
+		Distance checkDistance = new Distance(curId.getRunName(), curId.getThreadId());
+		distances.add(checkDistance);
+	}
+
+	public static synchronized Distance getDistance(RunId curId){
+		Distance checkDistance = new Distance(curId.getRunName(), curId.getThreadId());
 		return distances.get(distances.indexOf(checkDistance));
 	}
 
@@ -87,18 +90,25 @@ public aspect RandomMethod{
 	void updateDistances(Distance theDistance, 
 			RunId curId, 
 			String methodName, 
-			AbstractDistance distances){
+			AbstractDistance targetObject){
 
-			theDistance.timeCount ++;
 			DefinedDistance handle = new DefinedDistance(methodName);		
 
 			incrementSingleDistance(theDistance, handle);
-			ArrayList<DefinedDistance> absDistances = distances.getCurrentDistances();
+			ArrayList<DefinedDistance> absDistances = targetObject.getCurrentDistances();
 			for(DefinedDistance d : absDistances){
 				updateSingleDistance(theDistance, d);
 			}
+
+			//if(theDistance.timeCount < 10 && curId.errorful) {
+			//	System.out.println("timeCount: " + theDistance.timeCount);
+			//	curId.print();
+			//}
 	
 			if(forcedError(theDistance.timeCount, curId)){
+				//System.out.println("Burning In at: ");
+				//curId.print();
+				//theDistance.print();
 				theDistance.burnIn();
 			}
 	}
@@ -121,13 +131,17 @@ public aspect RandomMethod{
 				getName();
 		
 			updateDistances(theDistance, curId, methodName, (AbstractDistance) targetObject);
+			//increment time count seperately to account for 0 indexing
+			theDistance.timeCount ++;
+			
 			String randMethodName = thisJoinPointStaticPart.
 				getSignature().
 				getName() + "Rand";
 
+			//must account for early increment due to return...
 			if((rand.nextDouble() < 0.1 && 
-					unForcedError(theDistance.timeCount, curId)) || 
-					forcedError(theDistance.timeCount, curId)) {
+					unForcedError(theDistance.timeCount - 1, curId)) || 
+					forcedError(theDistance.timeCount - 1, curId)) {
 				return randomizedCall(targetObject, args, randMethodName, rand);
 			}
 		}

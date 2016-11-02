@@ -71,9 +71,21 @@ public class Experimenter implements Runnable {
 			Thread.currentThread().getId(), 
 			rand);
 		addId(curId);
+		RandomMethod.createDistance(curId);
+
 		experiment.experiment(input);
+		
 		RandomMethod.registerTimeCount();
-		exper.locDistance = RandomMethod.getDistance(curId);
+		if(errorful){
+			exper.locDistance = RandomMethod.getDistance(curId).getBurnIn();
+			
+			//if (exper.locDistance == null){
+			//	System.out.println("No BurnIn On");
+			//}
+			//	curId.print();
+			//	System.out.println("timeCount: " + RandomMethod.getDistance(curId).timeCount);
+		}
+		RandomMethod.clearDistance(curId);
 		removeId(curId);
 		return experiment;
 	}
@@ -97,9 +109,11 @@ public class Experimenter implements Runnable {
 		Random rand1 = new Random(seed);
 		Random rand2 = new Random(seed);
 
+
+		//this is hear to program the aspect to not run the experiment
 		RunId curId = new RunId(Thread.currentThread().getId());
 		curId.setExperiment(false);
-		addId(curId);
+		addId(curId); 
 		Experiment errorObject = (Experiment)getNewObject(experimentClassName);
 		Experiment correctObject = (Experiment)getNewObject(experimentClassName);
 		Input iObject1 = (Input)getNewInputObject(inputClassName, experimentSize);
@@ -110,8 +124,10 @@ public class Experimenter implements Runnable {
 
 		correctObject = runObject(iObject1, correctObject, rand1, false, this);
 		errorObject = runObject(iObject2, errorObject, rand2, true, this);
-		this.locDistance.addScores(errorObject.scores(correctObject));
-		addDistanceWithScores(locDistance);
+		if(this.locDistance != null) {
+			this.locDistance.addScores(errorObject.scores(correctObject));
+			addDistanceWithScores(locDistance);
+		}
 
 		/* This is how you print scores out here...
 		 *
@@ -259,11 +275,8 @@ public class Experimenter implements Runnable {
 		clear_output_on_input_size(input_size);
 	
 		for(int i = 0; i < outputDistances.size(); i ++){
-			System.out.println("and here");
-			Score[] scores = outputDistances.get(i).get_burn_in().get_scores();
-			System.out.println("This place too");
-			ArrayList<DefinedDistance> distances = outputDistances.get(i).get_burn_in().dDistances;
-			System.out.println("Made it here");
+			Score[] scores = outputDistances.get(i).get_scores();
+			ArrayList<DefinedDistance> distances = outputDistances.get(i).dDistances;
 			for(int j = 0; j < scores.length; j++) {
 				for(int k = 0; k < distances.size(); k ++){
 					print_output(scores[j], distances.get(k), input_size);	

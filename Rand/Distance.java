@@ -32,7 +32,7 @@ public class Distance{
 		burnIn = new Distance(this);
 	}
 
-	public Distance get_burn_in(){
+	public Distance getBurnIn(){
 		return burnIn;
 	}
 
@@ -57,6 +57,13 @@ public class Distance{
 			}
 			System.out.println();
 		}
+	}
+
+	public void addBurnInScores(Score[] in){
+		if(burnIn == null)
+			System.out.println("Null Burn In");
+		else
+			this.burnIn.addScores(in);
 	}
 
 	public void addScores(Score[] in){
