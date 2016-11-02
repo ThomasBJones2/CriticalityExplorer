@@ -78,12 +78,6 @@ public class Experimenter implements Runnable {
 		RandomMethod.registerTimeCount();
 		if(errorful){
 			exper.locDistance = RandomMethod.getDistance(curId).getBurnIn();
-			
-			//if (exper.locDistance == null){
-			//	System.out.println("No BurnIn On");
-			//}
-			//	curId.print();
-			//	System.out.println("timeCount: " + RandomMethod.getDistance(curId).timeCount);
 		}
 		RandomMethod.clearDistance(curId);
 		removeId(curId);
@@ -214,7 +208,7 @@ public class Experimenter implements Runnable {
 			}
 		
 			System.out.println("Printing data for size: " + q);	
-			print_all_data(finalDistancesWithScores, q);
+			printAllRawData(finalDistancesWithScores, q);
 			finalDistancesWithScores = new ArrayList<>();
 		}
 	}
@@ -243,18 +237,19 @@ public class Experimenter implements Runnable {
 
 	}
 
-	static String root_directory = "./output/";
+	static String rawRootDirectory = "./raw_output/";
+	static String processedRootDirectory = "./output/";
 
-	private static void clear_output_on_input_size (int input_size){
-		File directory = new File(root_directory);
+	private static void clearOutputOnInputSize (String directoryName, int input_size){
+		File directory = new File(directoryName);
 		for(File f: directory.listFiles())
 	    if(f.getName().endsWith(input_size + ".csv"))
 				f.delete();
 	}
 
-	private static void print_output(Score score, DefinedDistance distance, int input_size) {
+	private static void printRawOutput(Score score, DefinedDistance distance, int input_size) {
 		try(FileWriter fw = 
-					new FileWriter(root_directory + 
+					new FileWriter(rawRootDirectory + 
 						score.name + "_on_" +
 						distance.name + "_" +
 						input_size + ".csv", true);
@@ -271,15 +266,16 @@ public class Experimenter implements Runnable {
 
 	}
 
-	private static void print_all_data (ArrayList<Distance> outputDistances, int input_size){
-		clear_output_on_input_size(input_size);
+	private static void printAllRawData (ArrayList<Distance> outputDistances, int input_size){
+		clearOutputOnInputSize(rawRootDirectory, input_size);
 	
 		for(int i = 0; i < outputDistances.size(); i ++){
 			Score[] scores = outputDistances.get(i).get_scores();
 			ArrayList<DefinedDistance> distances = outputDistances.get(i).dDistances;
 			for(int j = 0; j < scores.length; j++) {
 				for(int k = 0; k < distances.size(); k ++){
-					print_output(scores[j], distances.get(k), input_size);	
+					if(distances.get(k).pertinent)
+						printRawOutput(scores[j], distances.get(k), input_size);
 				}
 			}
 		}

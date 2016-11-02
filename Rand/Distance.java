@@ -7,6 +7,7 @@ public class Distance{
 	Score[] scores;
 	ArrayList<DefinedDistance> dDistances = new ArrayList<>();
 
+
 	Distance burnIn;
 	
 	Distance(int runName, long threadId){
@@ -22,6 +23,11 @@ public class Distance{
 		for(DefinedDistance d : in.dDistances){
 			this.dDistances.add(new DefinedDistance(d));
 		}
+	}
+
+	public void clearPertinence(){
+		for(int i = 0; i < dDistances.size(); i ++)
+			dDistances.get(i).pertinent = false;
 	}
 
 	public Score[] get_scores(){

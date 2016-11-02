@@ -73,24 +73,35 @@ public aspect RandomMethod{
 
 	void updateSingleDistance(Distance theDistance, DefinedDistance handle){
 		if(theDistance.dDistances.contains(handle)){
-			theDistance.dDistances.get(theDistance.dDistances.indexOf(handle)).setDistance(handle.getDistance());
+			int index = theDistance.dDistances.indexOf(handle);
+			theDistance.dDistances.get(index).setDistance(handle.getDistance());
+			theDistance.dDistances.get(index).pertinent = true;
 		} else {
-			theDistance.dDistances.add(new DefinedDistance(handle));
+			DefinedDistance dist = new DefinedDistance(handle);
+			dist.pertinent = true;
+			theDistance.dDistances.add(dist);
 		}
 	}
 
 	void incrementSingleDistance(Distance theDistance, DefinedDistance handle){
+		DefinedDistance dDistance = null;
 		if(theDistance.dDistances.contains(handle)){
-			theDistance.dDistances.get(theDistance.dDistances.indexOf(handle)).increment();
+			dDistance = 
+				theDistance.dDistances.get(theDistance.dDistances.indexOf(handle));
 		} else {
-			theDistance.dDistances.add(new DefinedDistance(handle.getName(), 1));
+			dDistance = new DefinedDistance(handle.getName(), 0);
+			theDistance.dDistances.add(dDistance);
 		}
+		dDistance.increment();
+		dDistance.pertinent = true;
 	}
 
 	void updateDistances(Distance theDistance, 
 			RunId curId, 
 			String methodName, 
 			AbstractDistance targetObject){
+
+			theDistance.clearPertinence();
 
 			DefinedDistance handle = new DefinedDistance(methodName);		
 
@@ -100,15 +111,7 @@ public aspect RandomMethod{
 				updateSingleDistance(theDistance, d);
 			}
 
-			//if(theDistance.timeCount < 10 && curId.errorful) {
-			//	System.out.println("timeCount: " + theDistance.timeCount);
-			//	curId.print();
-			//}
-	
 			if(forcedError(theDistance.timeCount, curId)){
-				//System.out.println("Burning In at: ");
-				//curId.print();
-				//theDistance.print();
 				theDistance.burnIn();
 			}
 	}

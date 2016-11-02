@@ -3,6 +3,9 @@ import java.util.*;
 public class DefinedDistance {
 	String name;
 	double distance;
+	public boolean pertinent = false;
+
+
 
 	DefinedDistance(String mName){
 		name = mName;
@@ -17,6 +20,7 @@ public class DefinedDistance {
 	DefinedDistance(DefinedDistance in){
 		this.name = in.name;
 		this.distance = in.distance;
+		this.pertinent = in.pertinent;
 	}
 
 	@Override
