@@ -23,9 +23,17 @@ public class Distance{
 			this.dDistances.add(new DefinedDistance(d));
 		}
 	}
+
+	public Score[] get_scores(){
+		return scores;
+	}
 	
 	void burnIn(){
 		burnIn = new Distance(this);
+	}
+
+	public Distance get_burn_in(){
+		return burnIn;
 	}
 
 	@Override

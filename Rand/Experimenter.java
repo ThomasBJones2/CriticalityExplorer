@@ -3,6 +3,7 @@ import java.lang.reflect.*;
 import java.lang.Thread;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.*;
+import java.io.*;
 
 public class Experimenter implements Runnable {
 
@@ -190,6 +191,15 @@ public class Experimenter implements Runnable {
 					//thread.start();
 				}
 			}
+
+			thePool.shutdown();
+			while (!thePool.awaitTermination(10, TimeUnit.SECONDS)) {
+				  System.out.println("Awaiting completion of threads.");
+			}
+		
+			System.out.println("Printing data for size: " + q);	
+			print_all_data(finalDistancesWithScores, q);
+			finalDistancesWithScores = new ArrayList<>();
 		}
 	}
 
@@ -214,6 +224,52 @@ public class Experimenter implements Runnable {
 			System.out.println(E);
 		}
 
+
+	}
+
+	static String root_directory = "./output/";
+
+	private static void clear_output_on_input_size (int input_size){
+		File directory = new File(root_directory);
+		for(File f: directory.listFiles())
+	    if(f.getName().endsWith(input_size + ".csv"))
+				f.delete();
+	}
+
+	private static void print_output(Score score, DefinedDistance distance, int input_size) {
+		try(FileWriter fw = 
+					new FileWriter(root_directory + 
+						score.name + "_on_" +
+						distance.name + "_" +
+						input_size + ".csv", true);
+
+				BufferedWriter bw = 
+					new BufferedWriter(fw);
+				PrintWriter out = 
+					new PrintWriter(bw))
+		{
+				out.println(distance.distance + ", " + score.score);	
+		} catch (IOException E){
+			System.out.print(E);
+		}
+
+	}
+
+	private static void print_all_data (ArrayList<Distance> outputDistances, int input_size){
+		clear_output_on_input_size(input_size);
+	
+		for(int i = 0; i < outputDistances.size(); i ++){
+			System.out.println("and here");
+			Score[] scores = outputDistances.get(i).get_burn_in().get_scores();
+			System.out.println("This place too");
+			ArrayList<DefinedDistance> distances = outputDistances.get(i).get_burn_in().dDistances;
+			System.out.println("Made it here");
+			for(int j = 0; j < scores.length; j++) {
+				for(int k = 0; k < distances.size(); k ++){
+					print_output(scores[j], distances.get(k), input_size);	
+				}
+			}
+		}
 	}
 
 	private static void testInputObjects(String inputClassName, String experimentClassName) throws IllegalArgumentException {
