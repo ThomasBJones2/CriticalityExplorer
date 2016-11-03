@@ -247,27 +247,36 @@ public class Experimenter implements Runnable {
 				f.delete();
 	}
 
-	private static void printRawOutput(Score score, DefinedDistance distance, int input_size) {
+	private static void printOutput(String scoreName, 
+			double score, 
+			Double stdDev,
+			String distanceName, 
+			double distance, 
+			String rootDirectoryName,
+			int inputSize) {
 		try(FileWriter fw = 
-					new FileWriter(rawRootDirectory + 
-						score.name + "_on_" +
-						distance.name + "_" +
-						input_size + ".csv", true);
+					new FileWriter(rootDirectoryName + 
+						scoreName + "_on_" +
+						distanceName + "_" +
+						inputSize + ".csv", true);
 
 				BufferedWriter bw = 
 					new BufferedWriter(fw);
 				PrintWriter out = 
 					new PrintWriter(bw))
 		{
-				out.println(distance.distance + ", " + score.score);	
+			if(stdDev == null)
+				out.println(distance + ", " + score);	
+			else
+				out.println(distance + ", " + score + ", " + stdDev);
 		} catch (IOException E){
 			System.out.print(E);
 		}
 
 	}
 
-	private static void printAllRawData (ArrayList<Distance> outputDistances, int input_size){
-		clearOutputOnInputSize(rawRootDirectory, input_size);
+	private static void printAllRawData (ArrayList<Distance> outputDistances, int inputSize){
+		clearOutputOnInputSize(rawRootDirectory, inputSize);
 	
 		for(int i = 0; i < outputDistances.size(); i ++){
 			Score[] scores = outputDistances.get(i).get_scores();
@@ -275,10 +284,37 @@ public class Experimenter implements Runnable {
 			for(int j = 0; j < scores.length; j++) {
 				for(int k = 0; k < distances.size(); k ++){
 					if(distances.get(k).pertinent)
-						printRawOutput(scores[j], distances.get(k), input_size);
+						printOutput(scores[j].name,
+								scores[j].score,
+								null,
+								distances.get(k).name,
+							 	distances.get(k).distance,
+								rawRootDirectory,
+								inputSize);
 				}
 			}
 		}
+	}
+
+	private static void printAllProcessedData(DataEnsemble dataEnsemble, int inputSize){
+		clearOutputOnInputSize(processedRootDirectory, inputSize);
+		for(int i = 0; i < dataEnsemble.scores.size(); i ++) {
+			DataEnsemble.Score score = dataEnsemble.scores.get(i);
+			for(int j = 0; j < score.distances.size(); j ++){
+				DataEnsemble.Distance distance = score.distances.get(j);
+				for(int q = 0; q < distance.triples.size(); q ++) {
+					DataEnsemble.Triple triple = distance.triples.get(q);
+					printOutput(score.name,
+						triple.avg,
+						triple.stdDev,
+						distance.name,
+						triple.distance,
+						processedRootDirectory,
+						inputSize);
+				}
+			}
+		}
+
 	}
 
 	private static void testInputObjects(String inputClassName, String experimentClassName) throws IllegalArgumentException {
