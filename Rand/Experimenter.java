@@ -209,6 +209,8 @@ public class Experimenter implements Runnable {
 		
 			System.out.println("Printing data for size: " + q);	
 			printAllRawData(finalDistancesWithScores, q);
+			printAllProcessedData(new DataEnsemble(finalDistancesWithScores), q);	
+			
 			finalDistancesWithScores = new ArrayList<>();
 		}
 	}
@@ -299,11 +301,11 @@ public class Experimenter implements Runnable {
 	private static void printAllProcessedData(DataEnsemble dataEnsemble, int inputSize){
 		clearOutputOnInputSize(processedRootDirectory, inputSize);
 		for(int i = 0; i < dataEnsemble.scores.size(); i ++) {
-			DataEnsemble.Score score = dataEnsemble.scores.get(i);
+			DataEnsemble.EnsScore score = dataEnsemble.scores.get(i);
 			for(int j = 0; j < score.distances.size(); j ++){
-				DataEnsemble.Distance distance = score.distances.get(j);
+				DataEnsemble.EnsDistance distance = score.distances.get(j);
 				for(int q = 0; q < distance.triples.size(); q ++) {
-					DataEnsemble.Triple triple = distance.triples.get(q);
+					DataEnsemble.EnsTriple triple = distance.triples.get(q);
 					printOutput(score.name,
 						triple.avg,
 						triple.stdDev,
