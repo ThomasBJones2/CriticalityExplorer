@@ -239,14 +239,28 @@ public class Experimenter implements Runnable {
 
 	}
 
+	static String imageRootDirectory = "./output_images/";
 	static String rawRootDirectory = "./raw_output/";
 	static String processedRootDirectory = "./output/";
 
-	private static void clearOutputOnInputSize (String directoryName, int input_size){
+	private static void clearOutputOnInputSize (String directoryName, 
+			int input_size, 
+			String fileTerminal){
 		File directory = new File(directoryName);
 		for(File f: directory.listFiles())
-	    if(f.getName().endsWith(input_size + ".csv"))
+	    if(f.getName().endsWith(input_size + fileTerminal))
 				f.delete();
+	}
+
+
+	private static String createFile(String directory,
+			String scoreName,
+			String distanceName,
+			int inputSize){
+			return directory + 
+						scoreName + "_on_" +
+						distanceName + "_" +
+						inputSize;
 	}
 
 	private static void printOutput(String scoreName, 
@@ -257,10 +271,10 @@ public class Experimenter implements Runnable {
 			String rootDirectoryName,
 			int inputSize) {
 		try(FileWriter fw = 
-					new FileWriter(rootDirectoryName + 
-						scoreName + "_on_" +
-						distanceName + "_" +
-						inputSize + ".csv", true);
+					new FileWriter(createFile(rootDirectoryName, 
+						scoreName,
+						distanceName,
+						inputSize) + ".csv", true);
 
 				BufferedWriter bw = 
 					new BufferedWriter(fw);
@@ -278,7 +292,7 @@ public class Experimenter implements Runnable {
 	}
 
 	private static void printAllRawData (ArrayList<Distance> outputDistances, int inputSize){
-		clearOutputOnInputSize(rawRootDirectory, inputSize);
+		clearOutputOnInputSize(rawRootDirectory, inputSize, ".csv");
 	
 		for(int i = 0; i < outputDistances.size(); i ++){
 			Score[] scores = outputDistances.get(i).get_scores();
@@ -298,12 +312,82 @@ public class Experimenter implements Runnable {
 		}
 	}
 
+	private static String cleanString(String in){
+		return  in.replaceAll("\\$","\\\\\\$").replaceAll("\\ ", "\\\\ ");
+	}
+
+	private static void printGraph(String scoreName, String distanceName,
+																	String inputDirectory, 
+																	String outputDirectory,
+																	int inputSize,
+																	double[][] plottable){
+
+		String outputName = createFile(outputDirectory,
+																		scoreName,
+																		distanceName,
+																		inputSize) + ".png";
+
+
+		String fileName = createFile(inputDirectory,
+																		scoreName,
+																		distanceName,
+																		inputSize) + ".csv";
+		
+		System.out.println("creating pdf for " + fileName);
+		Plotter plotter = new Plotter(fileName, 
+										outputName, 
+										scoreName,
+										distanceName,
+										plottable);
+		plotter.plot();		
+		
+		/*try{
+			
+		
+
+			String execStrings[] = {
+				"gnuplot",
+				"-e",
+				"\"outname=\'" + cleanString(outputName) + "\';title=\'" 
+					+ scoreName,
+				"vs",
+				cleanString(distanceName) + 
+					"\';distance=\'" + cleanString(distanceName) 
+					+ "\';error=\'" + scoreName + 
+					"\';filename=\'" + cleanString(fileName) + "\'\"",
+				"Graph.plt"
+			};
+			
+			String execString = "gnuplot -e \"outname=\'" + cleanString(outputName) + "\';title=\'" 
+					+ scoreName + cleanString("vs") + cleanString(distanceName) + 
+					"\';distance=\'" + cleanString(distanceName) 
+					+ "\';error=\'" + scoreName + 
+					"\';filename=\'" + cleanString(fileName) + "\'\" Graph.plt"; 
+			System.out.println(execString);	
+			Runtime rt = Runtime.getRuntime();
+			Process pr = rt.exec(execString);
+			InputStream stderr = pr.getErrorStream();
+			InputStreamReader isr = new InputStreamReader(stderr);
+			BufferedReader br = new BufferedReader(isr);
+			String line = null;
+			System.out.println("<ERROR>");
+			while((line = br.readLine()) != null)
+				System.out.println(line);
+			System.out.println("</ERROR>");
+
+			System.out.println("Gnuplot exited on: " + pr.waitFor());
+		} catch (Exception E){
+			System.out.println(E);
+		}*/
+	}
+
 	private static void printAllProcessedData(DataEnsemble dataEnsemble, int inputSize){
-		clearOutputOnInputSize(processedRootDirectory, inputSize);
+		clearOutputOnInputSize(processedRootDirectory, inputSize, ".csv");
 		for(int i = 0; i < dataEnsemble.scores.size(); i ++) {
 			DataEnsemble.EnsScore score = dataEnsemble.scores.get(i);
 			for(int j = 0; j < score.distances.size(); j ++){
 				DataEnsemble.EnsDistance distance = score.distances.get(j);
+				double[][] theData = new double[distance.triples.size()][3];
 				for(int q = 0; q < distance.triples.size(); q ++) {
 					DataEnsemble.EnsTriple triple = distance.triples.get(q);
 					printOutput(score.name,
@@ -313,7 +397,18 @@ public class Experimenter implements Runnable {
 						triple.distance,
 						processedRootDirectory,
 						inputSize);
+					theData[q][0] = triple.distance;
+					theData[q][1] = triple.avg;
+					theData[q][2] = triple.stdDev;
 				}
+								
+				clearOutputOnInputSize(imageRootDirectory, inputSize, ".pdf");
+				printGraph(score.name, 
+						distance.name, 
+						processedRootDirectory, 
+						imageRootDirectory,
+						inputSize,
+						theData);
 			}
 		}
 

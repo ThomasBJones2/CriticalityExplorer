@@ -96,7 +96,7 @@ public class DataEnsemble{
 	public void addScores(ArrayList<Distance> distancesWithScores){
 		int count = 0;
 		for(Distance distance : distancesWithScores){
-			System.out.println("on distance " + count);
+			//System.out.println("on distance " + count);
 			count ++;
 			for(Score score : Arrays.asList(distance.scores)){
 				for(DefinedDistance dDistance : distance.dDistances){
