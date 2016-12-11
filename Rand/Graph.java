@@ -2,7 +2,9 @@ import java.util.*;
  
 public class Graph implements Input<Graph>{
 		ArrayList<GraphNode> nodes;	
-		
+	
+		double newLinkMultiplier = 0.6;
+
 		public Graph(){}
 
 		public static Graph emptyObject(){return new Graph();}
@@ -97,9 +99,19 @@ public class Graph implements Input<Graph>{
 			double out = 0;
 			if(nodes.get(nodes.size() - 1).lookBack != null) {
 				out = nodes.get(nodes.size() - 1).lookBack.getWeight();
-			}	
+			}
+
 			decrementAlongPath(out);
 			return out;	
+		}
+
+		void printNumLinksAndNodes(){
+			System.out.println("nodes: " + nodes.size());
+			int locCount = 0;
+			for(int i = 0; i < nodes.size(); i ++){
+				locCount += nodes.get(i).links.size();
+			}
+			System.out.println("links: " + locCount);
 		}
 
 		void decrementAlongPath(double out){
@@ -199,7 +211,8 @@ public class Graph implements Input<Graph>{
 		
 			public void randomize(Random rand){
 				this.name = rand.nextInt();
-				int newLinkCount = rand.nextInt(theGraph.nodes.size());
+				int newLinkCount = rand.nextInt(
+						(int) ((double)theGraph.nodes.size()*theGraph.newLinkMultiplier));
 				this.links = new ArrayList<>();				
 				for(int i = 0; i < newLinkCount; i ++){
 					GraphLink nextLink = new GraphLink(

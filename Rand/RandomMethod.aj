@@ -76,7 +76,10 @@ public aspect RandomMethod{
 
 	public static synchronized Distance getDistance(RunId curId){
 		Distance checkDistance = new Distance(curId.getRunName(), curId.getThreadId());
-		return distances.get(distances.indexOf(checkDistance));
+		if(distances.indexOf(checkDistance) >= 0)
+			return distances.get(distances.indexOf(checkDistance));
+		else
+			return checkDistance;
 	}
 
 	boolean forcedError(int timeCount, RunId curId){
@@ -153,9 +156,11 @@ public aspect RandomMethod{
 			//increment time count seperately to account for 0 indexing
 			theDistance.timeCount ++;
 			
-			String randMethodName = thisJoinPointStaticPart.
+			String shortMethodName = thisJoinPointStaticPart.
 				getSignature().
-				getName() + "Rand";
+				getName();
+
+			String randMethodName = shortMethodName + "Rand";
 
 			//must account for early increment due to return...
 			if((rand.nextDouble() < 0.0 && 

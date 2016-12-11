@@ -7,6 +7,8 @@ import java.io.*;
 
 public class Experimenter implements Runnable {
 
+	public static final int ERROR_POINTS = 1000;
+
 	String inputClassName, experimentClassName;
 	int errorPoint, runName, experimentSize;	
 
@@ -17,8 +19,6 @@ public class Experimenter implements Runnable {
 	Distance locDistance;
 
 	static final int numThreads = 16;
-
-
 
 	static String imageRootDirectory = "../output_images/";
 	static String rawRootDirectory = "../raw_output/";
@@ -48,8 +48,9 @@ public class Experimenter implements Runnable {
 				testInputObjects(inputClassName, experimentClassName);
 
 				Pair<Long>[] rTime = getRunTimes(inputClassName, experimentClassName);
-				//printRunTimes(rTime);
+				printRunTimes(rTime);
 				changeToExperimentTime(rTime);
+				printRunTimes(rTime);
 				runExperiments(inputClassName, experimentClassName, rTime);
 
 			} catch (IllegalArgumentException E){
@@ -122,6 +123,8 @@ public class Experimenter implements Runnable {
 			rand);
 		addId(curId);
 		RandomMethod.createDistance(curId);
+		if (exper.experimentRunning == false)
+			System.out.println("The error point is: " + errorPoint + " " + errorful);
 
 		experiment.experiment(input);
 		
@@ -188,8 +191,10 @@ public class Experimenter implements Runnable {
 	
 	static void changeToExperimentTime(Pair<Long>[] in){
 		for(int i = 0; i < in.length; i ++){
+			System.out.println((in[i].runTime*in[i].errorPoints));
 			if (in[i].runTime > 0 && in[i].errorPoints>0) {
-				in[i].runTime = Math.min(60*60*1000/(in[i].runTime*in[i].errorPoints), (long)1000);
+				in[i].runTime = 
+					Math.min(60*60*1000/(in[i].runTime*ERROR_POINTS), (long)1000);
 			} else {
 				in[i].runTime = 1L;
 			}
@@ -202,6 +207,7 @@ public class Experimenter implements Runnable {
 		for(int q = 10, c = 0; q <= 1000; q *= 10, c ++){		
 			long avgRunTime = System.currentTimeMillis();
 			ArrayList<Thread> threads = new ArrayList<>();
+			
 			for(int i = 0; i < 10; i ++){
 				Experimenter exp = new Experimenter(inputClassName,
 					experimentClassName, i, i, q, false);
@@ -210,16 +216,18 @@ public class Experimenter implements Runnable {
 				thread.start();
 			}
 			for(Thread t : threads){
-				t.join();
+				t.join(10000);
+				if(t.isAlive()) System.out.println("interupting " + t.toString()); t.interrupt();
 			}
 			avgRunTime = (System.currentTimeMillis() - avgRunTime)/10;
 			out[c] = new Pair<>();
 			out[c].runTime = avgRunTime;
 			out[c].errorPoints = (long) RandomMethod.getAverageTimeCount();;
 			System.out.println("The average run time is: " + avgRunTime);
+			System.out.println("The average error point is: " + RandomMethod.getAverageTimeCount());
 			RandomMethod.clearAspect();
+			Thread.sleep(10000);
 		}
-
 		return out;
 	}
 
@@ -239,7 +247,8 @@ public class Experimenter implements Runnable {
 					threadQueue);
 			//System.out.println("there are " + rTimes[c].errorPoints + " errorpoints");
 			for(int i = 0; i < rTimes[c].runTime; i ++){
-				for(int j = 0; j < rTimes[c].errorPoints; j ++){
+				for(int j = 0; j < Math.min(ERROR_POINTS, rTimes[c].errorPoints); j ++){ 
+					//rTimes[c].errorPoints; j ++){
 					long runName = i*rTimes[c].errorPoints + j;
 					if(runName % ((rTimes[c].runTime*rTimes[c].errorPoints)/10) == 0){
 						System.out.println("Now on runtime: " + i + " and errorPoint " + j);
@@ -258,7 +267,7 @@ public class Experimenter implements Runnable {
 			}
 
 			thePool.shutdown();
-			while (!thePool.awaitTermination(10, TimeUnit.SECONDS)) {
+			while (!thePool.awaitTermination(60, TimeUnit.SECONDS)) {
 				  System.out.println("Awaiting completion of threads.");
 			}
 		
@@ -464,7 +473,7 @@ public class Experimenter implements Runnable {
 			Class cls = Class.forName(inName);
 			Method clsMethod = cls.getMethod("newInputOfSize", int.class);
 
-			//Constructor ctor = cls.getConstructor(int.class);
+			Constructor ctor = cls.getConstructor(int.class);
 			//Object clsInstance = ctor.newInstance(size);		
 			Object clsInstance = clsMethod.invoke(null, (Object) size);
 			return clsInstance;

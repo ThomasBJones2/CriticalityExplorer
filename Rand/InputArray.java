@@ -23,7 +23,7 @@ public class InputArray implements Input<InputArray>{
 	}	
 
 	double singleRandomVal(Random rand){
-		return -1000000.0 + (2000000.0)*rand.nextDouble();
+		return Math.abs(-1000000.0 + (2000000.0)*rand.nextDouble());
 	}	
 
 	public void randomize(Random rand){
@@ -51,7 +51,8 @@ public class InputArray implements Input<InputArray>{
 
 	public double sumRand(Random rand, Double val1, Double val2){
 		double out = (1.0 + (0.2)*rand.nextDouble())*(val1 + val2);
-		System.out.println(ScorePool.AbsolutePercentValue(out, val1 + val2).score); 
+//		System.out.println(val1 + " " + val2 + 
+//				" " + out + " " + ScorePool.AbsolutePercentValue(out, val1 + val2).score); 
 		return out;
 	}
 
