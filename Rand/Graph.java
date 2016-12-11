@@ -5,6 +5,8 @@ public class Graph implements Input<Graph>{
 		
 		public Graph(){}
 
+		public static Graph emptyObject(){return new Graph();}
+
 		public ArrayList<DefinedDistance> getCurrentDistances(){
 			return new ArrayList<DefinedDistance>();
 		}
@@ -15,6 +17,10 @@ public class Graph implements Input<Graph>{
 			for(int i = 0; i < n; i ++){
 				nodes.add(new GraphNode(i, this));
 			}
+		}
+
+		public static Graph newInputOfSize(int n){
+			return new Graph(n);
 		}
 		
 		public void randomize(Random rand){

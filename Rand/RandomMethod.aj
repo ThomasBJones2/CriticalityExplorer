@@ -8,6 +8,11 @@ public aspect RandomMethod{
 
 	static ArrayList<Integer> timeCounts = new ArrayList<>();
 
+	
+	public static void clearAspect(){
+		distances = new ArrayList<>();
+		timeCounts = new ArrayList<>();
+	}
 
 	public static synchronized void registerTimeCount(){
 		RunId curId = new RunId(Thread.currentThread().getId());
@@ -37,13 +42,24 @@ public aspect RandomMethod{
 		}
 	}
 
+	public void printAllDistances(){
+		for(Distance distance : distances){
+			distance.print();
+		}
+
+		for(Integer integer: timeCounts){
+			System.out.println(integer);
+		}
+	}
+
 
 	pointcut Randomize(): call(@Randomize * *(..));
 
 	pointcut PrintAspect() : call(void *.printAspect());
 
 	after() : PrintAspect() {
-		printThisAspect();
+		printAllDistances();
+		//printThisAspect();
 	}
 
 	public static synchronized void clearDistance(RunId curId){
@@ -142,7 +158,7 @@ public aspect RandomMethod{
 				getName() + "Rand";
 
 			//must account for early increment due to return...
-			if((rand.nextDouble() < 0.1 && 
+			if((rand.nextDouble() < 0.0 && 
 					unForcedError(theDistance.timeCount - 1, curId)) || 
 					forcedError(theDistance.timeCount - 1, curId)) {
 				return randomizedCall(targetObject, args, randMethodName, rand);

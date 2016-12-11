@@ -5,6 +5,9 @@ public class MaxFlowMinCut implements Experiment<Graph, MaxFlowMinCut>{
 
 	Graph theGraph;
 
+
+	public static MaxFlowMinCut emptyObject(){return new MaxFlowMinCut();}
+
 	public double maxFlowFF(Graph inGraph){
 		double auxFlow = 1;
 		double out = 0;		

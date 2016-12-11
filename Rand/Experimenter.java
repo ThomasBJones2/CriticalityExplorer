@@ -18,6 +18,55 @@ public class Experimenter implements Runnable {
 
 	static final int numThreads = 16;
 
+
+
+	static String imageRootDirectory = "../output_images/";
+	static String rawRootDirectory = "../raw_output/";
+	static String processedRootDirectory = "../output/";
+
+	public static void main(String args[]){
+		if(args[0].equals("h") || args[0].equals("H")){
+			System.out.println("Welcome to the RandomComputation Service");
+			System.out.println("There are two ways to use this service: \n" +
+					"(1) java.jar RandJava.jar Input_Object Main_Object  OR \n"+
+				  "(2) java.jar RandJava.jar Input_Object Main_Object Images_Directory " + 
+					"Raw_Data_Directory Processed_Data_Directory");
+		} else {
+
+			String inputClassName = args[0]; 
+			String experimentClassName = args[1];	
+
+			if(args.length == 5){
+				imageRootDirectory = args[2];
+				rawRootDirectory = args[3];
+				processedRootDirectory = args[4];
+			}
+
+			Experimenter.runIds = new ArrayList<>();		
+
+			try{
+				testInputObjects(inputClassName, experimentClassName);
+
+				Pair<Long>[] rTime = getRunTimes(inputClassName, experimentClassName);
+				//printRunTimes(rTime);
+				changeToExperimentTime(rTime);
+				runExperiments(inputClassName, experimentClassName, rTime);
+
+			} catch (IllegalArgumentException E){
+				System.out.println(E);
+			} catch (InterruptedException E){
+				System.out.println(E);
+			}
+		}
+
+	}
+
+	static void printRunTimes(Pair<Long>[] rTime){
+				for(int i = 0; i < rTime.length; i++){
+					System.out.println("runtime of " + rTime[i].runTime + " errorpoints of " + rTime[i].errorPoints);
+				}
+	}
+
 	private static synchronized void addDistanceWithScores(Distance in){
 		finalDistancesWithScores.add(in);
 	}
@@ -28,6 +77,7 @@ public class Experimenter implements Runnable {
 		int errorPoint,
 		int experimentSize,
 		boolean experimentRunning){
+
 		this.inputClassName = inputClassName;
 		this.experimentClassName = experimentClassName;
 		this.errorPoint = errorPoint;
@@ -61,7 +111,7 @@ public class Experimenter implements Runnable {
 
 
 
-	private void printAspect(){}
+	private static void printAspect(){}
 
 	private Experiment runObject(Input input, Experiment experiment, Random rand, boolean errorful, Experimenter exper){
 		RunId curId = new RunId(2*runName + (errorful?1:0), 
@@ -138,7 +188,11 @@ public class Experimenter implements Runnable {
 	
 	static void changeToExperimentTime(Pair<Long>[] in){
 		for(int i = 0; i < in.length; i ++){
-			in[i].runTime = Math.min(60*60*1000/(in[i].runTime*in[i].errorPoints), (long)1000);
+			if (in[i].runTime > 0 && in[i].errorPoints>0) {
+				in[i].runTime = Math.min(60*60*1000/(in[i].runTime*in[i].errorPoints), (long)1000);
+			} else {
+				in[i].runTime = 1L;
+			}
 		}
 	}
 
@@ -163,6 +217,7 @@ public class Experimenter implements Runnable {
 			out[c].runTime = avgRunTime;
 			out[c].errorPoints = (long) RandomMethod.getAverageTimeCount();;
 			System.out.println("The average run time is: " + avgRunTime);
+			RandomMethod.clearAspect();
 		}
 
 		return out;
@@ -182,6 +237,7 @@ public class Experimenter implements Runnable {
 					0, 
 					TimeUnit.SECONDS,
 					threadQueue);
+			//System.out.println("there are " + rTimes[c].errorPoints + " errorpoints");
 			for(int i = 0; i < rTimes[c].runTime; i ++){
 				for(int j = 0; j < rTimes[c].errorPoints; j ++){
 					long runName = i*rTimes[c].errorPoints + j;
@@ -190,7 +246,6 @@ public class Experimenter implements Runnable {
 					}
 					while(threadQueue.size() >= 100){					
 					}
-
 					Experimenter exp = new Experimenter(inputClassName,
 						experimentClassName, 
 						(int) runName, j, q, true);
@@ -212,36 +267,13 @@ public class Experimenter implements Runnable {
 			printAllProcessedData(new DataEnsemble(finalDistancesWithScores), q);	
 			
 			finalDistancesWithScores = new ArrayList<>();
+			RandomMethod.clearAspect();
+			
+			//printAspect();
 		}
 	}
 
 
-
-	public static void main(String args[]){
-		String inputClassName = args[0]; 
-		String experimentClassName = args[1];	
-
-		Experimenter.runIds = new ArrayList<>();		
-
-		try{
-			testInputObjects(inputClassName, experimentClassName);
-
-			Pair<Long>[] rTime = getRunTimes(inputClassName, experimentClassName);
-			changeToExperimentTime(rTime);
-			runExperiments(inputClassName, experimentClassName, rTime);
-
-		} catch (IllegalArgumentException E){
-			System.out.println(E);
-		} catch (InterruptedException E){
-			System.out.println(E);
-		}
-
-
-	}
-
-	static String imageRootDirectory = "./output_images/";
-	static String rawRootDirectory = "./raw_output/";
-	static String processedRootDirectory = "./output/";
 
 	private static void clearOutputOnInputSize (String directoryName, 
 			int input_size, 
@@ -265,7 +297,7 @@ public class Experimenter implements Runnable {
 
 	private static void printOutput(String scoreName, 
 			double score, 
-			Double stdDev,
+			Double stdErr,
 			String distanceName, 
 			double distance, 
 			String rootDirectoryName,
@@ -281,10 +313,10 @@ public class Experimenter implements Runnable {
 				PrintWriter out = 
 					new PrintWriter(bw))
 		{
-			if(stdDev == null)
+			if(stdErr == null)
 				out.println(distance + ", " + score);	
 			else
-				out.println(distance + ", " + score + ", " + stdDev);
+				out.println(distance + ", " + score + ", " + stdErr);
 		} catch (IOException E){
 			System.out.print(E);
 		}
@@ -392,14 +424,14 @@ public class Experimenter implements Runnable {
 					DataEnsemble.EnsTriple triple = distance.triples.get(q);
 					printOutput(score.name,
 						triple.avg,
-						triple.stdDev,
+						triple.stdErr,
 						distance.name,
 						triple.distance,
 						processedRootDirectory,
 						inputSize);
 					theData[q][0] = triple.distance;
 					theData[q][1] = triple.avg;
-					theData[q][2] = triple.stdDev;
+					theData[q][2] = triple.stdErr;
 				}
 								
 				clearOutputOnInputSize(imageRootDirectory, inputSize, ".pdf");
@@ -430,13 +462,16 @@ public class Experimenter implements Runnable {
 	static Object getNewInputObject(String inName, int size){
 		try {
 			Class cls = Class.forName(inName);
-			Constructor ctor = cls.getConstructor(int.class);
-			Object clsInstance = ctor.newInstance(size);		
+			Method clsMethod = cls.getMethod("newInputOfSize", int.class);
+
+			//Constructor ctor = cls.getConstructor(int.class);
+			//Object clsInstance = ctor.newInstance(size);		
+			Object clsInstance = clsMethod.invoke(null, (Object) size);
 			return clsInstance;
 		} catch (ClassNotFoundException E) {
 			System.out.println(inName + " is not a class, please add to the classpath: " + E);
-		} catch (InstantiationException E) {
-			System.out.println("Trouble instantiating " + inName + ": " + E);
+//		} catch (InstantiationException E) {
+//			System.out.println("Trouble instantiating " + inName + ": " + E);
 		} catch (IllegalAccessException E) {
 			System.out.println("Trouble accessing " + inName + ": " + E);
 		} catch (NoSuchMethodException E) {
@@ -450,15 +485,22 @@ public class Experimenter implements Runnable {
 	static Object getNewObject(String inName) {
 		try {
 			Class cls = Class.forName(inName);
-			Object clsInstance = (Object) cls.newInstance();		
+			Method clsMethod = cls.getMethod("emptyObject");
+			Object clsInstance = clsMethod.invoke(null);
+			//Object clsInstance = (Object) cls.newInstance();		
 			return clsInstance;
 		} catch (ClassNotFoundException E) {
 			System.out.println(inName + " is not a class, please add to the classpath: " + E);
-		} catch (InstantiationException E) {
-			System.out.println("Trouble instantiating " + inName + ": " + E);
+//		} catch (InstantiationException E) {
+//			System.out.println("Trouble instantiating " + inName + ": " + E);
 		} catch (IllegalAccessException E) {
 			System.out.println("Trouble accessing " + inName + ": " + E);
+		} catch (NoSuchMethodException E) {
+			System.out.println("Trouble building random input using an input size on class" + inName + ". Is it possible that you don't have a constructor for input size or that the constructor is private?" + E);
+		} catch (InvocationTargetException E) {
+			System.out.println("Trouble getting random inputs:" + E);
 		}
+	
 		return null;
 	}
 }
