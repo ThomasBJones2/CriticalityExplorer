@@ -1,8 +1,8 @@
 build:
 	./compile.sh
 
-run:
-	./run.sh params
+rundefault:
+	./run.sh InputObjects.Graph InputObjects.MaxFlowMinCut 
 
 buildrun:
 	Build
