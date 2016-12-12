@@ -6,12 +6,14 @@ import java.lang.Thread;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.*;
 import java.io.*;
-
+import java.lang.annotation.Annotation;
+import org.reflections.Reflections;
+import org.reflections.scanners.*;
 public class Experimenter implements Runnable {
 
 	public static final int ERROR_POINTS = 1000;
 
-	String inputClassName, experimentClassName;
+	String inputClassName, experimentClassName,fallibleMethodName;
 	int errorPoint, runName, experimentSize;	
 
 	boolean experimentRunning;
@@ -25,6 +27,9 @@ public class Experimenter implements Runnable {
 	static String imageRootDirectory = "./output_images/";
 	static String rawRootDirectory = "./raw_output/";
 	static String processedRootDirectory = "./output/";
+
+	static List<String> FallibleMethods = new ArrayList<String>();
+
 
 	public static void main(String args[]){
 		if(args[0].equals("h") || args[0].equals("H")){
@@ -48,8 +53,10 @@ public class Experimenter implements Runnable {
 
 			try{
 				testInputObjects(inputClassName, experimentClassName);
+			
+				//FallibleMethods = getMethodsAnnotatedWith(Randomize.class);
 
-				Pair<Long>[] rTime = getRunTimes(inputClassName, experimentClassName);
+				RunTimeTriple<Long>[][] rTime = getRunTimes(inputClassName, experimentClassName);
 				printRunTimes(rTime);
 				changeToExperimentTime(rTime);
 				printRunTimes(rTime);
@@ -64,9 +71,11 @@ public class Experimenter implements Runnable {
 
 	}
 
-	static void printRunTimes(Pair<Long>[] rTime){
+	static void printRunTimes(RunTimeTriple<Long>[][] rTime){
 				for(int i = 0; i < rTime.length; i++){
-					System.out.println("runtime of " + rTime[i].runTime + " errorpoints of " + rTime[i].errorPoints);
+					for(int j = 0; j < rTime[i].length; j ++){
+						rTime[i][j].print();
+					}
 				}
 	}
 
@@ -79,7 +88,8 @@ public class Experimenter implements Runnable {
 		int runName, 
 		int errorPoint,
 		int experimentSize,
-		boolean experimentRunning){
+		boolean experimentRunning,
+		String fallibleMethodName){
 
 		this.inputClassName = inputClassName;
 		this.experimentClassName = experimentClassName;
@@ -87,6 +97,7 @@ public class Experimenter implements Runnable {
 		this.runName = runName;
 		this.experimentSize = experimentSize;
 		this.experimentRunning = experimentRunning;
+		this.fallibleMethodName = fallibleMethodName;
 	}
 
 	public static ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock(); 
@@ -122,7 +133,8 @@ public class Experimenter implements Runnable {
 			errorful, 
 			errorPoint, 
 			Thread.currentThread().getId(), 
-			rand);
+			rand,
+			exper.fallibleMethodName);
 		addId(curId);
 		RandomMethod.createDistance(curId);
 		if (exper.experimentRunning == false)
@@ -173,6 +185,7 @@ public class Experimenter implements Runnable {
 
 		correctObject = runObject(iObject1, correctObject, rand1, false, this);
 		errorObject = runObject(iObject2, errorObject, rand2, true, this);
+		
 		if(this.locDistance != null) {
 			this.locDistance.addScores(errorObject.scores(correctObject));
 			addDistanceWithScores(locDistance);
@@ -191,50 +204,66 @@ public class Experimenter implements Runnable {
 	}
 
 	
-	static void changeToExperimentTime(Pair<Long>[] in){
+	static void changeToExperimentTime(RunTimeTriple<Long>[][] in){
 		for(int i = 0; i < in.length; i ++){
-			System.out.println((in[i].runTime*in[i].errorPoints));
-			if (in[i].runTime > 0 && in[i].errorPoints>0) {
-				in[i].runTime = 
-					Math.min(60*60*1000/(in[i].runTime*ERROR_POINTS), (long)1000);
-			} else {
-				in[i].runTime = 1L;
+			for(int j = 0; j < in[i].length; j ++){
+				System.out.println((in[i][j].runTime*in[i][j].errorPoints));
+				if (in[i][j].runTime > 0 && in[i][j].errorPoints>0) {
+					in[i][j].runTime = 
+						Math.min(60*60*1000/(in[i][j].runTime*ERROR_POINTS), (long)1000);
+				} else {
+					in[i][j].runTime = 0L;
+				}
 			}
 		}
 	}
 
-	static Pair<Long>[] getRunTimes(String inputClassName, String experimentClassName) throws InterruptedException{
-		Pair<Long>[] out = new Pair[3];
+	static RunTimeTriple<Long>[][] getRunTimes(String inputClassName, String experimentClassName) throws InterruptedException{
+		RunTimeTriple<Long>[] nearOut = new RunTimeTriple[3];
 
 		for(int q = 10, c = 0; q <= 1000; q *= 10, c ++){		
 			long avgRunTime = System.currentTimeMillis();
 			ArrayList<Thread> threads = new ArrayList<>();
 			
-			for(int i = 0; i < 10; i ++){
-				Experimenter exp = new Experimenter(inputClassName,
-					experimentClassName, i, i, q, false);
-				Thread thread = new Thread(exp);
-				threads.add(thread);
-				thread.start();
-			}
-			for(Thread t : threads){
-				t.join(10000);
-				if(t.isAlive()) System.out.println("interupting " + t.toString()); t.interrupt();
-			}
-			avgRunTime = (System.currentTimeMillis() - avgRunTime)/10;
-			out[c] = new Pair<>();
-			out[c].runTime = avgRunTime;
-			out[c].errorPoints = (long) RandomMethod.getAverageTimeCount();;
-			System.out.println("The average run time is: " + avgRunTime);
-			System.out.println("The average error point is: " + RandomMethod.getAverageTimeCount());
-			RandomMethod.clearAspect();
+				for(int i = 0; i < 10; i ++){
+					Experimenter exp = new Experimenter(inputClassName,
+						experimentClassName, i, i, q, false, "All");
+					Thread thread = new Thread(exp);
+					threads.add(thread);
+					thread.start();
+				}
+				for(Thread t : threads){
+					t.join(10000);
+					if(t.isAlive()) System.out.println("interupting " + t.toString()); t.interrupt();
+				}
+				avgRunTime = (System.currentTimeMillis() - avgRunTime)/10;
+				nearOut[c] = new RunTimeTriple<Long>(avgRunTime,
+						(long)RandomMethod.getAverageTimeCount());
+				System.out.println("The average run time is: " + avgRunTime);
+				System.out.println("The average error point is: " + RandomMethod.getAverageTimeCount());
+				RandomMethod.clearAspect();
 			//Thread.sleep(10000);
+		}
+		RunTimeTriple<Long>[][] out = runTimeBoost(nearOut);
+
+		return out;
+	}
+
+	static RunTimeTriple<Long>[][] runTimeBoost(RunTimeTriple<Long>[] rtt){
+		RunTimeTriple<Long>[][] out = new RunTimeTriple[FallibleMethods.size()][rtt.length];
+		for(int j = 0; j < FallibleMethods.size(); j ++){
+			for(int i = 0; i < rtt.length; i ++){
+				out[j][i] = new RunTimeTriple(rtt[i]);
+				out[j][i].name = FallibleMethods.get(j);
+			}
 		}
 		return out;
 	}
 
-	static void runExperiments(String inputClassName, String experimentClassName, Pair<Long>[] rTimes) throws InterruptedException{
-		Pair<Long>[] out = new Pair[3];
+	static void runExperiments(String inputClassName, 
+			String experimentClassName, 
+			RunTimeTriple<Long>[][] rTimes) throws InterruptedException{
+		RunTimeTriple<Long>[][] out = new RunTimeTriple[FallibleMethods.size()][3];
 
 		for(int q = 10, c = 0; q <= 1000; q *= 10, c ++){	
 			System.out.println("Experimenting on size: " + q);	
@@ -248,23 +277,32 @@ public class Experimenter implements Runnable {
 					TimeUnit.SECONDS,
 					threadQueue);
 			//System.out.println("there are " + rTimes[c].errorPoints + " errorpoints");
-			for(int i = 0; i < rTimes[c].runTime; i ++){
-				for(int j = 0; j < Math.min(ERROR_POINTS, rTimes[c].errorPoints); j ++){ 
-					//rTimes[c].errorPoints; j ++){
-					long runName = i*rTimes[c].errorPoints + j;
-					if(runName % ((rTimes[c].runTime*rTimes[c].errorPoints)/10) == 0){
-						System.out.println("Now on runtime: " + i + " and errorPoint " + j);
-					}
-					while(threadQueue.size() >= 100){					
-					}
-					Experimenter exp = new Experimenter(inputClassName,
-						experimentClassName, 
-						(int) runName, j, q, true);
-					thePool.execute(exp);
+			for(int fallmeth = 0; fallmeth < FallibleMethods.size(); fallmeth ++){
+				for(int i = 0; i < rTimes[fallmeth][c].runTime; i ++){
+					for(int j = 0; j < Math.min(ERROR_POINTS, rTimes[fallmeth][c].errorPoints); j ++){ 
+						//rTimes[c].errorPoints; j ++){
+						long runName = 
+							fallmeth*rTimes[fallmeth][c].runTime
+							*Math.min(ERROR_POINTS, rTimes[fallmeth][c].errorPoints)
+							+ i*Math.min(ERROR_POINTS, rTimes[fallmeth][c].errorPoints) 
+							+ j;
+						if(runName % 
+								((rTimes[fallmeth][c].runTime*rTimes[fallmeth][c].errorPoints)/10) == 0){
+							System.out.println("Now on fallible method: " + 
+									FallibleMethods.get(fallmeth) + 
+									"runtime: " + i + " and errorPoint " + j);
+						}
+						while(threadQueue.size() >= 100){					
+						}
+						Experimenter exp = new Experimenter(inputClassName,
+							experimentClassName, 
+							(int) runName, j, q, true, FallibleMethods.get(fallmeth));
+						thePool.execute(exp);
 
-					//Thread thread = new Thread(exp);
-					//threads.add(thread);
-					//thread.start();
+						//Thread thread = new Thread(exp);
+						//threads.add(thread);
+						//thread.start();
+					}
 				}
 			}
 
@@ -343,6 +381,8 @@ public class Experimenter implements Runnable {
 			for(int j = 0; j < scores.length; j++) {
 				for(int k = 0; k < distances.size(); k ++){
 					if(distances.get(k).pertinent)
+						if(distances.get(k).distance > 1000)
+							outputDistances.get(i).print();
 						printOutput(scores[j].name,
 								scores[j].score,
 								null,
@@ -514,4 +554,26 @@ public class Experimenter implements Runnable {
 	
 		return null;
 	}
+
+	public static void addToFallibleMethods(String methodName){
+		if(!FallibleMethods.contains(methodName)){
+			FallibleMethods.add(methodName);
+		}
+	}
+
+
+	public static List<String> getMethodsAnnotatedWith(
+			final Class<? extends Annotation> annotation) {
+
+		Reflections reflections = new Reflections("InputObjects", 
+				new MethodAnnotationsScanner());
+		Set<Method> methods = reflections.getMethodsAnnotatedWith(annotation);
+		List<String> out = new ArrayList<>();
+		for(Method method : methods){
+			out.add(method.getDeclaringClass() + "." + method.getName());
+		}
+		return out;
+	}
+
+
 }

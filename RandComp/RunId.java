@@ -8,15 +8,24 @@ public class RunId{
 	boolean errorful;
 	int errorPoint;
 	long threadId;
+	String methodName;
+
 	Random rand;
 
-	RunId(int runName, boolean experiment, boolean errorful, int errorPoint, long threadId, Random rand){
+	RunId(int runName, 
+			boolean experiment, 
+			boolean errorful, 
+			int errorPoint, 
+			long threadId, 
+			Random rand,
+			String fallibleMethodName){
 		this.runName = runName;
 		this.errorful = errorful;
 		this.threadId = threadId;
 		this.errorPoint = errorPoint;
 		this.experiment = experiment;
 		this.rand = rand;
+		this.methodName = fallibleMethodName;
 	}
 
 	RunId(long threadId){

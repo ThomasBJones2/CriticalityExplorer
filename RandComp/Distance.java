@@ -8,6 +8,7 @@ public class Distance{
 	int timeCount = 0;
 	Score[] scores;
 	ArrayList<DefinedDistance> dDistances = new ArrayList<>();
+	String failedMethod;
 
 
 	Distance burnIn;
@@ -25,6 +26,7 @@ public class Distance{
 		for(DefinedDistance d : in.dDistances){
 			this.dDistances.add(new DefinedDistance(d));
 		}
+		this.failedMethod = in.failedMethod;
 	}
 
 	public void clearPertinence(){
@@ -36,8 +38,9 @@ public class Distance{
 		return scores;
 	}
 	
-	void burnIn(){
+	void burnIn(String failedMethod){
 		burnIn = new Distance(this);
+		burnIn.failedMethod = failedMethod;
 	}
 
 	public Distance getBurnIn(){
@@ -53,6 +56,17 @@ public class Distance{
 
 	public ArrayList<DefinedDistance> getDefinedDistances(){
 		return dDistances;
+	}
+
+	public DefinedDistance getFailedDistance(){
+		return getDefinedDistanceFromName(failedMethod);
+	}
+
+	public DefinedDistance getDefinedDistanceFromName(String name){
+		for(DefinedDistance d : dDistances){
+			if (d.name.equals(name)) return d;
+		}
+		return null;
 	}
 
 	public void print(){

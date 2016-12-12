@@ -10,6 +10,7 @@ public aspect RandomMethod{
 
 	static ArrayList<Integer> timeCounts = new ArrayList<>();
 
+	double NEAR_DIST = 0.0000000001;
 	
 	public static void clearAspect(){
 		distances = new ArrayList<>();
@@ -84,12 +85,20 @@ public aspect RandomMethod{
 			return checkDistance;
 	}
 
-	boolean forcedError(int timeCount, RunId curId){
-		return timeCount == curId.errorPoint && curId.errorful;
+	boolean near(double a, int b){
+		return (a + NEAR_DIST >= (double) b) && ((a - NEAR_DIST) <= (double) b);
+
 	}
 
-	boolean unForcedError(int timeCount, RunId curId){
-		return timeCount != curId.errorPoint;
+	boolean forcedError(double methodCount, String methodName, RunId curId){
+		return near(methodCount, curId.errorPoint) && 
+			curId.errorful && 
+			(methodName.equals(curId.methodName) || curId.methodName.equals("All"));
+	}
+
+	boolean unForcedError(double methodCount, String methodName, RunId curId){
+		return !near(methodCount,curId.errorPoint)
+			&& (methodName.equals(curId.methodName) || curId.methodName.equals("All"));
 	}
 
 	void updateSingleDistance(Distance theDistance, DefinedDistance handle){
@@ -132,8 +141,11 @@ public aspect RandomMethod{
 				updateSingleDistance(theDistance, d);
 			}
 
-			if(forcedError(theDistance.timeCount, curId)){
-				theDistance.burnIn();
+			if(forcedError(theDistance.getDefinedDistanceFromName(methodName).distance, 
+						methodName,
+						curId)){
+
+				theDistance.burnIn(methodName);
 			}
 	}
 
@@ -153,7 +165,9 @@ public aspect RandomMethod{
 				+ "." + thisJoinPointStaticPart.
 				getSignature().
 				getName();
-		
+
+			Experimenter.addToFallibleMethods(methodName);
+
 			updateDistances(theDistance, curId, methodName, (AbstractDistance) targetObject);
 			//increment time count seperately to account for 0 indexing
 			theDistance.timeCount ++;
@@ -166,8 +180,14 @@ public aspect RandomMethod{
 
 			//must account for early increment due to return...
 			if((rand.nextDouble() < 0.0 && 
-					unForcedError(theDistance.timeCount - 1, curId)) || 
-					forcedError(theDistance.timeCount - 1, curId)) {
+					unForcedError(theDistance.getDefinedDistanceFromName(methodName).getDistance() - 1, 
+						methodName,
+						curId)) || 
+					forcedError(theDistance.getDefinedDistanceFromName(methodName).getDistance() - 1, 
+						methodName, 
+						curId)) {
+//					unForcedError(theDistance.timeCount - 1, curId)) || 
+//					forcedError(theDistance.timeCount - 1, methodName, curId)) {
 				return randomizedCall(targetObject, args, randMethodName, rand);
 			}
 		}

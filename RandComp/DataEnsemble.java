@@ -44,6 +44,13 @@ public class DataEnsemble{
 			return out;
 		}
 
+		public void print(){
+			System.out.println("Ens Triple: ");
+			System.out.println(distance);
+			System.out.println(avg);
+			System.out.println(stdErr);
+		}
+
 		double standardErr(){
 			double out = 0;
 			for(double dp : dataPoints){
@@ -101,27 +108,30 @@ public class DataEnsemble{
 			//System.out.println("on distance " + count);
 			count ++;
 			for(Score score : Arrays.asList(distance.scores)){
-				for(DefinedDistance dDistance : distance.dDistances){
-					EnsScore locScore = getScore(score);
-					if(locScore == null){
-						locScore = new EnsScore(score);
-						scores.add(locScore);
-					}
 
-					EnsDistance locDistance = locScore.getDistance(dDistance);
-					if(locDistance == null){
-						locDistance = new EnsDistance(dDistance);
-						locScore.distances.add(locDistance);
-					}
-
-					EnsTriple locTriple = locDistance.getTriple(dDistance);
-					if(locTriple == null){
-						locTriple = new EnsTriple();
-						locTriple.distance = dDistance.distance;
-						locDistance.triples.add(locTriple);
-					}
-					locTriple.addScore(score);
+				DefinedDistance dDistance = distance.getFailedDistance();
+			//	for(DefinedDistance dDistance : distance.dDistances){
+				
+				EnsScore locScore = getScore(score);
+				if(locScore == null){
+					locScore = new EnsScore(score);
+					scores.add(locScore);
 				}
+
+				EnsDistance locDistance = locScore.getDistance(dDistance);
+				if(locDistance == null){
+					locDistance = new EnsDistance(dDistance);
+					locScore.distances.add(locDistance);
+				}
+
+				EnsTriple locTriple = locDistance.getTriple(dDistance);
+				if(locTriple == null){
+					locTriple = new EnsTriple();
+					locTriple.distance = dDistance.distance;
+					locDistance.triples.add(locTriple);
+				}
+				locTriple.addScore(score);
+				//}
 			}
 		}
 	}

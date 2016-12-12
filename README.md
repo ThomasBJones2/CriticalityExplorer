@@ -6,13 +6,23 @@ In order to use :
 
 (1) Download this git to your computer. 
 
-(2) Place a copy of the AspectJ jar files and JavaPlot in the RandComp sub directory of this folder. Two files are needed. 
+(2) Place a copy of the AspectJ jar files, google guava files, reflections files, and JavaPlot in the RandComp sub directory of this folder. 
+
+Two files are needed for the aspect j runtime. 
 
 The runtime can be found at: http://central.maven.org/maven2/org/aspectj/aspectjrt/1.6.12/aspectjrt-1.6.12.jar. 
 
 The weaver can be found at: https://mvnrepository.com/artifact/org.aspectj/aspectjweaver/1.6.2
 
 A jar file for JavaPlot can be found at: http://downloads.sourceforge.net/project/gnujavaplot/javaplot/0.5.0/JavaPlot-0.5.0.tar.bz2?r=http%3A%2F%2Fjavaplot.panayotis.com%2F&ts=1481526958&use_mirror=pilotfiber.
+
+The jar file for reflections can be found at http://dl.bintray.com/ronmamo/reflections/org/reflections/reflections/0.9.10/:reflections-0.9.10-sources.jar --- this jar is used to find methods marked with the 'randomize' tag
+
+The google common files can be found at http://central.maven.org/maven2/com/google/guava/guava/16.0.1/guava-16.0.1.jar.
+
+Javaassist files can be found at: http://central.maven.org/maven2/javassist/javassist/3.12.1.GA/javassist-3.12.1.GA.jar
+
+TODO: all of this should be managed through maven or something. I just don't know how to do that right at the moment.
 
 (3) Be sure to install aj and ajc, the aspectj compilers. These will be used to weave the aspects into your user code so that the code can be integrated into the analyzer in a fairly seemless manner. 
 
