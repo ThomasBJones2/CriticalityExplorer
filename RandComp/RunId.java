@@ -1,3 +1,5 @@
+package RandComp;
+
 import java.util.Random;
 
 public class RunId{

@@ -1,3 +1,5 @@
+package RandComp;
+
 public class Pair<E>{
 	E runTime;
 	E errorPoints;

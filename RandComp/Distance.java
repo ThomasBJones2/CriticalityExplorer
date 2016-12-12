@@ -1,3 +1,5 @@
+package RandComp;
+
 import java.util.*;
 
 public class Distance{

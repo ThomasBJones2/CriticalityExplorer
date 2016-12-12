@@ -1,3 +1,5 @@
+package RandComp;
+
 import com.panayotis.gnuplot.GNUPlotParameters;
 import com.panayotis.gnuplot.JavaPlot;
 import com.panayotis.gnuplot.dataset.FileDataSet;

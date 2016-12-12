@@ -1,3 +1,6 @@
+package InputObjects;
+
+import RandComp.*;
 import java.util.*;
 
 public class MaxFlowMinCut implements Experiment<Graph, MaxFlowMinCut>{

@@ -1,3 +1,6 @@
+package InputObjects;
+
+import RandComp.*;
 import java.util.*;
  
 public class Graph implements Input<Graph>{
@@ -140,7 +143,7 @@ public class Graph implements Input<Graph>{
 			return nodes.get(rand.nextInt() % nodes.size());
 		}
 
-		private class GraphNode implements Input{
+		public class GraphNode implements Input{
 			int name;
 
 			ArrayList<GraphLink> links;
@@ -236,7 +239,7 @@ public class Graph implements Input<Graph>{
 			}
 		}
 	
-		private class GraphLink implements Input{
+		public class GraphLink implements Input{
 			private double weight;
 			GraphNode target;
 			Graph theGraph;
@@ -286,24 +289,20 @@ public class Graph implements Input<Graph>{
 			}
 
 			@Randomize
-			double getWeight(){
+			public double getWeight(){
 				return this.weight;
 			}
 
-			double getRandomWeight(Random rand){
-				return rand.nextDouble();
-			}
-			
 			@Randomize
-			void setWeight(double weight){
+			public void setWeight(double weight){
 				this.weight = weight;
 			}
 
-			void setWeightRand(Random rand, Double weight){
+			public void setWeightRand(Random rand, Double weight){
 				this.weight = rand.nextDouble();
 			}
 			
-			double getWeightRand(Random rand){
+			public double getWeightRand(Random rand){
 				return rand.nextDouble();
 			}
 

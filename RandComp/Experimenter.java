@@ -1,3 +1,5 @@
+package RandComp;
+
 import java.util.*;
 import java.lang.reflect.*;
 import java.lang.Thread;
@@ -20,9 +22,9 @@ public class Experimenter implements Runnable {
 
 	static final int numThreads = 16;
 
-	static String imageRootDirectory = "../output_images/";
-	static String rawRootDirectory = "../raw_output/";
-	static String processedRootDirectory = "../output/";
+	static String imageRootDirectory = "./output_images/";
+	static String rawRootDirectory = "./raw_output/";
+	static String processedRootDirectory = "./output/";
 
 	public static void main(String args[]){
 		if(args[0].equals("h") || args[0].equals("H")){

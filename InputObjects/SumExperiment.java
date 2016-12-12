@@ -1,3 +1,6 @@
+package InputObjects;
+
+import RandComp.*;
 import java.util.ArrayList;
 
 public class SumExperiment implements Experiment<InputArray,SumExperiment> {

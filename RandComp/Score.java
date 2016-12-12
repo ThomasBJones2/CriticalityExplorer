@@ -1,3 +1,5 @@
+package RandComp;
+
 public class Score{
 	String name;
 	double score;
