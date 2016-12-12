@@ -6,7 +6,13 @@ In order to use :
 
 (1) Download this git to your computer. 
 
-(2) Place a copy of AspectJ and JavaPlot in the RandComp sub directory of this folder. A jar file for AspectJ can be found at: http://central.maven.org/maven2/org/aspectj/aspectjrt/1.6.12/aspectjrt-1.6.12.jar. A jar file for JavaPlot can be found at: http://downloads.sourceforge.net/project/gnujavaplot/javaplot/0.5.0/JavaPlot-0.5.0.tar.bz2?r=http%3A%2F%2Fjavaplot.panayotis.com%2F&ts=1481526958&use_mirror=pilotfiber.
+(2) Place a copy of the AspectJ jar files and JavaPlot in the RandComp sub directory of this folder. Two files are needed. 
+
+The runtime can be found at: http://central.maven.org/maven2/org/aspectj/aspectjrt/1.6.12/aspectjrt-1.6.12.jar. 
+
+The weaver can be found at: https://mvnrepository.com/artifact/org.aspectj/aspectjweaver/1.6.2
+
+A jar file for JavaPlot can be found at: http://downloads.sourceforge.net/project/gnujavaplot/javaplot/0.5.0/JavaPlot-0.5.0.tar.bz2?r=http%3A%2F%2Fjavaplot.panayotis.com%2F&ts=1481526958&use_mirror=pilotfiber.
 
 (3) Be sure to install aj and ajc, the aspectj compilers. These will be used to weave the aspects into your user code so that the code can be integrated into the analyzer in a fairly seemless manner. 
 
