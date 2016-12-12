@@ -226,7 +226,7 @@ public class Experimenter implements Runnable {
 			System.out.println("The average run time is: " + avgRunTime);
 			System.out.println("The average error point is: " + RandomMethod.getAverageTimeCount());
 			RandomMethod.clearAspect();
-			Thread.sleep(10000);
+			//Thread.sleep(10000);
 		}
 		return out;
 	}
