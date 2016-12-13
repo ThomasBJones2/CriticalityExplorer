@@ -28,7 +28,7 @@ public class MaxFlowMinCut implements Experiment<Graph, MaxFlowMinCut>{
 		flow = maxFlowFF((Graph) input);
 	}
 
-	public ArrayList<DefinedDistance> getCurrentDistances(){
+	public ArrayList<DefinedLocation> getCurrentDistances(){
 		return theGraph.getCurrentDistances();
 	}
 

@@ -377,7 +377,7 @@ public class Experimenter implements Runnable {
 	
 		for(int i = 0; i < outputDistances.size(); i ++){
 			Score[] scores = outputDistances.get(i).get_scores();
-			ArrayList<DefinedDistance> distances = outputDistances.get(i).dDistances;
+			ArrayList<DefinedLocation> distances = outputDistances.get(i).dDistances;
 			for(int j = 0; j < scores.length; j++) {
 				for(int k = 0; k < distances.size(); k ++){
 					if(distances.get(k).pertinent)

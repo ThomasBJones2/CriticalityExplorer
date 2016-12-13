@@ -7,7 +7,7 @@ public class Distance{
 	long threadId;
 	int timeCount = 0;
 	Score[] scores;
-	ArrayList<DefinedDistance> dDistances = new ArrayList<>();
+	ArrayList<DefinedLocation> dDistances = new ArrayList<>();
 	String failedMethod;
 
 
@@ -23,8 +23,8 @@ public class Distance{
 		this.threadId = in.threadId;
 		this.timeCount = in.timeCount;
 		this.dDistances = new ArrayList<>();
-		for(DefinedDistance d : in.dDistances){
-			this.dDistances.add(new DefinedDistance(d));
+		for(DefinedLocation d : in.dDistances){
+			this.dDistances.add(new DefinedLocation(d));
 		}
 		this.failedMethod = in.failedMethod;
 	}
@@ -54,16 +54,16 @@ public class Distance{
 		return threadId == ((Distance) in).threadId; 
 	}
 
-	public ArrayList<DefinedDistance> getDefinedDistances(){
+	public ArrayList<DefinedLocation> getDefinedLocations(){
 		return dDistances;
 	}
 
-	public DefinedDistance getFailedDistance(){
-		return getDefinedDistanceFromName(failedMethod);
+	public DefinedLocation getFailedDistance(){
+		return getDefinedLocationFromName(failedMethod);
 	}
 
-	public DefinedDistance getDefinedDistanceFromName(String name){
-		for(DefinedDistance d : dDistances){
+	public DefinedLocation getDefinedLocationFromName(String name){
+		for(DefinedLocation d : dDistances){
 			if (d.name.equals(name)) return d;
 		}
 		return null;
@@ -74,7 +74,7 @@ public class Distance{
 			burnIn.print();
 		} else {
 			System.out.print(timeCount + " ");
-			for(DefinedDistance d : dDistances){
+			for(DefinedLocation d : dDistances){
 				d.print();
 			}
 			System.out.println();

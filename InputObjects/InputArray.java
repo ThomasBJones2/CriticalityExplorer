@@ -16,8 +16,8 @@ public class InputArray implements Input<InputArray>{
 		theArray = new double[n];
 	}
 
-	public ArrayList<DefinedDistance> getCurrentDistances(){
-		return new ArrayList<DefinedDistance>();
+	public ArrayList<DefinedLocation> getCurrentDistances(){
+		return new ArrayList<DefinedLocation>();
 	}
 
 

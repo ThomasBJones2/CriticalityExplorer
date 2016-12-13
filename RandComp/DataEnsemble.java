@@ -13,7 +13,7 @@ public class DataEnsemble{
 			name = score.name;
 		}
 
-		EnsDistance getDistance(DefinedDistance locDistance){
+		EnsDistance getDistance(DefinedLocation locDistance){
 			for(EnsDistance distance : distances){
 				if(distance.name.equals(locDistance.name))
 					return distance;
@@ -72,8 +72,8 @@ public class DataEnsemble{
 		@Override
 		public boolean equals(Object in){
 			if(in == null) return false;
-			if(!(in instanceof DefinedDistance)) return false;
-			return nearEqual(distance, ((DefinedDistance) in).distance);
+			if(!(in instanceof DefinedLocation)) return false;
+			return nearEqual(distance, ((DefinedLocation) in).distance);
 		}
 	}
 
@@ -81,11 +81,11 @@ public class DataEnsemble{
 		String name;
 		ArrayList<EnsTriple> triples = new ArrayList<>();
 
-		EnsDistance(DefinedDistance distance){
+		EnsDistance(DefinedLocation distance){
 			name = distance.name;
 		}
 
-		EnsTriple getTriple(DefinedDistance dDistance){
+		EnsTriple getTriple(DefinedLocation dDistance){
 			for(EnsTriple triple : triples){
 				if(triple.equals(dDistance))
 					return triple;
@@ -109,8 +109,8 @@ public class DataEnsemble{
 			count ++;
 			for(Score score : Arrays.asList(distance.scores)){
 
-				DefinedDistance dDistance = distance.getFailedDistance();
-			//	for(DefinedDistance dDistance : distance.dDistances){
+				DefinedLocation dDistance = distance.getFailedDistance();
+			//	for(DefinedLocation dDistance : distance.dDistances){
 				
 				EnsScore locScore = getScore(score);
 				if(locScore == null){

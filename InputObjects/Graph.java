@@ -12,8 +12,8 @@ public class Graph implements Input<Graph>{
 
 		public static Graph emptyObject(){return new Graph();}
 
-		public ArrayList<DefinedDistance> getCurrentDistances(){
-			return new ArrayList<DefinedDistance>();
+		public ArrayList<DefinedLocation> getCurrentDistances(){
+			return new ArrayList<DefinedLocation>();
 		}
 
 
@@ -190,8 +190,8 @@ public class Graph implements Input<Graph>{
 				this.theGraph = in.theGraph;
 			}
 
-			public ArrayList<DefinedDistance> getCurrentDistances(){
-				return new ArrayList<DefinedDistance>();
+			public ArrayList<DefinedLocation> getCurrentDistances(){
+				return new ArrayList<DefinedLocation>();
 			}
 			
 			@Override
@@ -257,8 +257,8 @@ public class Graph implements Input<Graph>{
 				this.theGraph = inGraph;
 			}
 			
-			public ArrayList<DefinedDistance> getCurrentDistances(){
-				return new ArrayList<DefinedDistance>();
+			public ArrayList<DefinedLocation> getCurrentDistances(){
+				return new ArrayList<DefinedLocation>();
 			}			
 
 			public void copy(Input in){

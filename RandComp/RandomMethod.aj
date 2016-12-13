@@ -39,7 +39,7 @@ public aspect RandomMethod{
 
 		System.out.println("On thread: " + curId.getThreadId() + ": ");
 		System.out.println("The time count is: " + theDistance.timeCount);
-		for(DefinedDistance d : theDistance.getDefinedDistances()){
+		for(DefinedLocation d : theDistance.getDefinedLocations()){
 			System.out.println("The time count on method " + d.name + 
 				" is " + d.distance);
 		}
@@ -101,25 +101,25 @@ public aspect RandomMethod{
 			&& (methodName.equals(curId.methodName) || curId.methodName.equals("All"));
 	}
 
-	void updateSingleDistance(Distance theDistance, DefinedDistance handle){
+	void updateSingleDistance(Distance theDistance, DefinedLocation handle){
 		if(theDistance.dDistances.contains(handle)){
 			int index = theDistance.dDistances.indexOf(handle);
 			theDistance.dDistances.get(index).setDistance(handle.getDistance());
 			theDistance.dDistances.get(index).pertinent = true;
 		} else {
-			DefinedDistance dist = new DefinedDistance(handle);
+			DefinedLocation dist = new DefinedLocation(handle);
 			dist.pertinent = true;
 			theDistance.dDistances.add(dist);
 		}
 	}
 
-	void incrementSingleDistance(Distance theDistance, DefinedDistance handle){
-		DefinedDistance dDistance = null;
+	void incrementSingleDistance(Distance theDistance, DefinedLocation handle){
+		DefinedLocation dDistance = null;
 		if(theDistance.dDistances.contains(handle)){
 			dDistance = 
 				theDistance.dDistances.get(theDistance.dDistances.indexOf(handle));
 		} else {
-			dDistance = new DefinedDistance(handle.getName(), 0);
+			dDistance = new DefinedLocation(handle.getName(), 0);
 			theDistance.dDistances.add(dDistance);
 		}
 		dDistance.increment();
@@ -133,15 +133,15 @@ public aspect RandomMethod{
 
 			theDistance.clearPertinence();
 
-			DefinedDistance handle = new DefinedDistance(methodName);		
+			DefinedLocation handle = new DefinedLocation(methodName);		
 
 			incrementSingleDistance(theDistance, handle);
-			ArrayList<DefinedDistance> absDistances = targetObject.getCurrentDistances();
-			for(DefinedDistance d : absDistances){
+			ArrayList<DefinedLocation> absDistances = targetObject.getCurrentDistances();
+			for(DefinedLocation d : absDistances){
 				updateSingleDistance(theDistance, d);
 			}
 
-			if(forcedError(theDistance.getDefinedDistanceFromName(methodName).distance, 
+			if(forcedError(theDistance.getDefinedLocationFromName(methodName).distance, 
 						methodName,
 						curId)){
 
@@ -180,10 +180,10 @@ public aspect RandomMethod{
 
 			//must account for early increment due to return...
 			if((rand.nextDouble() < 0.0 && 
-					unForcedError(theDistance.getDefinedDistanceFromName(methodName).getDistance() - 1, 
+					unForcedError(theDistance.getDefinedLocationFromName(methodName).getDistance() - 1, 
 						methodName,
 						curId)) || 
-					forcedError(theDistance.getDefinedDistanceFromName(methodName).getDistance() - 1, 
+					forcedError(theDistance.getDefinedLocationFromName(methodName).getDistance() - 1, 
 						methodName, 
 						curId)) {
 //					unForcedError(theDistance.timeCount - 1, curId)) || 
