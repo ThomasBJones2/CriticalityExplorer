@@ -16,8 +16,8 @@ public class SumExperiment implements Experiment<InputArray,SumExperiment> {
 		theSum = sumArray.findSum();
 	}
 
-	public ArrayList<DefinedLocation> getCurrentDistances(){
-		return sumArray.getCurrentDistances();
+	public ArrayList<DefinedLocation> getCurrentLocations(){
+		return sumArray.getCurrentLocations();
 	}
 
 	public Score[] scores(SumExperiment correctObject){

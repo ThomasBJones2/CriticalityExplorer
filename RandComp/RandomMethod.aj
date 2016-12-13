@@ -6,22 +6,22 @@ import java.lang.Thread;
 
 public aspect RandomMethod{
 
-	static ArrayList<Distance> distances = new ArrayList<>();
+	static ArrayList<Location> locations = new ArrayList<>();
 
 	static ArrayList<Integer> timeCounts = new ArrayList<>();
 
 	double NEAR_DIST = 0.0000000001;
 	
 	public static void clearAspect(){
-		distances = new ArrayList<>();
+		locations = new ArrayList<>();
 		timeCounts = new ArrayList<>();
 	}
 
 	public static synchronized void registerTimeCount(){
 		RunId curId = new RunId(Thread.currentThread().getId());
 		curId = Experimenter.getId(curId);
-		Distance theDistance = getDistance(curId);
-		timeCounts.add(theDistance.timeCount);
+		Location theLocation = getLocation(curId);
+		timeCounts.add(theLocation.timeCount);
 	}
 
 	public static int getAverageTimeCount(){
@@ -35,19 +35,19 @@ public aspect RandomMethod{
 	public void printThisAspect(){
 		RunId curId = new RunId(Thread.currentThread().getId());
 		curId = Experimenter.getId(curId);
-		Distance theDistance = getDistance(curId);
+		Location theLocation = getLocation(curId);
 
 		System.out.println("On thread: " + curId.getThreadId() + ": ");
-		System.out.println("The time count is: " + theDistance.timeCount);
-		for(DefinedLocation d : theDistance.getDefinedLocations()){
+		System.out.println("The time count is: " + theLocation.timeCount);
+		for(DefinedLocation d : theLocation.getDefinedLocations()){
 			System.out.println("The time count on method " + d.name + 
-				" is " + d.distance);
+				" is " + d.location);
 		}
 	}
 
-	public void printAllDistances(){
-		for(Distance distance : distances){
-			distance.print();
+	public void printAllLocations(){
+		for(Location location : locations){
+			location.print();
 		}
 
 		for(Integer integer: timeCounts){
@@ -61,28 +61,28 @@ public aspect RandomMethod{
 	pointcut PrintAspect() : call(void *.printAspect());
 
 	after() : PrintAspect() {
-		printAllDistances();
+		printAllLocations();
 		//printThisAspect();
 	}
 
-	public static synchronized void clearDistance(RunId curId){
-		Distance checkDistance = new Distance(curId.getRunName(), curId.getThreadId());
-    while(distances.indexOf(checkDistance) != -1){
-			distances.remove(distances.indexOf(checkDistance));
+	public static synchronized void clearLocation(RunId curId){
+		Location checkLocation = new Location(curId.getRunName(), curId.getThreadId());
+    while(locations.indexOf(checkLocation) != -1){
+			locations.remove(locations.indexOf(checkLocation));
 		}
 	}
 
-	public static synchronized void createDistance(RunId curId){
-		Distance checkDistance = new Distance(curId.getRunName(), curId.getThreadId());
-		distances.add(checkDistance);
+	public static synchronized void createLocation(RunId curId){
+		Location checkLocation = new Location(curId.getRunName(), curId.getThreadId());
+		locations.add(checkLocation);
 	}
 
-	public static synchronized Distance getDistance(RunId curId){
-		Distance checkDistance = new Distance(curId.getRunName(), curId.getThreadId());
-		if(distances.indexOf(checkDistance) >= 0)
-			return distances.get(distances.indexOf(checkDistance));
+	public static synchronized Location getLocation(RunId curId){
+		Location checkLocation = new Location(curId.getRunName(), curId.getThreadId());
+		if(locations.indexOf(checkLocation) >= 0)
+			return locations.get(locations.indexOf(checkLocation));
 		else
-			return checkDistance;
+			return checkLocation;
 	}
 
 	boolean near(double a, int b){
@@ -101,51 +101,51 @@ public aspect RandomMethod{
 			&& (methodName.equals(curId.methodName) || curId.methodName.equals("All"));
 	}
 
-	void updateSingleDistance(Distance theDistance, DefinedLocation handle){
-		if(theDistance.dDistances.contains(handle)){
-			int index = theDistance.dDistances.indexOf(handle);
-			theDistance.dDistances.get(index).setDistance(handle.getDistance());
-			theDistance.dDistances.get(index).pertinent = true;
+	void updateSingleLocation(Location theLocation, DefinedLocation handle){
+		if(theLocation.dLocations.contains(handle)){
+			int index = theLocation.dLocations.indexOf(handle);
+			theLocation.dLocations.get(index).setLocation(handle.getLocation());
+			theLocation.dLocations.get(index).pertinent = true;
 		} else {
 			DefinedLocation dist = new DefinedLocation(handle);
 			dist.pertinent = true;
-			theDistance.dDistances.add(dist);
+			theLocation.dLocations.add(dist);
 		}
 	}
 
-	void incrementSingleDistance(Distance theDistance, DefinedLocation handle){
-		DefinedLocation dDistance = null;
-		if(theDistance.dDistances.contains(handle)){
-			dDistance = 
-				theDistance.dDistances.get(theDistance.dDistances.indexOf(handle));
+	void incrementSingleLocation(Location theLocation, DefinedLocation handle){
+		DefinedLocation dLocation = null;
+		if(theLocation.dLocations.contains(handle)){
+			dLocation = 
+				theLocation.dLocations.get(theLocation.dLocations.indexOf(handle));
 		} else {
-			dDistance = new DefinedLocation(handle.getName(), 0);
-			theDistance.dDistances.add(dDistance);
+			dLocation = new DefinedLocation(handle.getName(), 0);
+			theLocation.dLocations.add(dLocation);
 		}
-		dDistance.increment();
-		dDistance.pertinent = true;
+		dLocation.increment();
+		dLocation.pertinent = true;
 	}
 
-	void updateDistances(Distance theDistance, 
+	void updateLocations(Location theLocation, 
 			RunId curId, 
 			String methodName, 
-			AbstractDistance targetObject){
+			AbstractLocation targetObject){
 
-			theDistance.clearPertinence();
+			theLocation.clearPertinence();
 
 			DefinedLocation handle = new DefinedLocation(methodName);		
 
-			incrementSingleDistance(theDistance, handle);
-			ArrayList<DefinedLocation> absDistances = targetObject.getCurrentDistances();
-			for(DefinedLocation d : absDistances){
-				updateSingleDistance(theDistance, d);
+			incrementSingleLocation(theLocation, handle);
+			ArrayList<DefinedLocation> absLocations = targetObject.getCurrentLocations();
+			for(DefinedLocation d : absLocations){
+				updateSingleLocation(theLocation, d);
 			}
 
-			if(forcedError(theDistance.getDefinedLocationFromName(methodName).distance, 
+			if(forcedError(theLocation.getDefinedLocationFromName(methodName).location, 
 						methodName,
 						curId)){
 
-				theDistance.burnIn(methodName);
+				theLocation.burnIn(methodName);
 			}
 	}
 
@@ -157,7 +157,7 @@ public aspect RandomMethod{
 		curId = Experimenter.getId(curId);
 		if(curId.getExperiment() == true){
 			Random rand = curId.getRand();
-			Distance theDistance = getDistance(curId);
+			Location theLocation = getLocation(curId);
 			
 			String methodName = thisJoinPointStaticPart.
 				getSignature().
@@ -168,9 +168,9 @@ public aspect RandomMethod{
 
 			Experimenter.addToFallibleMethods(methodName);
 
-			updateDistances(theDistance, curId, methodName, (AbstractDistance) targetObject);
+			updateLocations(theLocation, curId, methodName, (AbstractLocation) targetObject);
 			//increment time count seperately to account for 0 indexing
-			theDistance.timeCount ++;
+			theLocation.timeCount ++;
 			
 			String shortMethodName = thisJoinPointStaticPart.
 				getSignature().
@@ -180,14 +180,14 @@ public aspect RandomMethod{
 
 			//must account for early increment due to return...
 			if((rand.nextDouble() < 0.0 && 
-					unForcedError(theDistance.getDefinedLocationFromName(methodName).getDistance() - 1, 
+					unForcedError(theLocation.getDefinedLocationFromName(methodName).getLocation() - 1, 
 						methodName,
 						curId)) || 
-					forcedError(theDistance.getDefinedLocationFromName(methodName).getDistance() - 1, 
+					forcedError(theLocation.getDefinedLocationFromName(methodName).getLocation() - 1, 
 						methodName, 
 						curId)) {
-//					unForcedError(theDistance.timeCount - 1, curId)) || 
-//					forcedError(theDistance.timeCount - 1, methodName, curId)) {
+//					unForcedError(theLocation.timeCount - 1, curId)) || 
+//					forcedError(theLocation.timeCount - 1, methodName, curId)) {
 				return randomizedCall(targetObject, args, randMethodName, rand);
 			}
 		}

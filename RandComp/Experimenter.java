@@ -18,9 +18,9 @@ public class Experimenter implements Runnable {
 
 	boolean experimentRunning;
 
-	static ArrayList<Distance> finalDistancesWithScores = new ArrayList<>();
+	static ArrayList<Location> finalLocationsWithScores = new ArrayList<>();
 
-	Distance locDistance;
+	Location locLocation;
 
 	static final int numThreads = 16;
 
@@ -79,8 +79,8 @@ public class Experimenter implements Runnable {
 				}
 	}
 
-	private static synchronized void addDistanceWithScores(Distance in){
-		finalDistancesWithScores.add(in);
+	private static synchronized void addLocationWithScores(Location in){
+		finalLocationsWithScores.add(in);
 	}
 
 	Experimenter(String inputClassName, 
@@ -136,7 +136,7 @@ public class Experimenter implements Runnable {
 			rand,
 			exper.fallibleMethodName);
 		addId(curId);
-		RandomMethod.createDistance(curId);
+		RandomMethod.createLocation(curId);
 		if (exper.experimentRunning == false)
 			System.out.println("The error point is: " + errorPoint + " " + errorful);
 
@@ -144,15 +144,15 @@ public class Experimenter implements Runnable {
 		
 		RandomMethod.registerTimeCount();
 		if(errorful){
-			exper.locDistance = RandomMethod.getDistance(curId).getBurnIn();
+			exper.locLocation = RandomMethod.getLocation(curId).getBurnIn();
 		}
-		RandomMethod.clearDistance(curId);
+		RandomMethod.clearLocation(curId);
 		removeId(curId);
 		return experiment;
 	}
 
-	void printDistancesAndScores(Experiment correctObject, Experiment errorObject){
-		locDistance.print();		
+	void printLocationsAndScores(Experiment correctObject, Experiment errorObject){
+		locLocation.print();		
 		Score[] scores = errorObject.scores(correctObject);
 		for(Score s : scores){
 			s.print();
@@ -186,9 +186,9 @@ public class Experimenter implements Runnable {
 		correctObject = runObject(iObject1, correctObject, rand1, false, this);
 		errorObject = runObject(iObject2, errorObject, rand2, true, this);
 		
-		if(this.locDistance != null) {
-			this.locDistance.addScores(errorObject.scores(correctObject));
-			addDistanceWithScores(locDistance);
+		if(this.locLocation != null) {
+			this.locLocation.addScores(errorObject.scores(correctObject));
+			addLocationWithScores(locLocation);
 		}
 
 		/* This is how you print scores out here...
@@ -312,10 +312,10 @@ public class Experimenter implements Runnable {
 			}
 		
 			System.out.println("Printing data for size: " + q);	
-			printAllRawData(finalDistancesWithScores, q);
-			printAllProcessedData(new DataEnsemble(finalDistancesWithScores), q);	
+			printAllRawData(finalLocationsWithScores, q);
+			printAllProcessedData(new DataEnsemble(finalLocationsWithScores), q);	
 			
-			finalDistancesWithScores = new ArrayList<>();
+			finalLocationsWithScores = new ArrayList<>();
 			RandomMethod.clearAspect();
 			
 			//printAspect();
@@ -336,25 +336,25 @@ public class Experimenter implements Runnable {
 
 	private static String createFile(String directory,
 			String scoreName,
-			String distanceName,
+			String locationName,
 			int inputSize){
 			return directory + 
 						scoreName + "_on_" +
-						distanceName + "_" +
+						locationName + "_" +
 						inputSize;
 	}
 
 	private static void printOutput(String scoreName, 
 			double score, 
 			Double stdErr,
-			String distanceName, 
-			double distance, 
+			String locationName, 
+			double location, 
 			String rootDirectoryName,
 			int inputSize) {
 		try(FileWriter fw = 
 					new FileWriter(createFile(rootDirectoryName, 
 						scoreName,
-						distanceName,
+						locationName,
 						inputSize) + ".csv", true);
 
 				BufferedWriter bw = 
@@ -363,31 +363,31 @@ public class Experimenter implements Runnable {
 					new PrintWriter(bw))
 		{
 			if(stdErr == null)
-				out.println(distance + ", " + score);	
+				out.println(location + ", " + score);	
 			else
-				out.println(distance + ", " + score + ", " + stdErr);
+				out.println(location + ", " + score + ", " + stdErr);
 		} catch (IOException E){
 			System.out.print(E);
 		}
 
 	}
 
-	private static void printAllRawData (ArrayList<Distance> outputDistances, int inputSize){
+	private static void printAllRawData (ArrayList<Location> outputLocations, int inputSize){
 		clearOutputOnInputSize(rawRootDirectory, inputSize, ".csv");
 	
-		for(int i = 0; i < outputDistances.size(); i ++){
-			Score[] scores = outputDistances.get(i).get_scores();
-			ArrayList<DefinedLocation> distances = outputDistances.get(i).dDistances;
+		for(int i = 0; i < outputLocations.size(); i ++){
+			Score[] scores = outputLocations.get(i).get_scores();
+			ArrayList<DefinedLocation> locations = outputLocations.get(i).dLocations;
 			for(int j = 0; j < scores.length; j++) {
-				for(int k = 0; k < distances.size(); k ++){
-					if(distances.get(k).pertinent)
-						if(distances.get(k).distance > 1000)
-							outputDistances.get(i).print();
+				for(int k = 0; k < locations.size(); k ++){
+					if(locations.get(k).pertinent)
+						if(locations.get(k).location > 1000)
+							outputLocations.get(i).print();
 						printOutput(scores[j].name,
 								scores[j].score,
 								null,
-								distances.get(k).name,
-							 	distances.get(k).distance,
+								locations.get(k).name,
+							 	locations.get(k).location,
 								rawRootDirectory,
 								inputSize);
 				}
@@ -399,7 +399,7 @@ public class Experimenter implements Runnable {
 		return  in.replaceAll("\\$","\\\\\\$").replaceAll("\\ ", "\\\\ ");
 	}
 
-	private static void printGraph(String scoreName, String distanceName,
+	private static void printGraph(String scoreName, String locationName,
 																	String inputDirectory, 
 																	String outputDirectory,
 																	int inputSize,
@@ -407,20 +407,20 @@ public class Experimenter implements Runnable {
 
 		String outputName = createFile(outputDirectory,
 																		scoreName,
-																		distanceName,
+																		locationName,
 																		inputSize) + ".png";
 
 
 		String fileName = createFile(inputDirectory,
 																		scoreName,
-																		distanceName,
+																		locationName,
 																		inputSize) + ".csv";
 		
 		System.out.println("creating pdf for " + fileName);
 		Plotter plotter = new Plotter(fileName, 
 										outputName, 
 										scoreName,
-										distanceName,
+										locationName,
 										plottable);
 		plotter.plot();		
 		
@@ -434,16 +434,16 @@ public class Experimenter implements Runnable {
 				"\"outname=\'" + cleanString(outputName) + "\';title=\'" 
 					+ scoreName,
 				"vs",
-				cleanString(distanceName) + 
-					"\';distance=\'" + cleanString(distanceName) 
+				cleanString(locationName) + 
+					"\';location=\'" + cleanString(locationName) 
 					+ "\';error=\'" + scoreName + 
 					"\';filename=\'" + cleanString(fileName) + "\'\"",
 				"Graph.plt"
 			};
 			
 			String execString = "gnuplot -e \"outname=\'" + cleanString(outputName) + "\';title=\'" 
-					+ scoreName + cleanString("vs") + cleanString(distanceName) + 
-					"\';distance=\'" + cleanString(distanceName) 
+					+ scoreName + cleanString("vs") + cleanString(locationName) + 
+					"\';location=\'" + cleanString(locationName) 
 					+ "\';error=\'" + scoreName + 
 					"\';filename=\'" + cleanString(fileName) + "\'\" Graph.plt"; 
 			System.out.println(execString);	
@@ -468,26 +468,26 @@ public class Experimenter implements Runnable {
 		clearOutputOnInputSize(processedRootDirectory, inputSize, ".csv");
 		for(int i = 0; i < dataEnsemble.scores.size(); i ++) {
 			DataEnsemble.EnsScore score = dataEnsemble.scores.get(i);
-			for(int j = 0; j < score.distances.size(); j ++){
-				DataEnsemble.EnsDistance distance = score.distances.get(j);
-				double[][] theData = new double[distance.triples.size()][3];
-				for(int q = 0; q < distance.triples.size(); q ++) {
-					DataEnsemble.EnsTriple triple = distance.triples.get(q);
+			for(int j = 0; j < score.locations.size(); j ++){
+				DataEnsemble.EnsLocation location = score.locations.get(j);
+				double[][] theData = new double[location.triples.size()][3];
+				for(int q = 0; q < location.triples.size(); q ++) {
+					DataEnsemble.EnsTriple triple = location.triples.get(q);
 					printOutput(score.name,
 						triple.avg,
 						triple.stdErr,
-						distance.name,
-						triple.distance,
+						location.name,
+						triple.location,
 						processedRootDirectory,
 						inputSize);
-					theData[q][0] = triple.distance;
+					theData[q][0] = triple.location;
 					theData[q][1] = triple.avg;
 					theData[q][2] = triple.stdErr;
 				}
 								
 				clearOutputOnInputSize(imageRootDirectory, inputSize, ".pdf");
 				printGraph(score.name, 
-						distance.name, 
+						location.name, 
 						processedRootDirectory, 
 						imageRootDirectory,
 						inputSize,

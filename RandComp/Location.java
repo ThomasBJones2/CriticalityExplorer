@@ -2,36 +2,36 @@ package RandComp;
 
 import java.util.*;
 
-public class Distance{
+public class Location{
 	int runName;
 	long threadId;
 	int timeCount = 0;
 	Score[] scores;
-	ArrayList<DefinedLocation> dDistances = new ArrayList<>();
+	ArrayList<DefinedLocation> dLocations = new ArrayList<>();
 	String failedMethod;
 
 
-	Distance burnIn;
+	Location burnIn;
 	
-	Distance(int runName, long threadId){
+	Location(int runName, long threadId){
 		this.runName = runName;
 		this.threadId = threadId;
 	}	
 
-	Distance(Distance in){
+	Location(Location in){
 		this.runName = in.runName;
 		this.threadId = in.threadId;
 		this.timeCount = in.timeCount;
-		this.dDistances = new ArrayList<>();
-		for(DefinedLocation d : in.dDistances){
-			this.dDistances.add(new DefinedLocation(d));
+		this.dLocations = new ArrayList<>();
+		for(DefinedLocation d : in.dLocations){
+			this.dLocations.add(new DefinedLocation(d));
 		}
 		this.failedMethod = in.failedMethod;
 	}
 
 	public void clearPertinence(){
-		for(int i = 0; i < dDistances.size(); i ++)
-			dDistances.get(i).pertinent = false;
+		for(int i = 0; i < dLocations.size(); i ++)
+			dLocations.get(i).pertinent = false;
 	}
 
 	public Score[] get_scores(){
@@ -39,31 +39,31 @@ public class Distance{
 	}
 	
 	void burnIn(String failedMethod){
-		burnIn = new Distance(this);
+		burnIn = new Location(this);
 		burnIn.failedMethod = failedMethod;
 	}
 
-	public Distance getBurnIn(){
+	public Location getBurnIn(){
 		return burnIn;
 	}
 
 	@Override
 	public boolean equals(Object in){
 		if(in == null) return false;
-		if(!(in instanceof Distance)) return false;
-		return threadId == ((Distance) in).threadId; 
+		if(!(in instanceof Location)) return false;
+		return threadId == ((Location) in).threadId; 
 	}
 
 	public ArrayList<DefinedLocation> getDefinedLocations(){
-		return dDistances;
+		return dLocations;
 	}
 
-	public DefinedLocation getFailedDistance(){
+	public DefinedLocation getFailedLocation(){
 		return getDefinedLocationFromName(failedMethod);
 	}
 
 	public DefinedLocation getDefinedLocationFromName(String name){
-		for(DefinedLocation d : dDistances){
+		for(DefinedLocation d : dLocations){
 			if (d.name.equals(name)) return d;
 		}
 		return null;
@@ -74,7 +74,7 @@ public class Distance{
 			burnIn.print();
 		} else {
 			System.out.print(timeCount + " ");
-			for(DefinedLocation d : dDistances){
+			for(DefinedLocation d : dLocations){
 				d.print();
 			}
 			System.out.println();

@@ -7,16 +7,16 @@ public class DataEnsemble{
 
 	public class EnsScore{
 		String name;
-		ArrayList<EnsDistance> distances = new ArrayList<>();
+		ArrayList<EnsLocation> locations = new ArrayList<>();
 	
 		EnsScore(Score score){
 			name = score.name;
 		}
 
-		EnsDistance getDistance(DefinedLocation locDistance){
-			for(EnsDistance distance : distances){
-				if(distance.name.equals(locDistance.name))
-					return distance;
+		EnsLocation getLocation(DefinedLocation locLocation){
+			for(EnsLocation location : locations){
+				if(location.name.equals(locLocation.name))
+					return location;
 			}
 			return null;
 		}
@@ -28,7 +28,7 @@ public class DataEnsemble{
 	public class EnsTriple{
 		double avg;
 		double stdErr;
-		double distance;
+		double location;
 		ArrayList<Double> dataPoints = new ArrayList<>();
 
 		void addScore(Score score){
@@ -46,7 +46,7 @@ public class DataEnsemble{
 
 		public void print(){
 			System.out.println("Ens Triple: ");
-			System.out.println(distance);
+			System.out.println(location);
 			System.out.println(avg);
 			System.out.println(stdErr);
 		}
@@ -73,21 +73,21 @@ public class DataEnsemble{
 		public boolean equals(Object in){
 			if(in == null) return false;
 			if(!(in instanceof DefinedLocation)) return false;
-			return nearEqual(distance, ((DefinedLocation) in).distance);
+			return nearEqual(location, ((DefinedLocation) in).location);
 		}
 	}
 
-	public class EnsDistance {
+	public class EnsLocation {
 		String name;
 		ArrayList<EnsTriple> triples = new ArrayList<>();
 
-		EnsDistance(DefinedLocation distance){
-			name = distance.name;
+		EnsLocation(DefinedLocation location){
+			name = location.name;
 		}
 
-		EnsTriple getTriple(DefinedLocation dDistance){
+		EnsTriple getTriple(DefinedLocation dLocation){
 			for(EnsTriple triple : triples){
-				if(triple.equals(dDistance))
+				if(triple.equals(dLocation))
 					return triple;
 			}
 			return null;
@@ -102,15 +102,15 @@ public class DataEnsemble{
 		return null;
 	}
 
-	public void addScores(ArrayList<Distance> distancesWithScores){
+	public void addScores(ArrayList<Location> locationsWithScores){
 		int count = 0;
-		for(Distance distance : distancesWithScores){
-			//System.out.println("on distance " + count);
+		for(Location location : locationsWithScores){
+			//System.out.println("on location " + count);
 			count ++;
-			for(Score score : Arrays.asList(distance.scores)){
+			for(Score score : Arrays.asList(location.scores)){
 
-				DefinedLocation dDistance = distance.getFailedDistance();
-			//	for(DefinedLocation dDistance : distance.dDistances){
+				DefinedLocation dLocation = location.getFailedLocation();
+			//	for(DefinedLocation dLocation : location.dLocations){
 				
 				EnsScore locScore = getScore(score);
 				if(locScore == null){
@@ -118,17 +118,17 @@ public class DataEnsemble{
 					scores.add(locScore);
 				}
 
-				EnsDistance locDistance = locScore.getDistance(dDistance);
-				if(locDistance == null){
-					locDistance = new EnsDistance(dDistance);
-					locScore.distances.add(locDistance);
+				EnsLocation locLocation = locScore.getLocation(dLocation);
+				if(locLocation == null){
+					locLocation = new EnsLocation(dLocation);
+					locScore.locations.add(locLocation);
 				}
 
-				EnsTriple locTriple = locDistance.getTriple(dDistance);
+				EnsTriple locTriple = locLocation.getTriple(dLocation);
 				if(locTriple == null){
 					locTriple = new EnsTriple();
-					locTriple.distance = dDistance.distance;
-					locDistance.triples.add(locTriple);
+					locTriple.location = dLocation.location;
+					locLocation.triples.add(locTriple);
 				}
 				locTriple.addScore(score);
 				//}
@@ -138,14 +138,14 @@ public class DataEnsemble{
 
 	void resolveScores(){
 		for(EnsScore score : scores)
-			for(EnsDistance distance: score.distances)
-				for(EnsTriple triple: distance.triples)
+			for(EnsLocation location: score.locations)
+				for(EnsTriple triple: location.triples)
 					triple.resolve();
 	}
 
-	DataEnsemble(ArrayList<Distance> distancesWithScores){
+	DataEnsemble(ArrayList<Location> locationsWithScores){
 		System.out.println("Adding scores to data ensemble for processed output");
-		addScores(distancesWithScores);
+		addScores(locationsWithScores);
 		System.out.println("Processing data ensemble");
 		resolveScores();
 	}

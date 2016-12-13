@@ -1,6 +1,6 @@
 package RandComp;
 
-public interface Experiment <I,E extends Experiment<I,E>> extends AbstractDistance{
+public interface Experiment <I,E extends Experiment<I,E>> extends AbstractLocation{
 	public void experiment(I input);
 
 	public static Experiment emptyObject(){return null;}

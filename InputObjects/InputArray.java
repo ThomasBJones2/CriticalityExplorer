@@ -16,7 +16,7 @@ public class InputArray implements Input<InputArray>{
 		theArray = new double[n];
 	}
 
-	public ArrayList<DefinedLocation> getCurrentDistances(){
+	public ArrayList<DefinedLocation> getCurrentLocations(){
 		return new ArrayList<DefinedLocation>();
 	}
 
@@ -25,7 +25,7 @@ public class InputArray implements Input<InputArray>{
 		return new InputArray(n);
 	}	
 
-	double singleRandomVal(Random rand){
+	public double singleRandomVal(Random rand){
 		return Math.abs(-1000000.0 + (2000000.0)*rand.nextDouble());
 	}	
 
