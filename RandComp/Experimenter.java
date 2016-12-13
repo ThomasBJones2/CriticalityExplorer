@@ -60,6 +60,7 @@ public class Experimenter implements Runnable {
 				printRunTimes(rTime);
 				changeToExperimentTime(rTime);
 				printRunTimes(rTime);
+				printFallibleMethods();	
 				runExperiments(inputClassName, experimentClassName, rTime);
 
 			} catch (IllegalArgumentException E){
@@ -69,6 +70,14 @@ public class Experimenter implements Runnable {
 			}
 		}
 
+	}
+
+	private static void printFallibleMethods(){
+		System.out.println("Printing Fallible Methods");	
+		
+		for(String f : FallibleMethods){
+			System.out.println(f);
+		}
 	}
 
 	static void printRunTimes(RunTimeTriple<Long>[][] rTime){

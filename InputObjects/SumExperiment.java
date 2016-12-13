@@ -2,8 +2,10 @@ package InputObjects;
 
 import RandComp.*;
 import java.util.ArrayList;
+import java.lang.reflect.*;
 
-public class SumExperiment implements Experiment<InputArray,SumExperiment> {
+public class SumExperiment 
+	implements Experiment<InputArray, SumExperiment> {
 	double theSum;
 	InputArray sumArray;
 
@@ -11,9 +13,16 @@ public class SumExperiment implements Experiment<InputArray,SumExperiment> {
 
 	public static SumExperiment emptyObject(){return new SumExperiment();}
 
+	void findSum(InputArray in){
+		theSum = 0;
+		for(int i = 0; i < in.theArray.length; i ++){
+			theSum = in.sum(theSum, in.theArray[i]);
+		}
+	}
+
 	public void experiment(InputArray in){
 		sumArray = in;
-		theSum = sumArray.findSum();
+		findSum(in);
 	}
 
 	public ArrayList<DefinedLocation> getCurrentLocations(){

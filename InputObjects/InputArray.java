@@ -10,20 +10,22 @@ public class InputArray implements Input<InputArray>{
 	
 	public InputArray(){}
 
-	public static InputArray emptyObject(){return new InputArray();}
-
 	public InputArray(int n){
 		theArray = new double[n];
 	}
+
+	public InputArray(double[] inArray){copy(inArray);}
+
+	public static InputArray emptyObject(){return new InputArray();}
+
+	public static InputArray newInputOfSize(int n){return new InputArray(n);}	
+
+	public InputArray newLocInputArray(double[] inArr){return new InputArray(inArr);}
 
 	public ArrayList<DefinedLocation> getCurrentLocations(){
 		return new ArrayList<DefinedLocation>();
 	}
 
-
-	public static InputArray newInputOfSize(int n){
-		return new InputArray(n);
-	}	
 
 	public double singleRandomVal(Random rand){
 		return Math.abs(-1000000.0 + (2000000.0)*rand.nextDouble());
@@ -39,35 +41,35 @@ public class InputArray implements Input<InputArray>{
 		return theArray.length;
 	}
 
-	public double findSum(){
-		theSum = 0;
-		for(int i = 0; i < theArray.length; i ++){
-			theSum = this.sum(theSum, theArray[i]);
-		}
-		return theSum;
-	}
-
 	@Randomize
 	public double sum(Double val1, Double val2){
 		return val1 + val2;
 	}
 
 	public double sumRand(Random rand, Double val1, Double val2){
-		double out = (1.0 + (0.2)*rand.nextDouble())*(val1 + val2);
-//		System.out.println(val1 + " " + val2 + 
-//				" " + out + " " + ScorePool.AbsolutePercentValue(out, val1 + val2).score); 
-		return out;
+		return val1 + val2;
 	}
 
-//	public double sumRand(Random rand, Double val1, Double val2){
-//		return singleRandomVal(rand);
-//	}
+	public void copy (double[] inArray){
+		theArray = new double[inArray.length];
+		for(int i = 0; i < inArray.length; i ++){
+			theArray[i] = inArray[i];
+		}
+	}
 
 	public void copy(InputArray inArray){
 		theArray = new double[inArray.theArray.length];
 		for(int i = 0; i < inArray.theArray.length; i ++){
 			theArray[i] = inArray.theArray[i];
 		}
+	}
+
+	public InputArray copyTenth(int in){
+		int dist = theArray.length/10;
+		double[] newArray = new double[dist];
+		for(int i = dist*in; i < dist*(in + 1); i ++)
+			newArray[i - dist*in] = theArray[i];
+		return newLocInputArray(newArray);
 	}
 
 }

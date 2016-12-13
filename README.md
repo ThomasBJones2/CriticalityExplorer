@@ -29,3 +29,6 @@ TODO: all of this should be managed through maven or something. I just don't kno
 (4) Run make build with your properly modified code in the InputObjects file (example code in Graph.java, MaxFlowMinCut.java, InputArray.java, and SumExperiment.java can be found in the InputObjects file). --- mostly this means ensuring that the code implements the correct interfaces, declares itself part of the InputObjects package, and has at least one function of name <function-name> that has a @Randomize tag along with a <function-name>Rand version of that function that accepts a Random object along with the inputs accepted by the original function (Also! the function must used boxed types --- no double, only Double). 
 
 (5) Run the code by calling ./run.sh InputObjects.<input-class> InputObjects.<experiment-class> where the input-class is where fallible components reside and experiment-class uses the input-class to run an experiment. 
+
+Some Caveats:
+(1) Some times the first time you run a particular combinaton of input and experiment object, the first time you will get a lot of null objects. System runs fine on second run
