@@ -8,7 +8,7 @@ public class Location{
 	int timeCount = 0;
 	Score[] scores;
 	ArrayList<DefinedLocation> dLocations = new ArrayList<>();
-	String failedMethod;
+//	String failedMethod;
 
 
 	Location burnIn;
@@ -26,7 +26,7 @@ public class Location{
 		for(DefinedLocation d : in.dLocations){
 			this.dLocations.add(new DefinedLocation(d));
 		}
-		this.failedMethod = in.failedMethod;
+//		this.failedMethod = in.failedMethod;
 	}
 
 	public void clearPertinence(){
@@ -38,9 +38,9 @@ public class Location{
 		return scores;
 	}
 	
-	void burnIn(String failedMethod){
+	void burnIn(){
 		burnIn = new Location(this);
-		burnIn.failedMethod = failedMethod;
+	//	burnIn.failedMethod = failedMethod;
 	}
 
 	public Location getBurnIn(){
@@ -58,9 +58,9 @@ public class Location{
 		return dLocations;
 	}
 
-	public DefinedLocation getFailedLocation(){
-		return getDefinedLocationFromName(failedMethod);
-	}
+//	public DefinedLocation getFailedLocation(){
+//		return getDefinedLocationFromName(failedMethod);
+//	}
 
 	public DefinedLocation getDefinedLocationFromName(String name){
 		for(DefinedLocation d : dLocations){

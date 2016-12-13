@@ -109,29 +109,29 @@ public class DataEnsemble{
 			count ++;
 			for(Score score : Arrays.asList(location.scores)){
 
-				DefinedLocation dLocation = location.getFailedLocation();
-			//	for(DefinedLocation dLocation : location.dLocations){
-				
-				EnsScore locScore = getScore(score);
-				if(locScore == null){
-					locScore = new EnsScore(score);
-					scores.add(locScore);
-				}
+				for(DefinedLocation dLocation : location.dLocations){
+					if(dLocation.pertinent){
+						EnsScore locScore = getScore(score);
+						if(locScore == null){
+							locScore = new EnsScore(score);
+							scores.add(locScore);
+						}
 
-				EnsLocation locLocation = locScore.getLocation(dLocation);
-				if(locLocation == null){
-					locLocation = new EnsLocation(dLocation);
-					locScore.locations.add(locLocation);
-				}
+						EnsLocation locLocation = locScore.getLocation(dLocation);
+						if(locLocation == null){
+							locLocation = new EnsLocation(dLocation);
+							locScore.locations.add(locLocation);
+						}
 
-				EnsTriple locTriple = locLocation.getTriple(dLocation);
-				if(locTriple == null){
-					locTriple = new EnsTriple();
-					locTriple.location = dLocation.location;
-					locLocation.triples.add(locTriple);
+						EnsTriple locTriple = locLocation.getTriple(dLocation);
+						if(locTriple == null){
+							locTriple = new EnsTriple();
+							locTriple.location = dLocation.location;
+							locLocation.triples.add(locTriple);
+						}
+						locTriple.addScore(score);
+					}
 				}
-				locTriple.addScore(score);
-				//}
 			}
 		}
 	}

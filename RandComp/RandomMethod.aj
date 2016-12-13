@@ -105,10 +105,10 @@ public aspect RandomMethod{
 		if(theLocation.dLocations.contains(handle)){
 			int index = theLocation.dLocations.indexOf(handle);
 			theLocation.dLocations.get(index).setLocation(handle.getLocation());
-			//theLocation.dLocations.get(index).pertinent = true;
+			theLocation.dLocations.get(index).pertinent = true;
 		} else {
 			DefinedLocation dist = new DefinedLocation(handle);
-			//dist.pertinent = true;
+			dist.pertinent = true;
 			theLocation.dLocations.add(dist);
 		}
 	}
@@ -123,7 +123,7 @@ public aspect RandomMethod{
 			theLocation.dLocations.add(dLocation);
 		}
 		dLocation.increment();
-		//dLocation.pertinent = true;
+		dLocation.pertinent = true;
 	}
 
 	void updateLocations(Location theLocation, 
@@ -145,7 +145,7 @@ public aspect RandomMethod{
 						methodName,
 						curId)){
 
-				theLocation.burnIn(methodName);
+				theLocation.burnIn();
 			}
 	}
 
