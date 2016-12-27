@@ -29,6 +29,7 @@ public class DataEnsemble{
 		double avg;
 		double stdErr;
 		double location;
+		int count;
 		ArrayList<Double> dataPoints = new ArrayList<>();
 
 		void addScore(Score score){
@@ -63,6 +64,7 @@ public class DataEnsemble{
 		void resolve(){
 			avg = average();
 			stdErr = standardErr();
+			count = dataPoints.size();
 		}
 
 		boolean nearEqual(double a, double b){

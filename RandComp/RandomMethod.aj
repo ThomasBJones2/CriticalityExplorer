@@ -91,6 +91,12 @@ public aspect RandomMethod{
 	}
 
 	boolean forcedError(double methodCount, String methodName, RunId curId){
+		
+		if(curId == null || methodName == null || curId.methodName == null){
+			System.out.println("in forced error");
+			System.out.println("mathod name: " + methodName + " ");
+			System.out.println("curIDMethodName: " + curId.methodName);
+		}
 		return near(methodCount, curId.errorPoint) && 
 			curId.errorful && 
 			(methodName.equals(curId.methodName) || curId.methodName.equals("All"));

@@ -39,15 +39,32 @@ public class Plotter{
 		this.plottable = plottable;		
 	}
 
-	private JavaPlot setUpPlot(JavaPlot p, 
+	double[][] cleanData(double[][] inData){
+		double[][] outData = new double[inData.length][3];
+		for(int i = 0; i < inData.length; i ++)
+			for(int j = 0; j < 3; j ++)
+				outData[i][j] = inData[i][j];
+		return outData;
+	}
+
+	JavaPlot createPlots(JavaPlot p, double[][] theData){
+		p = setUpPlot(p, plottable, Style.POINTS, NamedPlotColor.BLACK);
+		p = setUpPlot(p, plottable, Style.ERRORBARS, NamedPlotColor.BLACK);
+		return p;
+	}
+
+	JavaPlot setUpPlot(JavaPlot p, 
 										double[][] theData,
 										Style style, 
 										NamedPlotColor npc){
 
 		
-		DataSetPlot s = new DataSetPlot(theData);
+		
+
+		DataSetPlot s = new DataSetPlot(cleanData(theData));
 		p.addPlot(s);
 
+		System.out.println("the number of plots is: " + p.getPlots().size());
 		PlotStyle stl = ((AbstractPlot) 
 									p.getPlots().get(p.getPlots().size() - 1)).getPlotStyle();
 		stl.setStyle(style);
@@ -61,7 +78,6 @@ public class Plotter{
 	public void plot(){
 		JavaPlot p = new JavaPlot();
 		
-
 		ImageTerminal imgTerm = new ImageTerminal();
 		p.setTerminal(imgTerm);
 	
@@ -70,9 +86,7 @@ public class Plotter{
 		p.getAxis("y").setLabel(scoreName, "Arial", 20);
 		p.setKey(JavaPlot.Key.OFF);
 
-		p = setUpPlot(p, plottable, Style.POINTS, NamedPlotColor.BLACK);
-		p = setUpPlot(p, plottable, Style.ERRORBARS, NamedPlotColor.BLACK);
-
+		p = createPlots(p, plottable);
 //		DataSetPlot s = new DataSetPlot(plottable);
 //		p.addPlot(s);
 

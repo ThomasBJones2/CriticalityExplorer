@@ -144,6 +144,14 @@ public class Experimenter implements Runnable {
 			Thread.currentThread().getId(), 
 			rand,
 			exper.fallibleMethodName);
+		if(curId.methodName == null){
+			System.out.println("found null methodName in runObject");
+			try{
+				Thread.sleep(10000);
+			} catch (Exception E){
+				System.out.println(E);
+			}
+		}
 		addId(curId);
 		RandomMethod.createLocation(curId);
 		if (exper.experimentRunning == false)
@@ -219,7 +227,8 @@ public class Experimenter implements Runnable {
 				System.out.println((in[i][j].runTime*in[i][j].errorPoints));
 				if (in[i][j].runTime > 0 && in[i][j].errorPoints>0) {
 					in[i][j].runTime = 
-						Math.min(60*60*1000/(in[i][j].runTime*ERROR_POINTS), (long)1000);
+						Math.min(24*60*60*ERROR_POINTS/(in[i][j].runTime*ERROR_POINTS), (long)1000);
+						
 				} else {
 					in[i][j].runTime = 0L;
 				}
@@ -303,6 +312,10 @@ public class Experimenter implements Runnable {
 						}
 						while(threadQueue.size() >= 100){					
 						}
+						if(FallibleMethods.get(fallmeth) == null){
+							System.out.println("well the fallmeth: " + fallmeth + "gives us a null method");
+
+						}
 						Experimenter exp = new Experimenter(inputClassName,
 							experimentClassName, 
 							(int) runName, j, q, true, FallibleMethods.get(fallmeth));
@@ -356,6 +369,7 @@ public class Experimenter implements Runnable {
 	private static void printOutput(String scoreName, 
 			double score, 
 			Double stdErr,
+			Integer count,
 			String locationName, 
 			double location, 
 			String rootDirectoryName,
@@ -374,7 +388,7 @@ public class Experimenter implements Runnable {
 			if(stdErr == null)
 				out.println(location + ", " + score);	
 			else
-				out.println(location + ", " + score + ", " + stdErr);
+				out.println(location + ", " + score + ", " + stdErr + ", " + count);
 		} catch (IOException E){
 			System.out.print(E);
 		}
@@ -394,6 +408,7 @@ public class Experimenter implements Runnable {
 							outputLocations.get(i).print();
 						printOutput(scores[j].name,
 								scores[j].score,
+								null,
 								null,
 								locations.get(k).name,
 							 	locations.get(k).location,
@@ -417,7 +432,12 @@ public class Experimenter implements Runnable {
 		String outputName = createFile(outputDirectory,
 																		scoreName,
 																		locationName,
-																		inputSize) + ".png";
+																		inputSize) +  ".png";
+
+		String numRunsOutputName = createFile(outputDirectory,
+																		scoreName,
+																		locationName,
+																		inputSize) + "_Num_Runs" + ".png";
 
 
 		String fileName = createFile(inputDirectory,
@@ -425,13 +445,20 @@ public class Experimenter implements Runnable {
 																		locationName,
 																		inputSize) + ".csv";
 		
-		System.out.println("creating pdf for " + fileName);
+		System.out.println("creating pdfs for " + fileName);
 		Plotter plotter = new Plotter(fileName, 
 										outputName, 
 										scoreName,
 										locationName,
 										plottable);
 		plotter.plot();		
+		
+		RunsPlotter plotter2 = new RunsPlotter(fileName, 
+										numRunsOutputName, 
+										scoreName,
+										locationName,
+										plottable);
+		plotter2.plot();		
 		
 		/*try{
 			
@@ -473,18 +500,21 @@ public class Experimenter implements Runnable {
 		}*/
 	}
 
-	private static void printAllProcessedData(DataEnsemble dataEnsemble, int inputSize){
+	private static void printAllProcessedData(DataEnsemble dataEnsemble, 
+			int inputSize){
+
 		clearOutputOnInputSize(processedRootDirectory, inputSize, ".csv");
 		for(int i = 0; i < dataEnsemble.scores.size(); i ++) {
 			DataEnsemble.EnsScore score = dataEnsemble.scores.get(i);
 			for(int j = 0; j < score.locations.size(); j ++){
 				DataEnsemble.EnsLocation location = score.locations.get(j);
-				double[][] theData = new double[location.triples.size()][3];
+				double[][] theData = new double[location.triples.size()][4];
 				for(int q = 0; q < location.triples.size(); q ++) {
 					DataEnsemble.EnsTriple triple = location.triples.get(q);
 					printOutput(score.name,
 						triple.avg,
 						triple.stdErr,
+						triple.count,
 						location.name,
 						triple.location,
 						processedRootDirectory,
@@ -492,9 +522,10 @@ public class Experimenter implements Runnable {
 					theData[q][0] = triple.location;
 					theData[q][1] = triple.avg;
 					theData[q][2] = triple.stdErr;
+					theData[q][3] = triple.count;
 				}
-								
-				clearOutputOnInputSize(imageRootDirectory, inputSize, ".pdf");
+		
+				//clearOutputOnInputSize(imageRootDirectory, inputSize, ".png");
 				printGraph(score.name, 
 						location.name, 
 						processedRootDirectory, 
