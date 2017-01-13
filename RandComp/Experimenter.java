@@ -78,6 +78,11 @@ public class Experimenter implements Runnable {
 		for(String f : FallibleMethods){
 			System.out.println(f);
 		}
+		try{
+			Thread.sleep(1000);
+		} catch (Exception E){
+			System.out.println(E);
+		}
 	}
 
 	static void printRunTimes(RunTimeTriple<Long>[][] rTime){
@@ -305,7 +310,8 @@ public class Experimenter implements Runnable {
 							+ i*Math.min(ERROR_POINTS, rTimes[fallmeth][c].errorPoints) 
 							+ j;
 						if(runName % 
-								((rTimes[fallmeth][c].runTime*rTimes[fallmeth][c].errorPoints)/10) == 0){
+								((rTimes[fallmeth][c].runTime*
+									Math.min(ERROR_POINTS, rTimes[fallmeth][c].errorPoints))/100) == 0){
 							System.out.println("Now on fallible method: " + 
 									FallibleMethods.get(fallmeth) + 
 									"runtime: " + i + " and errorPoint " + j);
@@ -596,7 +602,7 @@ public class Experimenter implements Runnable {
 	}
 
 	public static void addToFallibleMethods(String methodName){
-		if(!FallibleMethods.contains(methodName)){
+		if(!FallibleMethods.contains(methodName) && methodName != null){
 			FallibleMethods.add(methodName);
 		}
 	}
