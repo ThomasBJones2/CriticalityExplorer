@@ -53,7 +53,9 @@ public class Experimenter implements Runnable {
 
 			try{
 				testInputObjects(inputClassName, experimentClassName);
-			
+				initialize(inputClassName);
+				initialize(experimentClassName);
+
 				//FallibleMethods = getMethodsAnnotatedWith(Randomize.class);
 
 				RunTimeTriple<Long>[][] rTime = getRunTimes(inputClassName, experimentClassName);
@@ -64,6 +66,7 @@ public class Experimenter implements Runnable {
 				runExperiments(inputClassName, experimentClassName, rTime);
 
 			} catch (IllegalArgumentException E){
+				System.out.println("illegal argument exception at top level of experimenter program");
 				System.out.println(E);
 			} catch (InterruptedException E){
 				System.out.println(E);
@@ -549,10 +552,32 @@ public class Experimenter implements Runnable {
 		System.out.println(inputClass.getClass());
 		System.out.println(experimentClass.getClass());
 		if(!(experimentClass instanceof Experiment)) {
+			System.out.println("The experiment class is not correct!");
 			throw new IllegalArgumentException();
 		}
 		if(!(inputClass instanceof Input)){
+			System.out.println("The input class is not correct!");
 			throw new IllegalArgumentException();
+		}
+	}
+
+
+	static void initialize(String inName){
+		try {
+			Class cls = Class.forName(inName);
+			Method clsMethod = cls.getMethod("initialize");
+			clsMethod.invoke(null);
+	
+		} catch (ClassNotFoundException E) {
+			System.out.println(inName + " is not a class, please add to the classpath: " + E);
+//		} catch (InstantiationException E) {
+//			System.out.println("Trouble instantiating " + inName + ": " + E);
+		} catch (IllegalAccessException E) {
+			System.out.println("Trouble accessing " + inName + ": " + E);
+		} catch (NoSuchMethodException E) {
+			System.out.println("Trouble building random input using an input size on class" + inName + ". Is it possible that you don't have a constructor for input size or that the constructor is private?" + E);
+		} catch (InvocationTargetException E) {
+			System.out.println("Trouble getting random inputs:" + E);
 		}
 	}
 

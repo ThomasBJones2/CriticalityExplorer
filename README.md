@@ -22,6 +22,8 @@ The google common files can be found at http://central.maven.org/maven2/com/goog
 
 Javaassist files can be found at: http://central.maven.org/maven2/javassist/javassist/3.12.1.GA/javassist-3.12.1.GA.jar
 
+Some of the input objects require junit a jar for junit can be found at https://mvnrepository.com/artifact/junit/junit/4.12
+
 TODO: all of this should be managed through maven or something. I just don't know how to do that right at the moment.
 
 (3) Be sure to install aj and ajc, the aspectj compilers. These will be used to weave the aspects into your user code so that the code can be integrated into the analyzer in a fairly seemless manner. 
