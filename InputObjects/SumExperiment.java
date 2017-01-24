@@ -31,8 +31,8 @@ public class SumExperiment
 
 	public Score[] scores(SumExperiment correctObject){
 		Score[] out = new Score [2];
-		out[0] = ScorePool.AbsolutePercentValue(this.theSum, correctObject.theSum);
-		out[1] = ScorePool.AbsoluteValue(this.theSum, correctObject.theSum);
+		out[0] = ScorePool.absolutePercentValue(this.theSum, correctObject.theSum);
+		out[1] = ScorePool.absoluteValue(this.theSum, correctObject.theSum);
 		return out; 
 
 	}

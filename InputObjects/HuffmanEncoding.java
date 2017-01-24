@@ -21,8 +21,6 @@ public class HuffmanEncoding
 		return new ArrayList<DefinedLocation>();
 	}
 
-	public Score[] scores(HuffmanEncoding correctObject){return new Score[0];}
-
 	public void experiment(InputString iString){
 		try{
 			startString = new String(iString.theString);
@@ -53,6 +51,15 @@ public class HuffmanEncoding
 			System.out.println(endString);
 		}
 	}
+
+	public Score[] scores(HuffmanEncoding correctObject){
+		Score[] out = new Score [2];
+		out[0] = ScorePool.symbolDistance(this.endString, correctObject.endString);
+		out[0] = ScorePool.manhattanDistance(this.endString, correctObject.endString);
+		return out; 
+
+	}
+
 
 	public static void main(String[] args){
 		InputString.initialize();

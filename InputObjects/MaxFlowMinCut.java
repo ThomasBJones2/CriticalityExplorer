@@ -35,8 +35,8 @@ public class MaxFlowMinCut implements Experiment<Graph, MaxFlowMinCut>{
 	public Score[] scores(MaxFlowMinCut correctObject){
 		//if(correctObject instanceof MaxFlowMinCut
 		Score[] out = new Score [2];
-		out[0] = ScorePool.AbsolutePercentValue(this.flow, correctObject.flow);
-		out[1] = ScorePool.AbsoluteValue(this.flow, correctObject.flow);
+		out[0] = ScorePool.absolutePercentValue(this.flow, correctObject.flow);
+		out[1] = ScorePool.absoluteValue(this.flow, correctObject.flow);
 		return out; 
 	}
 
