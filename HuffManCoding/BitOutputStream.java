@@ -10,6 +10,8 @@ package HuffManCoding;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Random;
+import RandComp.*;
 
 /**
  * A stream where bits can be written to. Because they are written to an underlying
@@ -53,13 +55,8 @@ public final class BitOutputStream {
 	}
 
 	/* Methods */
-	
-	/**
-	 * Writes a bit to the stream. The specified bit must be 0 or 1.
-	 * @param b the bit to write, which must be 0 or 1
-	 * @throws IOException if an I/O exception occurred
-	 */
-	public void write(int b) throws IOException {
+
+	private void subWrite(int b) throws IOException{
 		if (b != 0 && b != 1)
 			throw new IllegalArgumentException("Argument must be 0 or 1");
 		currentByte = (currentByte << 1) | b;
@@ -70,6 +67,21 @@ public final class BitOutputStream {
 			currentByte = 0;
 			numBitsFilled = 0;
 		}
+	}
+
+
+	/**
+	 * Writes a bit to the stream. The specified bit must be 0 or 1.
+	 * @param b the bit to write, which must be 0 or 1
+	 * @throws IOException if an I/O exception occurred
+	 */
+	@Randomize
+	public void write(int b) throws IOException {
+		subWrite(b);
+	}
+
+	public void writeRand(Random rand, int b) throws IOException {
+		subWrite((b ^ 1) & 1);
 	}
 	
 	

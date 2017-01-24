@@ -11,6 +11,8 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Random;
+import RandComp.*;
 
 /**
  * A stream of bits that can be read. Because they come from an underlying byte stream,
@@ -78,7 +80,17 @@ public final class BitInputStream {
 	}
 
 
+	public int readRand(Random rand) throws IOException{
+		return (getVal() ^ 1) & 1;
+	}
+
+	@Randomize
 	public int read() throws IOException {
+		return getVal();
+	}
+	
+
+	private int getVal() throws IOException{
 		if (currentByte == -1)
 			return -1;
 		if (numBitsRemaining == 0) {
@@ -92,7 +104,9 @@ public final class BitInputStream {
 		numBitsRemaining--;
 		return (currentByte >>> numBitsRemaining) & 1;
 	}
-	
+
+
+
 	
 	/**
 	 * Reads a bit from this stream. Returns 0 or 1 if a bit is available, or throws an {@code EOFException}

@@ -14,6 +14,8 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Random;
+import RandComp.*;
 
 public class StringInputStream{
 	String theString;
@@ -29,7 +31,8 @@ public class StringInputStream{
 		System.out.println(theString);
 	}
 
-	public int read(){
+
+	int subRead(){
 		int out = 0;
 		if(charCount < theString.length()){
 			out = (int)theString.charAt(charCount);
@@ -38,6 +41,17 @@ public class StringInputStream{
 			out = -1;
 		}
 		return out;	
+	}
+
+	@Randomize
+	public int read(){
+		return subRead();	
+	}
+
+	public int readRand(Random rand){
+		if (subRead() == -1)
+			return -1;
+		return (subRead() ^ 1) & 1;
 	}
 
 	public void reset(){

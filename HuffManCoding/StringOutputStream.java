@@ -15,6 +15,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.StringBuilder;
+import java.util.Random;
+import RandComp.*;
 
 
 public class StringOutputStream{
@@ -28,8 +30,21 @@ public class StringOutputStream{
 		charCount = 0;
 	}
 
-	public void write(int symbol){
+	
+	void subWrite(int symbol){
 		sb.append((char) symbol);
+	}
+
+	public void writeRand(Random rand, int symbol){
+		int bit = rand.nextInt(8);
+		int mask = 1 << bit;
+		symbol &= mask;
+		subWrite(symbol);
+	}
+
+	@Randomize 
+	public void write(int symbol){
+		subWrite(symbol);
 	}
 
 	public void close(){
