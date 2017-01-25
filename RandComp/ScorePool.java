@@ -23,4 +23,8 @@ public class ScorePool{
 			double errorOut = StringDistances.symbolDistance(error, correct);
 			return new Score(errorOut, name);
 		}
+
+		public static Score nullScore(){
+			return new Score(0,"null_score");
+		}
 }

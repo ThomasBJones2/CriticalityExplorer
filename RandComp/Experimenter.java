@@ -9,17 +9,21 @@ import java.io.*;
 import java.lang.annotation.Annotation;
 import org.reflections.Reflections;
 import org.reflections.scanners.*;
-public class Experimenter implements Runnable {
+public class Experimenter implements Runnable{
 
 	public static final int ERROR_POINTS = 1000;
 
+	static final int MAX_RUN_TIME = 10000;
+	
+	
 	String inputClassName, experimentClassName,fallibleMethodName;
 	int errorPoint, runName, experimentSize;	
 
-	boolean experimentRunning;
+	boolean experimentRunning, sdcError = true;
 
 	static ArrayList<Location> finalLocationsWithScores = new ArrayList<>();
-
+	static ArrayList<Location> finalNonSDCLocations = new ArrayList<>();
+		
 	Location locLocation;
 
 	static final int numThreads = 16;
@@ -100,6 +104,10 @@ public class Experimenter implements Runnable {
 		finalLocationsWithScores.add(in);
 	}
 
+	private static synchronized void addNonSDCLocation(Location in){
+		finalNonSDCLocations.add(in);
+	}
+
 	Experimenter(String inputClassName, 
 		String experimentClassName,
 		int runName, 
@@ -144,32 +152,43 @@ public class Experimenter implements Runnable {
 
 	private static void printAspect(){}
 
-	private Experiment runObject(Input input, Experiment experiment, Random rand, boolean errorful, Experimenter exper){
+	private Experiment runObject(Input input, 
+			Experiment experiment, 
+			Random rand, 
+			boolean errorful){
+
 		RunId curId = new RunId(2*runName + (errorful?1:0), 
 			true,
 			errorful, 
 			errorPoint, 
 			Thread.currentThread().getId(), 
 			rand,
-			exper.fallibleMethodName);
+			fallibleMethodName);
+
 		if(curId.methodName == null){
 			System.out.println("found null methodName in runObject");
 			try{
-				Thread.sleep(10000);
+				Thread.sleep(MAX_RUN_TIME);
 			} catch (Exception E){
 				System.out.println(E);
 			}
 		}
 		addId(curId);
 		RandomMethod.createLocation(curId);
-		if (exper.experimentRunning == false)
+		if (experimentRunning == false)
 			System.out.println("The error point is: " + errorPoint + " " + errorful);
 
-		experiment.experiment(input);
-		
+		try{
+			experiment.experiment(input);
+		} catch (Exception e){
+			//System.out.println("Non SDC error: " + e);
+			sdcError = false;
+		}
+	
+
 		RandomMethod.registerTimeCount();
 		if(errorful){
-			exper.locLocation = RandomMethod.getLocation(curId).getBurnIn();
+			locLocation = RandomMethod.getLocation(curId).getBurnIn();
 		}
 		RandomMethod.clearLocation(curId);
 		removeId(curId);
@@ -184,8 +203,26 @@ public class Experimenter implements Runnable {
 		}
 	}
 
+	void gleanExperimenterLocation(){
+		if(locLocation != null 
+				&& errorObject != null
+				&& correctObject != null) {
+			if(sdcError) {
+				locLocation.addScores(errorObject.scores(correctObject));
+				addLocationWithScores(locLocation);
+			} else {
+				Score[] scores = new Score[1];
+				scores[0] = ScorePool.nullScore();
+				locLocation.addScores(scores);
+				addNonSDCLocation(locLocation);
+			}
+		}
+	}
+
+	Experiment errorObject, correctObject;
+
 	@Override
-	public void run() {
+	public void run (){
 		long seed = new Random().nextLong();
 		long inputSeed = new Random().nextLong();
 		/*System.out.println("Starting " + 
@@ -200,21 +237,18 @@ public class Experimenter implements Runnable {
 		RunId curId = new RunId(Thread.currentThread().getId());
 		curId.setExperiment(false);
 		addId(curId); 
-		Experiment errorObject = (Experiment)getNewObject(experimentClassName);
-		Experiment correctObject = (Experiment)getNewObject(experimentClassName);
+		errorObject = (Experiment)getNewObject(experimentClassName);
+		correctObject = (Experiment)getNewObject(experimentClassName);
 		Input iObject1 = (Input)getNewInputObject(inputClassName, experimentSize);
 		Input iObject2 = (Input)getNewObject(inputClassName);
 		iObject1.randomize(rand);
 		iObject2.copy(iObject1);
 		removeId(curId);
 
-		correctObject = runObject(iObject1, correctObject, rand1, false, this);
-		errorObject = runObject(iObject2, errorObject, rand2, true, this);
-		
-		if(this.locLocation != null) {
-			this.locLocation.addScores(errorObject.scores(correctObject));
-			addLocationWithScores(locLocation);
-		}
+		correctObject = runObject(iObject1, correctObject, rand1, false);
+		errorObject = runObject(iObject2, errorObject, rand2, true);
+
+		gleanExperimenterLocation();
 
 		/* This is how you print scores out here...
 		 *
@@ -235,7 +269,7 @@ public class Experimenter implements Runnable {
 				System.out.println((in[i][j].runTime*in[i][j].errorPoints));
 				if (in[i][j].runTime > 0 && in[i][j].errorPoints>0) {
 					in[i][j].runTime = 
-						Math.min(24*60*60*ERROR_POINTS/(in[i][j].runTime*ERROR_POINTS), (long)1000);
+						Math.min(24*60*60*ERROR_POINTS/(in[i][j].runTime*ERROR_POINTS), (long)ERROR_POINTS);
 						
 				} else {
 					in[i][j].runTime = 0L;
@@ -259,7 +293,7 @@ public class Experimenter implements Runnable {
 					thread.start();
 				}
 				for(Thread t : threads){
-					t.join(10000);
+					t.join(MAX_RUN_TIME);
 					if(t.isAlive()) System.out.println("interupting " + t.toString()); t.interrupt();
 				}
 				avgRunTime = (System.currentTimeMillis() - avgRunTime)/10;
@@ -286,6 +320,24 @@ public class Experimenter implements Runnable {
 		return out;
 	}
 
+
+	static class CheckFuture implements Runnable{
+		Future theFuture;
+
+		CheckFuture(Future theFuture){
+			this.theFuture = theFuture;
+		}
+
+		@Override
+		public void run(){
+			try{
+				theFuture.get(MAX_RUN_TIME*2, TimeUnit.MILLISECONDS);
+			} catch (Exception e){
+				theFuture.cancel(true);
+			}
+		}
+	}
+
 	static void runExperiments(String inputClassName, 
 			String experimentClassName, 
 			RunTimeTriple<Long>[][] rTimes) throws InterruptedException{
@@ -295,13 +347,23 @@ public class Experimenter implements Runnable {
 			System.out.println("Experimenting on size: " + q);	
 
 			ArrayBlockingQueue<Runnable> threadQueue = 
-				new ArrayBlockingQueue<Runnable>(100);
+				new ArrayBlockingQueue<Runnable>(8);
 			ThreadPoolExecutor thePool = 
 				new ThreadPoolExecutor(numThreads,
 					numThreads,
 					0, 
 					TimeUnit.SECONDS,
 					threadQueue);
+
+			ArrayBlockingQueue<Runnable> checkThreadQueue = 
+				new ArrayBlockingQueue<Runnable>(8);
+			ThreadPoolExecutor checkThread = 
+				new ThreadPoolExecutor(numThreads,
+						numThreads,
+						0,
+						TimeUnit.SECONDS,
+						checkThreadQueue);
+
 			//System.out.println("there are " + rTimes[c].errorPoints + " errorpoints");
 			for(int fallmeth = 0; fallmeth < FallibleMethods.size(); fallmeth ++){
 				for(int i = 0; i < rTimes[fallmeth][c].runTime; i ++){
@@ -319,8 +381,8 @@ public class Experimenter implements Runnable {
 									FallibleMethods.get(fallmeth) + 
 									"runtime: " + i + " and errorPoint " + j);
 						}
-						while(threadQueue.size() >= 100){					
-						}
+						while(threadQueue.size() >= 8){}
+						while(checkThreadQueue.size() >= 8){}
 						if(FallibleMethods.get(fallmeth) == null){
 							System.out.println("well the fallmeth: " + fallmeth + "gives us a null method");
 
@@ -328,14 +390,17 @@ public class Experimenter implements Runnable {
 						Experimenter exp = new Experimenter(inputClassName,
 							experimentClassName, 
 							(int) runName, j, q, true, FallibleMethods.get(fallmeth));
-						thePool.execute(exp);
-
+						Future theFuture = thePool.submit(exp);
+						CheckFuture cf = new CheckFuture(theFuture);
+						checkThread.submit(cf);
 						//Thread thread = new Thread(exp);
 						//threads.add(thread);
 						//thread.start();
 					}
 				}
 			}
+
+			
 
 			thePool.shutdown();
 			while (!thePool.awaitTermination(60, TimeUnit.SECONDS)) {
@@ -344,8 +409,12 @@ public class Experimenter implements Runnable {
 		
 			System.out.println("Printing data for size: " + q);	
 			printAllRawData(finalLocationsWithScores, q);
-			printAllProcessedData(new DataEnsemble(finalLocationsWithScores), q);	
+			printAllProcessedData(
+					new DataEnsemble<EnsTriple>(finalLocationsWithScores,EnsTriple::new ), q);	
+			printAllNoSDCData(
+					new DataEnsemble<NoSDCEnsTriple>(finalNonSDCLocations, NoSDCEnsTriple::new), q);
 			
+
 			finalLocationsWithScores = new ArrayList<>();
 			RandomMethod.clearAspect();
 			
@@ -413,7 +482,7 @@ public class Experimenter implements Runnable {
 			for(int j = 0; j < scores.length; j++) {
 				for(int k = 0; k < locations.size(); k ++){
 					if(locations.get(k).pertinent)
-						if(locations.get(k).location > 1000)
+						if(locations.get(k).location > ERROR_POINTS)
 							outputLocations.get(i).print();
 						printOutput(scores[j].name,
 								scores[j].score,
@@ -430,6 +499,24 @@ public class Experimenter implements Runnable {
 
 	private static String cleanString(String in){
 		return  in.replaceAll("\\$","\\\\\\$").replaceAll("\\ ", "\\\\ ");
+	}
+	
+	private static void printNoSDCGraph(String scoreName, String locationName,
+																	String outputDirectory,
+																	int inputSize,
+																	double[][] plottable){
+
+		String outputName = createFile(outputDirectory,
+																		scoreName,
+																		locationName,
+																		inputSize) +  ".png";
+
+		System.out.println("creating no SDC Count pdfs for " + outputName);
+		NoSDCPlotter plotter = new NoSDCPlotter(outputName, 
+										scoreName,
+										locationName,
+										plottable);
+		plotter.plot();		
 	}
 
 	private static void printGraph(String scoreName, String locationName,
@@ -449,21 +536,14 @@ public class Experimenter implements Runnable {
 																		inputSize) + "_Num_Runs" + ".png";
 
 
-		String fileName = createFile(inputDirectory,
-																		scoreName,
-																		locationName,
-																		inputSize) + ".csv";
-		
-		System.out.println("creating pdfs for " + fileName);
-		Plotter plotter = new Plotter(fileName, 
-										outputName, 
+		System.out.println("creating pdfs for " + outputName);
+		Plotter plotter = new Plotter(outputName, 
 										scoreName,
 										locationName,
 										plottable);
 		plotter.plot();		
 		
-		RunsPlotter plotter2 = new RunsPlotter(fileName, 
-										numRunsOutputName, 
+		RunsPlotter plotter2 = new RunsPlotter(numRunsOutputName, 
 										scoreName,
 										locationName,
 										plottable);
@@ -508,18 +588,44 @@ public class Experimenter implements Runnable {
 			System.out.println(E);
 		}*/
 	}
+	private static void printAllNoSDCData(DataEnsemble<NoSDCEnsTriple> dataEnsemble, 
+			int inputSize
+			){
 
-	private static void printAllProcessedData(DataEnsemble dataEnsemble, 
-			int inputSize){
+		for(int i = 0; i < dataEnsemble.scores.size(); i ++) {
+			DataEnsemble<NoSDCEnsTriple>.EnsScore score = dataEnsemble.scores.get(i);
+			for(int j = 0; j < score.locations.size(); j ++){
+				DataEnsemble<NoSDCEnsTriple>.EnsLocation location = score.locations.get(j);
+				double[][] theData = new double[location.triples.size()][2];
+				for(int q = 0; q < location.triples.size(); q ++) {
+					NoSDCEnsTriple triple = location.triples.get(q);
+					theData[q][0] = triple.location;
+					theData[q][1] = triple.count;
+				}
+		
+				//clearOutputOnInputSize(imageRootDirectory, inputSize, ".png");
+				printNoSDCGraph(score.name, 
+						location.name,  
+						imageRootDirectory,
+						inputSize,
+						theData);
+			}
+		}
+
+	}
+
+	private static void printAllProcessedData(DataEnsemble<EnsTriple> dataEnsemble, 
+			int inputSize
+			){
 
 		clearOutputOnInputSize(processedRootDirectory, inputSize, ".csv");
 		for(int i = 0; i < dataEnsemble.scores.size(); i ++) {
-			DataEnsemble.EnsScore score = dataEnsemble.scores.get(i);
+			DataEnsemble<EnsTriple>.EnsScore score = dataEnsemble.scores.get(i);
 			for(int j = 0; j < score.locations.size(); j ++){
-				DataEnsemble.EnsLocation location = score.locations.get(j);
+				DataEnsemble<EnsTriple>.EnsLocation location = score.locations.get(j);
 				double[][] theData = new double[location.triples.size()][4];
 				for(int q = 0; q < location.triples.size(); q ++) {
-					DataEnsemble.EnsTriple triple = location.triples.get(q);
+					EnsTriple triple = location.triples.get(q);
 					printOutput(score.name,
 						triple.avg,
 						triple.stdErr,
@@ -627,8 +733,11 @@ public class Experimenter implements Runnable {
 	}
 
 	public static void addToFallibleMethods(String methodName){
-		if(!FallibleMethods.contains(methodName) && methodName != null){
-			FallibleMethods.add(methodName);
+		if(!FallibleMethods.contains(methodName) 
+				&& methodName != null && 
+				!methodName.equals("null")){
+			
+			FallibleMethods.add(new String(methodName));
 		}
 	}
 

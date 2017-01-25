@@ -24,10 +24,10 @@ import javax.imageio.ImageIO;
 
 
 public class RunsPlotter extends Plotter{
-	public RunsPlotter(String inputFileName, String outputFileName,
+	public RunsPlotter(String outputFileName,
 							String scoreName, String distanceName, 
 							double[][] plottable){
-		super(inputFileName, outputFileName, scoreName, distanceName, plottable);
+		super(outputFileName, scoreName, distanceName, plottable);
 
 	}
 

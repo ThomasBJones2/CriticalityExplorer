@@ -2,8 +2,11 @@ package RandComp;
 
 import java.util.*;
 import java.lang.*;
+import java.util.function.*;
 
-public class DataEnsemble{
+public class DataEnsemble<T extends EnsTriple>{
+
+	private final Supplier<? extends T> ctor;
 
 	public class EnsScore{
 		String name;
@@ -25,70 +28,17 @@ public class DataEnsemble{
 
 	ArrayList<EnsScore> scores = new ArrayList<>();
 
-	public class EnsTriple{
-		double avg;
-		double stdErr;
-		double location;
-		int count;
-		ArrayList<Double> dataPoints = new ArrayList<>();
-
-		void addScore(Score score){
-			dataPoints.add(score.score);
-		}
-
-		double average(){
-			double out = 0;
-			for(double dp : dataPoints){
-				out += dp;
-			}
-			out /= dataPoints.size();
-			return out;
-		}
-
-		public void print(){
-			System.out.println("Ens Triple: ");
-			System.out.println(location);
-			System.out.println(avg);
-			System.out.println(stdErr);
-		}
-
-		double standardErr(){
-			double out = 0;
-			for(double dp : dataPoints){
-				out += (dp - avg)*(dp - avg);
-			}
-			out /= dataPoints.size();
-			return Math.sqrt(out/dataPoints.size());
-		}
-
-		void resolve(){
-			avg = average();
-			stdErr = standardErr();
-			count = dataPoints.size();
-		}
-
-		boolean nearEqual(double a, double b){
-			return Math.abs(a - b) < 0.0000000001;
-		}
-
-		@Override
-		public boolean equals(Object in){
-			if(in == null) return false;
-			if(!(in instanceof DefinedLocation)) return false;
-			return nearEqual(location, ((DefinedLocation) in).location);
-		}
-	}
 
 	public class EnsLocation {
 		String name;
-		ArrayList<EnsTriple> triples = new ArrayList<>();
+		ArrayList<T> triples = new ArrayList<>();
 
 		EnsLocation(DefinedLocation location){
 			name = location.name;
 		}
 
-		EnsTriple getTriple(DefinedLocation dLocation){
-			for(EnsTriple triple : triples){
+		T getTriple(DefinedLocation dLocation){
+			for(T triple : triples){
 				if(triple.equals(dLocation))
 					return triple;
 			}
@@ -125,9 +75,9 @@ public class DataEnsemble{
 							locScore.locations.add(locLocation);
 						}
 
-						EnsTriple locTriple = locLocation.getTriple(dLocation);
+						T locTriple = locLocation.getTriple(dLocation);
 						if(locTriple == null){
-							locTriple = new EnsTriple();
+							locTriple = ctor.get();
 							locTriple.location = dLocation.location;
 							locLocation.triples.add(locTriple);
 						}
@@ -141,11 +91,12 @@ public class DataEnsemble{
 	void resolveScores(){
 		for(EnsScore score : scores)
 			for(EnsLocation location: score.locations)
-				for(EnsTriple triple: location.triples)
+				for(T triple: location.triples)
 					triple.resolve();
 	}
 
-	DataEnsemble(ArrayList<Location> locationsWithScores){
+	DataEnsemble(ArrayList<Location> locationsWithScores, Supplier<? extends T> ctor){
+		this.ctor = Objects.requireNonNull(ctor);
 		System.out.println("Adding scores to data ensemble for processed output");
 		addScores(locationsWithScores);
 		System.out.println("Processing data ensemble");

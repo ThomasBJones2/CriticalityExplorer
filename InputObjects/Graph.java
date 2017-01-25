@@ -4,6 +4,8 @@ import RandComp.*;
 import java.util.*;
  
 public class Graph implements Input<Graph>{
+
+
 		ArrayList<GraphNode> nodes;	
 	
 		double newLinkMultiplier = 0.6;
@@ -12,10 +14,10 @@ public class Graph implements Input<Graph>{
 
 		public static Graph emptyObject(){return new Graph();}
 
+
 		public ArrayList<DefinedLocation> getCurrentLocations(){
 			return new ArrayList<DefinedLocation>();
 		}
-
 
 		public Graph(int n){
 			nodes = new ArrayList<>();
@@ -27,7 +29,9 @@ public class Graph implements Input<Graph>{
 		public static Graph newInputOfSize(int n){
 			return new Graph(n);
 		}
-		
+
+		static public void initialize(){}
+
 		public void randomize(Random rand){
 			for(int i = 0; i < nodes.size(); i ++){
 				nodes.get(i).randomize(rand);

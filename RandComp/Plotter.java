@@ -23,16 +23,14 @@ import javax.imageio.ImageIO;
 
 
 public class Plotter{
-	String inputFileName;
 	String outputFileName;
 	String scoreName;
 	String distanceName;
 	double[][] plottable;
 
-	public Plotter(String inputFileName, String outputFileName,
+	public Plotter(String outputFileName,
 							String scoreName, String distanceName, 
 							double[][] plottable){
-		this.inputFileName = inputFileName;
 		this.outputFileName = outputFileName;
 		this.scoreName = scoreName;
 		this.distanceName = distanceName;
@@ -100,7 +98,6 @@ public class Plotter{
 //		try{
 // 			p.addPlot(new FileDataSet(new File("lala")));
 //		} catch (IOException E){
-//			System.out.println(inputFileName);
 //		}		
 		p.plot();
 

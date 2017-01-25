@@ -155,16 +155,25 @@ public aspect RandomMethod{
 			}
 	}
 
-	Object around() : Randomize() {
+	Object around() : Randomize(){
 		Object targetObject = thisJoinPoint.getTarget();    	
 		final Object[] args = thisJoinPoint.getArgs();
 
 		RunId curId = new RunId(Thread.currentThread().getId());
 		curId = Experimenter.getId(curId);
+
 		if(curId.getExperiment() == true){
 			Random rand = curId.getRand();
 			Location theLocation = getLocation(curId);
-			
+
+			//This forces a non-sdc error which allows us to clean up execution
+			//through 'non-sdc' error methods...
+			if(Thread.currentThread().isInterrupted()){
+				theLocation.burnIn();
+				int[] a = new int[0];
+				a[-1] = 7;
+			}
+
 			String methodName = thisJoinPointStaticPart.
 				getSignature().
 				getDeclaringTypeName()
@@ -183,6 +192,7 @@ public aspect RandomMethod{
 				getName();
 
 			String randMethodName = shortMethodName + "Rand";
+
 
 			//must account for early increment due to return...
 			if((rand.nextDouble() < 0.0 && 

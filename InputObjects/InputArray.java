@@ -22,6 +22,8 @@ public class InputArray implements Input<InputArray>{
 
 	public InputArray newLocInputArray(double[] inArr){return new InputArray(inArr);}
 
+	static public void initialize(){}
+
 	public ArrayList<DefinedLocation> getCurrentLocations(){
 		return new ArrayList<DefinedLocation>();
 	}
