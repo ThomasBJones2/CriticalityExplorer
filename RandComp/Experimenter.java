@@ -181,7 +181,7 @@ public class Experimenter implements Runnable{
 		try{
 			experiment.experiment(input);
 		} catch (Exception e){
-			//System.out.println("Non SDC error: " + e);
+			//System.out.println("Non SDC error: " + errorful + " " + e);
 			sdcError = false;
 		}
 	
@@ -484,6 +484,14 @@ public class Experimenter implements Runnable{
 					if(locations.get(k).pertinent)
 						if(locations.get(k).location > ERROR_POINTS)
 							outputLocations.get(i).print();
+						//System.out.println("bob is here");
+						//scores[j].print();
+						//System.out.println("name " + scores[j].name);
+						//System.out.println("location name " + locations.get(k).name);
+						//System.out.println("location value " + locations.get(k).location);
+						//System.out.println("rawRootDirectory " + rawRootDirectory);
+						//System.out.println("input size "  + inputSize);
+
 						printOutput(scores[j].name,
 								scores[j].score,
 								null,
@@ -732,7 +740,7 @@ public class Experimenter implements Runnable{
 		return null;
 	}
 
-	public static void addToFallibleMethods(String methodName){
+	public static synchronized void addToFallibleMethods(String methodName){
 		if(!FallibleMethods.contains(methodName) 
 				&& methodName != null && 
 				!methodName.equals("null")){

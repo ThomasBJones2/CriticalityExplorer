@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Random;
+import java.util.ArrayList;
 import RandComp.*;
 
 /**
@@ -19,7 +20,7 @@ import RandComp.*;
  * The bits are written in big endian. Mutable and not thread-safe.
  * @see BitInputStream
  */
-public final class BitOutputStream {
+public final class BitOutputStream implements AbstractLocation{
 	
 	/* Fields */
 	
@@ -43,6 +44,10 @@ public final class BitOutputStream {
 		outputStore = new ArrayList<>();
 		currentByte = 0;
 		numBitsFilled = 0;
+	}
+
+	public ArrayList<DefinedLocation> getCurrentLocations(){
+		return new ArrayList<DefinedLocation>();
 	}
 	
 	
@@ -76,11 +81,11 @@ public final class BitOutputStream {
 	 * @throws IOException if an I/O exception occurred
 	 */
 	@Randomize
-	public void write(int b) throws IOException {
+	public void write(Integer b) throws IOException {
 		subWrite(b);
 	}
 
-	public void writeRand(Random rand, int b) throws IOException {
+	public void writeRand(Random rand, Integer b) throws IOException {
 		subWrite((b ^ 1) & 1);
 	}
 	

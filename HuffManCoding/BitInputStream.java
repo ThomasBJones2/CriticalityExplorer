@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Random;
+import java.util.ArrayList;
 import RandComp.*;
 
 /**
@@ -20,7 +21,7 @@ import RandComp.*;
  * Mutable and not thread-safe.
  * @see BitOutputStream
  */
-public final class BitInputStream {
+public final class BitInputStream implements AbstractLocation{
 	
 	/* Fields */
 
@@ -63,7 +64,12 @@ public final class BitInputStream {
 	
 	
 	/* Methods */
+
+	public ArrayList<DefinedLocation> getCurrentLocations(){
+		return new ArrayList<DefinedLocation>();
+	}
 	
+
 	/**
 	 * Reads a bit from this stream. Returns 0 or 1 if a bit is available, or -1 if
 	 * the end of stream is reached. The end of stream always occurs on a byte boundary.

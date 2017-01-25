@@ -15,11 +15,16 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Random;
+import java.util.ArrayList;
 import RandComp.*;
 
-public class StringInputStream{
+public class StringInputStream implements AbstractLocation{
 	String theString;
 	int charCount;
+	
+	public ArrayList<DefinedLocation> getCurrentLocations(){
+		return new ArrayList<DefinedLocation>();
+	}
 	
 	public StringInputStream(String inString){
 		theString = new String(inString);

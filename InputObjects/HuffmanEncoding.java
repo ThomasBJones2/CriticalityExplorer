@@ -17,6 +17,8 @@ public class HuffmanEncoding
 
 	public static HuffmanEncoding emptyObject(){return new HuffmanEncoding();}
 
+	public static void initialize(){}
+
 	public ArrayList<DefinedLocation> getCurrentLocations(){
 		return new ArrayList<DefinedLocation>();
 	}
@@ -55,7 +57,7 @@ public class HuffmanEncoding
 	public Score[] scores(HuffmanEncoding correctObject){
 		Score[] out = new Score [2];
 		out[0] = ScorePool.symbolDistance(this.endString, correctObject.endString);
-		out[0] = ScorePool.manhattanDistance(this.endString, correctObject.endString);
+		out[1] = ScorePool.manhattanDistance(this.endString, correctObject.endString);
 		return out; 
 
 	}

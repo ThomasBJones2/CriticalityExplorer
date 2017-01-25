@@ -16,13 +16,18 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.StringBuilder;
 import java.util.Random;
+import java.util.ArrayList;
 import RandComp.*;
 
 
-public class StringOutputStream{
+public class StringOutputStream implements AbstractLocation{
 	String theString;
 	int charCount;
 	StringBuilder sb;
+	
+	public ArrayList<DefinedLocation> getCurrentLocations(){
+		return new ArrayList<DefinedLocation>();
+	}
 	
 	public StringOutputStream(){
 		theString = new String();
@@ -35,7 +40,7 @@ public class StringOutputStream{
 		sb.append((char) symbol);
 	}
 
-	public void writeRand(Random rand, int symbol){
+	public void writeRand(Random rand, Integer symbol){
 		int bit = rand.nextInt(8);
 		int mask = 1 << bit;
 		symbol &= mask;
@@ -43,7 +48,7 @@ public class StringOutputStream{
 	}
 
 	@Randomize 
-	public void write(int symbol){
+	public void write(Integer symbol){
 		subWrite(symbol);
 	}
 
