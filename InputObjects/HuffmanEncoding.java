@@ -13,6 +13,8 @@ public class HuffmanEncoding
 	String startString;
 	String endString;
 
+	Exception registerThrow;
+
 	public HuffmanEncoding(){}	
 
 	public static HuffmanEncoding emptyObject(){return new HuffmanEncoding();}
@@ -24,6 +26,7 @@ public class HuffmanEncoding
 	}
 
 	public void experiment(InputString iString){
+		StringOutputStream finalString = null;
 		try{
 			startString = new String(iString.theString);
 			HuffmanCompress hc = new HuffmanCompress();
@@ -35,11 +38,16 @@ public class HuffmanEncoding
 			BitOutputStream compressedOut = hc.compress(new StringInputStream(startString));
 			//compressedOut.print();
 				
-			StringOutputStream finalString= hdc.decompress(new BitInputStream(compressedOut));
-			endString = finalString.getOutputString();
+			finalString= hdc.decompress(new BitInputStream(compressedOut));
 		} catch(IOException e) {
 			System.out.println("To be honest, you should never see this exception");
 			System.out.println(e);
+		} finally {
+			if (finalString != null){
+				endString = finalString.getOutputString();
+			} else {
+				endString = "";
+			}
 		}
 	}
 

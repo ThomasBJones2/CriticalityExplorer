@@ -11,6 +11,9 @@ public aspect RandomMethod{
 	static ArrayList<Integer> timeCounts = new ArrayList<>();
 
 	double NEAR_DIST = 0.0000000001;
+
+	EpsilonProbability eProbability = new NullEpsilon();
+	boolean epsilonTest = false;
 	
 	public static void clearAspect(){
 		locations = new ArrayList<>();
@@ -193,12 +196,17 @@ public aspect RandomMethod{
 
 			String randMethodName = shortMethodName + "Rand";
 
-
 			//must account for early increment due to return...
-			if((rand.nextDouble() < 0.0 && 
-					unForcedError(theLocation.getDefinedLocationFromName(methodName).getLocation() - 1, 
-						methodName,
-						curId)) || 
+			if(
+					(rand.nextDouble() < eProbability.getProbability(shortMethodName, theLocation) && 
+						(
+							epsilonTest ||
+							unForcedError(
+								theLocation.getDefinedLocationFromName(methodName).getLocation() - 1, 
+								methodName,
+								curId)
+						)
+					) || 
 					forcedError(theLocation.getDefinedLocationFromName(methodName).getLocation() - 1, 
 						methodName, 
 						curId)) {

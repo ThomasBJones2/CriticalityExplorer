@@ -45,15 +45,19 @@ public final class HuffmanDecompress {
 		//in.reset();
 		HuffmanDecoder dec = new HuffmanDecoder(in);
 		dec.codeTree = code;
-		StringOutputStream out = new StringOutputStream();		
-		while (true) {
-			int symbol = dec.read();
-			if (symbol == 256)  // EOF symbol
-				break;
-			out.write(symbol);
+		StringOutputStream out = new StringOutputStream();	
+		
+		try{	
+			while (true) {
+				int symbol = dec.read();
+				if (symbol == 256)  // EOF symbol
+					break;
+				out.write(symbol);
+			}
+		} finally {
+			out.close();
+			return out;
 		}
-		out.close();
-		return out;
 	}
 	
 }

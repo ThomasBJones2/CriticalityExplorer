@@ -21,6 +21,8 @@ public class Experimenter implements Runnable{
 
 	boolean experimentRunning, sdcError = true;
 
+	Exception nonSDCError;
+
 	static ArrayList<Location> finalLocationsWithScores = new ArrayList<>();
 	static ArrayList<Location> finalNonSDCLocations = new ArrayList<>();
 		
@@ -182,6 +184,7 @@ public class Experimenter implements Runnable{
 			experiment.experiment(input);
 		} catch (Exception e){
 			//System.out.println("Non SDC error: " + errorful + " " + e);
+			nonSDCError = e;
 			sdcError = false;
 		}
 	
@@ -207,12 +210,12 @@ public class Experimenter implements Runnable{
 		if(locLocation != null 
 				&& errorObject != null
 				&& correctObject != null) {
-			if(sdcError) {
+				
 				locLocation.addScores(errorObject.scores(correctObject));
 				addLocationWithScores(locLocation);
-			} else {
+			if(!sdcError) {
 				Score[] scores = new Score[1];
-				scores[0] = ScorePool.nullScore();
+				scores[0] = ScorePool.nullScore(nonSDCError);
 				locLocation.addScores(scores);
 				addNonSDCLocation(locLocation);
 			}
@@ -341,6 +344,11 @@ public class Experimenter implements Runnable{
 	static void runExperiments(String inputClassName, 
 			String experimentClassName, 
 			RunTimeTriple<Long>[][] rTimes) throws InterruptedException{
+
+
+		finalLocationsWithScores = new ArrayList<>();
+		RandomMethod.clearAspect();
+
 		RunTimeTriple<Long>[][] out = new RunTimeTriple[FallibleMethods.size()][3];
 
 		for(int q = 10, c = 0; q <= 1000; q *= 10, c ++){	

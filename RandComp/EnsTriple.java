@@ -22,6 +22,8 @@ public class EnsTriple{
 	double average(){
 		double out = 0;
 		for(double dp : dataPoints){
+			if(dp == Double.POSITIVE_INFINITY)
+				System.out.println("Found one: " + dp + dataPoints.size());
 			out += dp;
 		}
 		out /= dataPoints.size();

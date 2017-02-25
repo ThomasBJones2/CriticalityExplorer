@@ -6,7 +6,7 @@ import java.lang.*;
 public class NoSDCEnsTriple extends EnsTriple{
 	@Override
 	void addScore(Score score){
-		System.out.println("The location is " + location);
+		//System.out.println("The location is " + location);
 		count ++;
 	}
 

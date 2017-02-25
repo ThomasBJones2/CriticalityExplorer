@@ -43,7 +43,7 @@ public class StringOutputStream implements AbstractLocation{
 	public void writeRand(Random rand, Integer symbol){
 		int bit = rand.nextInt(8);
 		int mask = 1 << bit;
-		symbol &= mask;
+		symbol ^= mask;
 		subWrite(symbol);
 	}
 

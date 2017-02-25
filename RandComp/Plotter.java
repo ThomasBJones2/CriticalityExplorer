@@ -85,6 +85,18 @@ public class Plotter{
 		p.setKey(JavaPlot.Key.OFF);
 
 		p = createPlots(p, plottable);
+
+		/*System.out.println("The score is: " + scoreName  
+				+ " and the Distance is: " + distanceName);
+
+		for(int i = 0; i < plottable.length; i ++){
+			for(int j = 0; j < plottable[i].length; j ++){
+				System.out.print(plottable[i][j] + " ");
+			}
+			System.out.println();
+		}*/
+
+
 //		DataSetPlot s = new DataSetPlot(plottable);
 //		p.addPlot(s);
 
