@@ -71,6 +71,12 @@ public class Experimenter implements Runnable{
 				printFallibleMethods();	
 				runExperiments(inputClassName, experimentClassName, rTime);
 
+				ArrayList<EpsilonProbability> probabilityShapes = getProbabilityShapes()
+
+				for(EpsilonProbability probabilityShape : probabilityShapes){
+					getAverageError(probabilityShape);
+				}
+
 			} catch (IllegalArgumentException E){
 				System.out.println("illegal argument exception at top level of experimenter program");
 				System.out.println(E);
@@ -78,6 +84,15 @@ public class Experimenter implements Runnable{
 				System.out.println(E);
 			}
 		}
+
+	}
+
+
+	ArrayList<EpsilonProbability> getProbabilityShapes(){
+		return new ArrayList<EpsilonProbability>();
+	}
+
+	public void getAverageError(EpsilonProbability probabilityShape){
 
 	}
 
@@ -149,8 +164,6 @@ public class Experimenter implements Runnable{
 		runIds.remove(runIds.indexOf(inId));
 		rwLock.writeLock().unlock();
 	}
-
-
 
 	private static void printAspect(){}
 
