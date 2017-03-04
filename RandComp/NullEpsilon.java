@@ -6,4 +6,9 @@ public class NullEpsilon implements EpsilonProbability{
 		return 0.0;
 	}
 
+	public void printName(){
+		System.out.println("NullEpsilon");
+
+	}
+
 }

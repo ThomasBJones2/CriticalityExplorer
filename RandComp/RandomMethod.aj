@@ -12,8 +12,8 @@ public aspect RandomMethod{
 
 	double NEAR_DIST = 0.0000000001;
 
-	EpsilonProbability eProbability = new NullEpsilon();
-	boolean epsilonTest = false;
+	public static EpsilonProbability eProbability = new NullEpsilon();
+	public static boolean epsilonTest = false;
 	
 	public static void clearAspect(){
 		locations = new ArrayList<>();
@@ -206,10 +206,13 @@ public aspect RandomMethod{
 								methodName,
 								curId)
 						)
-					) || 
-					forcedError(theLocation.getDefinedLocationFromName(methodName).getLocation() - 1, 
-						methodName, 
-						curId)) {
+					) || (
+						!epsilonTest &&	
+						forcedError(theLocation.getDefinedLocationFromName(methodName).getLocation() - 1, 
+							methodName, 
+							curId)
+						) 
+					){
 //					unForcedError(theLocation.timeCount - 1, curId)) || 
 //					forcedError(theLocation.timeCount - 1, methodName, curId)) {
 				return randomizedCall(targetObject, args, randMethodName, rand);
