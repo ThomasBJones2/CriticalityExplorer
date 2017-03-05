@@ -69,7 +69,7 @@ public class Experimenter implements Runnable{
 				changeToExperimentTime(rTime);
 				printRunTimes(rTime);
 				printFallibleMethods();	
-				runExperiments(inputClassName, experimentClassName, rTime);
+				//runExperiments(inputClassName, experimentClassName, rTime);
 
 				ArrayList<EpsilonProbability> probabilityShapes = getProbabilityShapes();
 
@@ -88,7 +88,9 @@ public class Experimenter implements Runnable{
 	}
 
 	static ArrayList<EpsilonProbability> getProbabilityShapes(){
-		return new ArrayList<EpsilonProbability>();
+		ArrayList<EpsilonProbability> out = new ArrayList<EpsilonProbability>();
+		out.add(new NullEpsilon());
+		return out;
 	}
 
 	public static void getAverageError(EpsilonProbability probabilityShape,
@@ -104,25 +106,25 @@ public class Experimenter implements Runnable{
 
 		finalLocationsWithScores = new ArrayList<>();
 		RandomMethod.clearAspect();
-
-		ArrayBlockingQueue<Runnable> threadQueue = 
-			new ArrayBlockingQueue<Runnable>(8);
-		ThreadPoolExecutor thePool = 
-			new ThreadPoolExecutor(numThreads,
-				numThreads,
-				0, 
-				TimeUnit.SECONDS,
-				threadQueue);
-
-		ArrayBlockingQueue<Runnable> checkThreadQueue = 
-			new ArrayBlockingQueue<Runnable>(8);
-		ThreadPoolExecutor checkThread = 
-			new ThreadPoolExecutor(numThreads,
-					numThreads,
-					0,
-					TimeUnit.SECONDS,
-					checkThreadQueue);
 		for(int q = 10, c = 0; q <= 1000; q *= 10, c ++){
+			ArrayBlockingQueue<Runnable> threadQueue = 
+				new ArrayBlockingQueue<Runnable>(8);
+			ThreadPoolExecutor thePool = 
+				new ThreadPoolExecutor(numThreads,
+					numThreads,
+					0, 
+					TimeUnit.SECONDS,
+					threadQueue);
+
+			ArrayBlockingQueue<Runnable> checkThreadQueue = 
+				new ArrayBlockingQueue<Runnable>(8);
+			ThreadPoolExecutor checkThread = 
+				new ThreadPoolExecutor(numThreads,
+						numThreads,
+						0,
+						TimeUnit.SECONDS,
+						checkThreadQueue);
+
 			for(int j = 0; j < 1000; j ++){ 
 				
 				long runName = j;
@@ -133,7 +135,7 @@ public class Experimenter implements Runnable{
 				while(checkThreadQueue.size() >= 8){}
 				Experimenter exp = new Experimenter(inputClassName,
 					experimentClassName, 
-					(int) runName, j, q, false, "All");
+					(int) runName, j, q, true, "All");
 				Future theFuture = thePool.submit(exp);
 				CheckFuture cf = new CheckFuture(theFuture);
 				checkThread.submit(cf);
@@ -149,16 +151,17 @@ public class Experimenter implements Runnable{
 		
 			System.out.println("Printing Average Error Data data for size: " + q);	
 		
-			printAverageErrorData();
+			printAverageErrorData(q);
 
 			finalLocationsWithScores = new ArrayList<>();
 			RandomMethod.clearAspect();
 		}
 	}
 
-	public static void printAverageErrorData(){
-
-
+	public static void printAverageErrorData(int inputSize){
+			printAllProcessedData(
+					new DataEnsemble<EnsTriple>(finalLocationsWithScores,EnsTriple::new ), inputSize);	
+			
 	}
 
 	private static void printFallibleMethods(){

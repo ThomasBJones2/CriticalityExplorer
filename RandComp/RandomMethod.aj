@@ -110,44 +110,20 @@ public aspect RandomMethod{
 			&& (methodName.equals(curId.methodName) || curId.methodName.equals("All"));
 	}
 
-	void updateSingleLocation(Location theLocation, DefinedLocation handle){
-		if(theLocation.dLocations.contains(handle)){
-			int index = theLocation.dLocations.indexOf(handle);
-			theLocation.dLocations.get(index).setLocation(handle.getLocation());
-			theLocation.dLocations.get(index).pertinent = true;
-		} else {
-			DefinedLocation dist = new DefinedLocation(handle);
-			dist.pertinent = true;
-			theLocation.dLocations.add(dist);
-		}
-	}
-
-	void incrementSingleLocation(Location theLocation, DefinedLocation handle){
-		DefinedLocation dLocation = null;
-		if(theLocation.dLocations.contains(handle)){
-			dLocation = 
-				theLocation.dLocations.get(theLocation.dLocations.indexOf(handle));
-		} else {
-			dLocation = new DefinedLocation(handle.getName(), 0);
-			theLocation.dLocations.add(dLocation);
-		}
-		dLocation.increment();
-		dLocation.pertinent = true;
-	}
 
 	void updateLocations(Location theLocation, 
 			RunId curId, 
 			String methodName, 
 			AbstractLocation targetObject){
 
+			//only keep track of locations when *not* running the epsilon test
 			theLocation.clearPertinence();
 
-			DefinedLocation handle = new DefinedLocation(methodName);		
-
-			incrementSingleLocation(theLocation, handle);
+			theLocation.incrementSingleLocation(new DefinedLocation(methodName));
+			
 			ArrayList<DefinedLocation> absLocations = targetObject.getCurrentLocations();
 			for(DefinedLocation d : absLocations){
-				updateSingleLocation(theLocation, d);
+				theLocation.updateSingleLocation(d);
 			}
 
 			if(forcedError(theLocation.getDefinedLocationFromName(methodName).location, 
@@ -156,6 +132,14 @@ public aspect RandomMethod{
 
 				theLocation.burnIn();
 			}
+			if(epsilonTest){
+				theLocation.clearPertinence();
+				DefinedLocation epsilonHandle	= new DefinedLocation("EpsilonTest", 0);
+				epsilonHandle.pertinent = true;
+				theLocation.updateSingleLocation(epsilonHandle);
+				theLocation.burnIn();
+			}
+	
 	}
 
 	Object around() : Randomize(){

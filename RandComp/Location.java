@@ -29,6 +29,32 @@ public class Location{
 //		this.failedMethod = in.failedMethod;
 	}
 
+
+	void updateSingleLocation(DefinedLocation handle){
+		if(dLocations.contains(handle)){
+			int index = dLocations.indexOf(handle);
+			dLocations.get(index).setLocation(handle.getLocation());
+			dLocations.get(index).pertinent = true;
+		} else {
+			DefinedLocation dist = new DefinedLocation(handle);
+			dist.pertinent = true;
+			dLocations.add(dist);
+		}
+	}
+
+	
+	void incrementSingleLocation(DefinedLocation handle){
+		DefinedLocation dLocation = null;
+		if(dLocations.contains(handle)){
+			dLocation = dLocations.get(dLocations.indexOf(handle));
+		} else {
+			dLocation = new DefinedLocation(handle.getName(), 0);
+			dLocations.add(dLocation);
+		}
+		dLocation.increment();
+		dLocation.pertinent = true;
+	}
+
 	public void clearPertinence(){
 		for(int i = 0; i < dLocations.size(); i ++)
 			dLocations.get(i).pertinent = false;
