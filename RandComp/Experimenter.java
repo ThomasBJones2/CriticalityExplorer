@@ -125,23 +125,28 @@ public class Experimenter implements Runnable{
 						TimeUnit.SECONDS,
 						checkThreadQueue);
 
-			for(int j = 0; j < 1000; j ++){ 
-				
-				long runName = j;
-				if(runName % 100 == 0){
-					System.out.println("Now on runtime: " + j);
+			for(double probability = 0; probability <= 0.1; probability += 0.01){
+				probabilityShape.setProbability(probability);
+
+
+				for(int j = 0; j < 1000; j ++){ 
+					
+					long runName = j + (long)(probability*10000.0*1000.0);
+					if(runName % 100 == 0){
+						System.out.println("Now on runtime: " + j);
+					}
+					while(threadQueue.size() >= 8){}
+					while(checkThreadQueue.size() >= 8){}
+					Experimenter exp = new Experimenter(inputClassName,
+						experimentClassName, 
+						(int) runName, j, q, true, "All");
+					Future theFuture = thePool.submit(exp);
+					CheckFuture cf = new CheckFuture(theFuture);
+					checkThread.submit(cf);
+					//Thread thread = new Thread(exp);
+					//threads.add(thread);
+					//thread.start();
 				}
-				while(threadQueue.size() >= 8){}
-				while(checkThreadQueue.size() >= 8){}
-				Experimenter exp = new Experimenter(inputClassName,
-					experimentClassName, 
-					(int) runName, j, q, true, "All");
-				Future theFuture = thePool.submit(exp);
-				CheckFuture cf = new CheckFuture(theFuture);
-				checkThread.submit(cf);
-				//Thread thread = new Thread(exp);
-				//threads.add(thread);
-				//thread.start();
 			}
 		
 			thePool.shutdown();
@@ -306,7 +311,7 @@ public class Experimenter implements Runnable{
 	Experiment errorObject, correctObject;
 
 	@Override
-	public void run (){
+	public void run(){
 		long seed = new Random().nextLong();
 		long inputSeed = new Random().nextLong();
 		/*System.out.println("Starting " + 
@@ -333,17 +338,6 @@ public class Experimenter implements Runnable{
 		errorObject = runObject(iObject2, errorObject, rand2, true);
 
 		gleanExperimenterLocation();
-
-		/* This is how you print scores out here...
-		 *
-		System.out.println("The errors were: \n");
-		for(int q = 0; q < errorObject.scores(correctObject).length; q ++)
-			System.out.println(	
-				errorObject.scores(correctObject)[q].getName() + " " + 
-				errorObject.scores(correctObject)[q].getScore()
-				);
-		*/
-		//System.out.println("Done " + Thread.currentThread().getId());
 	}
 
 	
@@ -646,44 +640,6 @@ public class Experimenter implements Runnable{
 										plottable);
 		plotter2.plot();		
 		
-		/*try{
-			
-		
-
-			String execStrings[] = {
-				"gnuplot",
-				"-e",
-				"\"outname=\'" + cleanString(outputName) + "\';title=\'" 
-					+ scoreName,
-				"vs",
-				cleanString(locationName) + 
-					"\';location=\'" + cleanString(locationName) 
-					+ "\';error=\'" + scoreName + 
-					"\';filename=\'" + cleanString(fileName) + "\'\"",
-				"Graph.plt"
-			};
-			
-			String execString = "gnuplot -e \"outname=\'" + cleanString(outputName) + "\';title=\'" 
-					+ scoreName + cleanString("vs") + cleanString(locationName) + 
-					"\';location=\'" + cleanString(locationName) 
-					+ "\';error=\'" + scoreName + 
-					"\';filename=\'" + cleanString(fileName) + "\'\" Graph.plt"; 
-			System.out.println(execString);	
-			Runtime rt = Runtime.getRuntime();
-			Process pr = rt.exec(execString);
-			InputStream stderr = pr.getErrorStream();
-			InputStreamReader isr = new InputStreamReader(stderr);
-			BufferedReader br = new BufferedReader(isr);
-			String line = null;
-			System.out.println("<ERROR>");
-			while((line = br.readLine()) != null)
-				System.out.println(line);
-			System.out.println("</ERROR>");
-
-			System.out.println("Gnuplot exited on: " + pr.waitFor());
-		} catch (Exception E){
-			System.out.println(E);
-		}*/
 	}
 	private static void printAllNoSDCData(DataEnsemble<NoSDCEnsTriple> dataEnsemble, 
 			int inputSize

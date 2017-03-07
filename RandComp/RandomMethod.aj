@@ -134,7 +134,7 @@ public aspect RandomMethod{
 			}
 			if(epsilonTest){
 				theLocation.clearPertinence();
-				DefinedLocation epsilonHandle	= new DefinedLocation("EpsilonTest", 0);
+				DefinedLocation epsilonHandle	= new DefinedLocation(eProbability.getName(), eProbability.getLocation());
 				epsilonHandle.pertinent = true;
 				theLocation.updateSingleLocation(epsilonHandle);
 				theLocation.burnIn();
@@ -182,9 +182,11 @@ public aspect RandomMethod{
 
 			//must account for early increment due to return...
 			if(
-					(rand.nextDouble() < eProbability.getProbability(shortMethodName, theLocation) && 
+					curId.errorful &&
+					(
+					 (rand.nextDouble() < eProbability.getProbability(shortMethodName, theLocation) && 
 						(
-							epsilonTest ||
+							(epsilonTest) ||
 							unForcedError(
 								theLocation.getDefinedLocationFromName(methodName).getLocation() - 1, 
 								methodName,
@@ -195,6 +197,7 @@ public aspect RandomMethod{
 						forcedError(theLocation.getDefinedLocationFromName(methodName).getLocation() - 1, 
 							methodName, 
 							curId)
+						)
 						) 
 					){
 //					unForcedError(theLocation.timeCount - 1, curId)) || 

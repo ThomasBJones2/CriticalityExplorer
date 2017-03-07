@@ -19,6 +19,12 @@ public class DefinedLocation {
 		location = (double)tCount;
 	}
 
+	DefinedLocation(String mName, double tCount){
+		name = mName;
+		location = tCount;
+	}
+
+
 	DefinedLocation(DefinedLocation in){
 		this.name = in.name;
 		this.location = in.location;
