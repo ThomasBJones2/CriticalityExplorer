@@ -1,5 +1,7 @@
 package RandComp;
 
+import au.com.bytecode.opencsv.CSVReadProc;
+
 import java.util.*;
 import java.lang.reflect.*;
 import java.lang.Thread;
@@ -260,20 +262,26 @@ public abstract class Experimenter implements Runnable{
 	}
 	
 
-	public synchronized void printFinalResults(Experiment correctObject, Experiment errorObject){
-		/*if(locLocation != null 
-				&& errorObject != null
-				&& correctObject != null) {
-				
-				locLocation.addScores(errorObject.scores(correctObject));
-				addLocationWithScores(locLocation);
-			if(!sdcError) {
-				Score[] scores = new Score[1];
-				scores[0] = ScorePool.nullScore(nonSDCError);
-				locLocation.addScores(scores);
-				addNonSDCLocation(locLocation);
-			}
-		}*/
+	public synchronized void printFinalResults(Location localLocation, 
+		Experiment correctObject, 
+		Experiment errorObject){
+
+		Score[] scores = errorObject.scores(correctObject);				
+		Score errorScore = null;		
+		if(!sdcError) {
+			errorScore = ScorePool.nullScore(nonSDCError);
+		}			
+	
+		saveLocation(locLocation);
+		saveScores(scores, errorScore);
+	}
+
+	public void saveScores(Score[] scores, Score errorScore){
+		
+	}
+
+	public void saveLocation(Location location){
+
 	}
 	
 
