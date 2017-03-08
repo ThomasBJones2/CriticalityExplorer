@@ -25,15 +25,25 @@ public class CriticalityExperimenter extends Experimenter{
 			fallibleMethodName);
 	}
 
-		@Override
-		public void runMain() throws InterruptedException{
-				RunTimeTriple<Long>[][] rTime = getRunTimes();
-				printRunTimes(rTime);
-				changeToExperimentTime(rTime);
-				printRunTimes(rTime);
-				printFallibleMethods();	
-				runExperiments(new CriticalityExperiment(rTime));
-		}
+
+	CriticalityExperimenter(){
+		super();
+	}
+
+	public static Experimenter emptyObject(){
+		System.out.println("Grabbing Criticality Experiment...");
+		return new CriticalityExperimenter();
+	}
+	
+	@Override
+	public void runMain() throws InterruptedException{
+			RunTimeTriple<Long>[][] rTime = getRunTimes();
+			printRunTimes(rTime);
+			changeToExperimentTime(rTime);
+			printRunTimes(rTime);
+			printFallibleMethods();	
+			runExperiments(new CriticalityExperiment(rTime));
+	}
 
 
 	public class CriticalityExperiment implements ExperimentFunction{

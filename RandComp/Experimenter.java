@@ -34,7 +34,26 @@ public abstract class Experimenter implements Runnable{
 
 	static List<String> FallibleMethods = new ArrayList<String>();
 
+
+	Experimenter(){}
+
+	Experimenter(
+		int runName, 
+		int errorPoint,
+		int experimentSize,
+		boolean experimentRunning,
+		String fallibleMethodName){
+
+		this.errorPoint = errorPoint;
+		this.runName = runName;
+		this.experimentSize = experimentSize;
+		this.experimentRunning = experimentRunning;
+		this.fallibleMethodName = fallibleMethodName;
+	}
+
 	public abstract void runMain() throws InterruptedException;
+
+	public static Experimenter emptyObject(){return null;}
 
 	public static void main(String args[]){
 		if(args[0].equals("h") || args[0].equals("H")){
@@ -72,22 +91,6 @@ public abstract class Experimenter implements Runnable{
 			}
 		}
 
-	}
-
-	Experimenter(){}
-
-	Experimenter(
-		int runName, 
-		int errorPoint,
-		int experimentSize,
-		boolean experimentRunning,
-		String fallibleMethodName){
-
-		this.errorPoint = errorPoint;
-		this.runName = runName;
-		this.experimentSize = experimentSize;
-		this.experimentRunning = experimentRunning;
-		this.fallibleMethodName = fallibleMethodName;
 	}
 
 	public static ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock(); 

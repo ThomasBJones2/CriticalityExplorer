@@ -24,6 +24,15 @@ public class EconomyExperimenter extends Experimenter{
 			fallibleMethodName);
 	}
 
+	EconomyExperimenter(){
+		super();
+	}
+
+	public static Experimenter emptyObject(){
+		System.out.println("Grabbing Economy Experiment...");
+		return new EconomyExperimenter();
+	}
+
 
 	@Override
 	public void runMain() throws InterruptedException{
