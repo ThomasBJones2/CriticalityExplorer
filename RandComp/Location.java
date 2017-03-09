@@ -107,6 +107,16 @@ public class Location{
 		}
 	}
 
+	public ArrayList<String> outputIterator(){
+		ArrayList<String> out = new ArrayList<>();
+		for(DefinedLocation dLocation : dLocations) {
+			if(dLocation.pertinent) {
+				out.add("location: " + dLocation.toString());
+			}
+		}
+		return out;
+	}
+
 	public void addBurnInScores(Score[] in){
 		if(burnIn == null)
 			System.out.println("Null Burn In");

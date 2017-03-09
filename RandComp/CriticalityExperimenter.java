@@ -36,7 +36,7 @@ public class CriticalityExperimenter extends Experimenter{
 	}
 	
 	@Override
-	public void runMain() throws InterruptedException{
+	public void runMain() throws InterruptedException, IOException{
 			RunTimeTriple<Long>[][] rTime = getRunTimes();
 			printRunTimes(rTime);
 			changeToExperimentTime(rTime);

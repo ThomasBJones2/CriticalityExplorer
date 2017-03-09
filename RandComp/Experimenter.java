@@ -1,6 +1,6 @@
 package RandComp;
 
-import au.com.bytecode.opencsv.CSVReadProc;
+import au.com.bytecode.opencsv.CSVWriter;
 
 import java.util.*;
 import java.lang.reflect.*;
@@ -36,6 +36,9 @@ public abstract class Experimenter implements Runnable{
 
 	static List<String> FallibleMethods = new ArrayList<String>();
 
+	static CSVWriter outputWriter;
+
+	static String outputFile;
 
 	Experimenter(){}
 
@@ -53,11 +56,11 @@ public abstract class Experimenter implements Runnable{
 		this.fallibleMethodName = fallibleMethodName;
 	}
 
-	public abstract void runMain() throws InterruptedException;
+	public abstract void runMain() throws InterruptedException, IOException;
 
 	public static Experimenter emptyObject(){return null;}
 
-	public static void main(String args[]){
+	public static void main(String args[]) throws IOException{
 		if(args[0].equals("h") || args[0].equals("H")){
 			System.out.println("Welcome to the RandomComputation Service");
 			System.out.println("There are two ways to use this service: \n" +
@@ -201,7 +204,9 @@ public abstract class Experimenter implements Runnable{
 		correctObject = runObject(iObject1, correctObject, rand1, false);
 		errorObject = runObject(iObject2, errorObject, rand2, true);
 
-		printFinalResults(correctObject, errorObject);
+		if(experimentRunning) {
+			printFinalResults(correctObject, errorObject);
+		}
 	}
 
 	static class CheckFuture implements Runnable{
@@ -222,7 +227,7 @@ public abstract class Experimenter implements Runnable{
 	}
 
 	public static void runExperiments(ExperimentFunction EF)
-			throws InterruptedException{
+			throws InterruptedException, IOException{
 		
 		RandomMethod.clearAspect();
 		for(int inputSize = 10, loopCount = 0; inputSize <= 1000; inputSize *= 10, loopCount ++){
@@ -244,6 +249,14 @@ public abstract class Experimenter implements Runnable{
 						TimeUnit.SECONDS,
 						checkThreadQueue);
 
+			outputFile = rawDataOutputDirectory + 
+				inputClassName + 
+				experimentClassName + 
+				experimentTypeName + 
+				inputSize + ".csv";
+
+			outputWriter = new CSVWriter(new FileWriter(new File(outputFile)));
+
 			EF.runExperiment(threadQueue, thePool, checkThreadQueue, checkThread, inputSize, loopCount);
 		
 			thePool.shutdown();
@@ -253,6 +266,7 @@ public abstract class Experimenter implements Runnable{
 		
 			System.out.println("Printing Average Error Data data for size: " + inputSize);	
 		
+			outputWriter.close();
 			RandomMethod.clearAspect();
 		}
 	}
@@ -261,8 +275,14 @@ public abstract class Experimenter implements Runnable{
 
 	}
 	
+	String[] concat(String[] first, String[] second) {
+    List<String> both = new ArrayList<String>(first.length + second.length);
+    Collections.addAll(both, first);
+    Collections.addAll(both, second);
+    return both.toArray(new String[both.size()]);
+	}
 
-	public synchronized void printFinalResults(Location localLocation, 
+	public synchronized void printFinalResults(
 		Experiment correctObject, 
 		Experiment errorObject){
 
@@ -272,16 +292,42 @@ public abstract class Experimenter implements Runnable{
 			errorScore = ScorePool.nullScore(nonSDCError);
 		}			
 	
-		saveLocation(locLocation);
-		saveScores(scores, errorScore);
+		String[] locationStrings = getLocationStrings(locLocation);
+		String[] scoreStrings = getScoreStrings(scores, errorScore);
+			
+		outputWriter.writeNext(concat(locationStrings, scoreStrings));
+
+		try{
+			outputWriter.flush();
+		} catch (IOException e) {
+			System.out.println("There was a problem flushing the result printer to csv " + e);
+		}
 	}
 
-	public void saveScores(Score[] scores, Score errorScore){
+
+	public void iteratorPrint(String[] strings){
+		for(String string : strings){
+			System.out.println(string);
+		}
+
+	}
+
+	public String[] getScoreStrings(Score[] scores, Score errorScore){
+		String[] theScores = new String[scores.length + (errorScore==null?0:1)];
+		for(int i = 0; i < scores.length; i ++){
+			theScores[i] = "score: " + scores[i].toString();
+		}
+		if(errorScore != null)
+			theScores[theScores.length - 1] = "score: " + errorScore.toString();
 		
+		return theScores;
 	}
 
-	public void saveLocation(Location location){
+	public String[] getLocationStrings(Location location){
+		ArrayList<String> locationOutputList = location.outputIterator();		
+		String[] locationOutput = locationOutputList.toArray(new String[locationOutputList.size()]);
 
+		return locationOutput;
 	}
 	
 

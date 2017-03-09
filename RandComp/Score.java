@@ -20,4 +20,9 @@ public class Score{
 	public void print(){
 		System.out.println(name + " " + score);
 	}
+
+	@Override
+	public String toString(){
+		return name + " " + score;
+	}
 }	

@@ -57,6 +57,11 @@ public class DefinedLocation {
 	}
 
 	public void print(){
-		System.out.print(name + " " + location + " ");
+		System.out.print(this.toString() + " ");
+	}
+
+	@Override
+	public String toString(){
+		return name + " " + location;
 	}
 }

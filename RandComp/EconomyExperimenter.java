@@ -35,7 +35,7 @@ public class EconomyExperimenter extends Experimenter{
 
 
 	@Override
-	public void runMain() throws InterruptedException{
+	public void runMain() throws InterruptedException, IOException{
 		ArrayList<EpsilonProbability> probabilityShapes = getProbabilityShapes();
 
 		for(EpsilonProbability probabilityShape : probabilityShapes){
