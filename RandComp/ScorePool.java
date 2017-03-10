@@ -9,21 +9,20 @@ public class ScorePool{
 		}
 
 		public static Score absolutePercentValue(double error, double correct){
-			
 			return new Score(Math.abs(error - correct)/Math.abs(correct + 1), 
 			"Absolute_Percent_Value"); 
 		}
 
 		public static Score absoluteValueBigInteger(BigInteger error, BigInteger correct){ 
 			BigInteger newError = (error == null)?BigInteger.ZERO:error;
-			BigInteger newCorrect = (correct == null)?BigInteger.ZERO:correct);
+			BigInteger newCorrect = (correct == null)?BigInteger.ZERO:correct;
 			double score = error.subtract(correct).abs().doubleValue();
 			return new Score(score, "Absolute_Value"); 
 		}
 
 		public static Score logarithmAbsoluteValueBigInteger(BigInteger error, BigInteger correct){ 
 			BigInteger newError = (error == null)?BigInteger.ZERO:error;
-			BigInteger newCorrect = (correct == null)?BigInteger.ZERO:correct);
+			BigInteger newCorrect = (correct == null)?BigInteger.ZERO:correct;
 			return new Score(
 				Math.log((error.subtract(correct).add(BigInteger.ONE)).abs().doubleValue()), 
 				"Absolute_Logarithm_Value"); 
@@ -32,7 +31,7 @@ public class ScorePool{
 
 		public static Score absolutePercentValueBigInteger(BigInteger error, BigInteger correct){
 			BigInteger newError = (error == null)?BigInteger.ZERO:error;
-			BigInteger newCorrect = (correct == null)?BigInteger.ZERO:correct);
+			BigInteger newCorrect = (correct == null)?BigInteger.ZERO:correct;
 			return new Score(
 			(((error.subtract(correct)).abs()).divide(correct.abs().add(BigInteger.ONE))).doubleValue(), 
 			"Absolute_Percent_Value"); 
