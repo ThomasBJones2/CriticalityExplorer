@@ -1,5 +1,7 @@
 package RandComp;
 
+import au.com.bytecode.opencsv.CSVReader;
+
 import java.util.*;
 import java.io.*;
 
@@ -7,7 +9,74 @@ import java.io.*;
 
 public class GraphBuilder{
 
-/*	private static void clearOutputOnInputSize (String directoryName, 
+	static ArrayList<Location> readInLocations;
+
+	static String imageRootDirectory = "./output_images/";
+	static String rawDataOutputDirectory = "./output/";
+	static String inputClassName, experimentClassName, experimentTypeName;
+
+	public static void main(String[] args){
+		if(args[0].equals("h") || args[0].equals("H")){
+			System.out.println("Welcome to the GraphBuilding Service");
+			System.out.println("There are two ways to use this service: \n" +
+					"(1) java.jar <name> Input_Object Main_Object Experiment_Type  OR \n"+
+				  "(2) java.jar <name> Input_Object Main_Object Experiment_Type Images_Directory "
+ 					+ "Data_output_directory");
+		} else {
+
+			inputClassName = args[0]; 
+			experimentClassName = args[1];	
+			experimentTypeName = args[2];
+
+			if(args.length == 5){
+				imageRootDirectory = args[3];
+				rawDataOutputDirectory = args[4];
+			}
+
+			readDataIn();
+
+		}
+		
+
+	}
+
+	public static void printReadInData(){
+			for(Location location : readInLocations){
+				location.print();
+			}
+	}
+
+
+	public static void readDataIn(){
+		for(int inputSize = 10; inputSize <= 1000; inputSize *= 10){
+			String inputFile = rawDataOutputDirectory + 
+				inputClassName + 
+				experimentClassName + 
+				experimentTypeName + 
+				inputSize + ".csv";
+			
+			readInLocations = new ArrayList<>();
+	
+			try{
+				CSVReader inputReader = new CSVReader(new FileReader(new File(inputFile)));
+
+				List<String[]> allLocations = inputReader.readAll();
+
+				for(String[] location : allLocations){
+					readInLocations.add(Location.buildFromStringArray(location));
+				}
+
+				printReadInData();
+
+			} catch (IOException e){
+				System.out.println("The file doesn't exist ---" + 
+					" you've probably not run the experiment" + e); 
+
+			}
+		}
+	}
+
+	/*private static void clearOutputOnInputSize (String directoryName, 
 			int input_size, 
 			String fileTerminal){
 		File directory = new File(directoryName);

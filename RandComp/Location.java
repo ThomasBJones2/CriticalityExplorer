@@ -6,7 +6,7 @@ public class Location{
 	int runName;
 	long threadId;
 	int timeCount = 0;
-	Score[] scores;
+	ArrayList<Score> scores = new ArrayList<>();
 	ArrayList<DefinedLocation> dLocations = new ArrayList<>();
 //	String failedMethod;
 
@@ -60,7 +60,7 @@ public class Location{
 			dLocations.get(i).pertinent = false;
 	}
 
-	public Score[] get_scores(){
+	public ArrayList<Score> getScores(){
 		return scores;
 	}
 	
@@ -104,6 +104,11 @@ public class Location{
 				d.print();
 			}
 			System.out.println();
+			System.out.println("scores: ");
+			for(Score score : scores){
+				score.print();
+			}
+			System.out.println();
 		}
 	}
 
@@ -117,14 +122,36 @@ public class Location{
 		return out;
 	}
 
-	public void addBurnInScores(Score[] in){
+
+	public static Location buildFromStringArray(String[] strings){
+		Location out = new Location(0,0);
+		for(String string : strings){
+			String[] subStrings = string.split(" ");
+			if(subStrings[0].equals("location:")){
+				out.dLocations.add(
+					new DefinedLocation(subStrings[1], 
+							 Double.parseDouble(subStrings[2]))
+				);
+			} else if(subStrings[0].equals("score:")){
+				out.scores.add(
+					new Score(Double.parseDouble(subStrings[2]),
+						subStrings[1])
+				);								 
+			} else if(subStrings[0].equals("timeCount:")){
+				out.timeCount = Integer.parseInt(subStrings[1]);								 
+			}
+		}
+		return out;
+	}
+
+	public void addBurnInScores(ArrayList<Score> in){
 		if(burnIn == null)
 			System.out.println("Null Burn In");
 		else
 			this.burnIn.addScores(in);
 	}
 
-	public void addScores(Score[] in){
+	public void addScores(ArrayList<Score> in){
 		this.scores = in;
 	}
 }

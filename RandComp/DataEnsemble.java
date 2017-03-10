@@ -59,7 +59,7 @@ public class DataEnsemble<T extends EnsTriple>{
 		for(Location location : locationsWithScores){
 			//System.out.println("on location " + count);
 			count ++;
-			for(Score score : Arrays.asList(location.scores)){
+			for(Score score : location.scores){
 
 				for(DefinedLocation dLocation : location.dLocations){
 					if(dLocation.pertinent){

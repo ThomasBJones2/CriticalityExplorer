@@ -31,7 +31,6 @@ public abstract class Experimenter implements Runnable{
 
 	static final int numThreads = 16;
 
-	static String imageRootDirectory = "./output_images/";
 	static String rawDataOutputDirectory = "./output/";
 
 	static List<String> FallibleMethods = new ArrayList<String>();
@@ -65,7 +64,7 @@ public abstract class Experimenter implements Runnable{
 			System.out.println("Welcome to the RandomComputation Service");
 			System.out.println("There are two ways to use this service: \n" +
 					"(1) java.jar RandJava.jar Input_Object Main_Object Experiment_Type  OR \n"+
-				  "(2) java.jar RandJava.jar Input_Object Main_Object Experiment_Type Images_Directory "
+				  "(2) java.jar RandJava.jar Input_Object Main_Object Experiment_Type "
  					+ "Data_output_directory");
 		} else {
 
@@ -73,9 +72,8 @@ public abstract class Experimenter implements Runnable{
 			experimentClassName = args[1];	
 			experimentTypeName = args[2];
 
-			if(args.length == 5){
-				imageRootDirectory = args[3];
-				rawDataOutputDirectory = args[4];
+			if(args.length == 4){
+				rawDataOutputDirectory = args[3];
 			}
 
 			Experimenter.runIds = new ArrayList<>();		
@@ -291,11 +289,14 @@ public abstract class Experimenter implements Runnable{
 		if(!sdcError) {
 			errorScore = ScorePool.nullScore(nonSDCError);
 		}			
+
+		String[] timeCount = new String[1];
+		timeCount[0] = "timeCount: " + locLocation.timeCount;
 	
 		String[] locationStrings = getLocationStrings(locLocation);
 		String[] scoreStrings = getScoreStrings(scores, errorScore);
 			
-		outputWriter.writeNext(concat(locationStrings, scoreStrings));
+		outputWriter.writeNext(concat(timeCount, concat(locationStrings, scoreStrings)));
 
 		try{
 			outputWriter.flush();
