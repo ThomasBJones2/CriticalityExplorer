@@ -67,7 +67,8 @@ public class GraphBuilder{
 			List<String[]> allLocations = inputReader.readAll();
 
 			for(String[] location : allLocations){
-				readInLocations.add(Location.buildFromStringArray(location));
+				if (!location[0].equals("#"))
+					readInLocations.add(Location.buildFromStringArray(location));
 			}
 
 		} catch (IOException e){

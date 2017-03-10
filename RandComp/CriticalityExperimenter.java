@@ -1,5 +1,7 @@
 package RandComp;
 
+import au.com.bytecode.opencsv.CSVReader;
+
 import java.util.*;
 import java.lang.reflect.*;
 import java.lang.Thread;
@@ -48,9 +50,22 @@ public class CriticalityExperimenter extends Experimenter{
 
 	public class CriticalityExperiment implements ExperimentFunction{
 		RunTimeTriple<Long>[][] rTimes;
-	
+		int fallmethStart = 0;
+		int errorPointStart = 0;	
+
+
 		CriticalityExperiment(RunTimeTriple<Long>[][] rTimes){
 			this.rTimes = rTimes;
+		}
+
+		public void translateLastState(String[] result){
+			for(String rs: result){
+				String[] r = rs.split(" ");
+				if(r[0].equals("fallmeth:"))
+					this.fallmethStart = Integer.parseInt(r[1]);
+				if(r[0].equals("errorPoint:"))
+					this.errorPointStart = Integer.parseInt(r[1]);
+			}
 		}
 
 
@@ -59,26 +74,36 @@ public class CriticalityExperimenter extends Experimenter{
 				ArrayBlockingQueue<Runnable> checkThreadQueue, 
 				ThreadPoolExecutor checkThread,
 				int inputSize,
-				int loopCount){
+				int inputSizeloopCount){
 
-			//System.out.println("there are " + rTimes[loopCount].errorPoints + " errorpoints");
-			for(int fallmeth = 0; fallmeth < FallibleMethods.size(); fallmeth ++){
-				for(int i = 0; i < rTimes[fallmeth][loopCount].runTime; i ++){
-					for(int j = 0; 
-							j < Math.min(ERROR_POINTS, rTimes[fallmeth][loopCount].errorPoints); 
-							j ++){ 
-						//rTimes[loopCount].errorPoints; j ++){
+			//System.out.println("there are " + 
+				//rTimes[inputSizeloopCount].errorPoints + " errorpoints");
+			for(int fallmeth = fallmethStart; fallmeth < FallibleMethods.size(); fallmeth ++){
+				for(int errorPoint = errorPointStart; 
+						errorPoint < Math.min(ERROR_POINTS, 
+							rTimes[fallmeth][inputSizeloopCount].errorPoints); 
+						errorPoint ++){ 
+					String[] state = {"#", "fallmeth: " + fallmeth, "errorPoint: " + errorPoint};
+					saveState(state);
+					//String[] derp = {"!", "fallmeth: " + FallibleMethods.get(fallmeth)};
+					//saveState(derp);
+					for(int runTime = 0; 
+						runTime < rTimes[fallmeth][inputSizeloopCount].runTime; 
+						runTime ++){
+						//rTimes[inputSizeloopCount].errorPoints; j ++){
 						long runName = 
-							fallmeth*rTimes[fallmeth][loopCount].runTime
-							*Math.min(ERROR_POINTS, rTimes[fallmeth][loopCount].errorPoints)
-							+ i*Math.min(ERROR_POINTS, rTimes[fallmeth][loopCount].errorPoints) 
-							+ j;
+							fallmeth*rTimes[fallmeth][inputSizeloopCount].runTime
+							*Math.min(ERROR_POINTS, rTimes[fallmeth][inputSizeloopCount].errorPoints)
+							+ errorPoint*
+								Math.min(ERROR_POINTS, rTimes[fallmeth][inputSizeloopCount].runTime) 
+							+ runTime;
 						if(runName % 
-								((rTimes[fallmeth][loopCount].runTime*
-									Math.min(ERROR_POINTS, rTimes[fallmeth][loopCount].errorPoints))/100) == 0){
+								((rTimes[fallmeth][inputSizeloopCount].runTime*
+									Math.min(ERROR_POINTS, 
+										rTimes[fallmeth][inputSizeloopCount].errorPoints))/100) == 0){
 							System.out.println("Now on fallible method: " + 
 									FallibleMethods.get(fallmeth) + 
-									"runtime: " + i + " and errorPoint " + j);
+									"runtime: " + runTime + " and errorPoint " + errorPoint);
 						}
 						while(threadQueue.size() >= 8){}
 						while(checkThreadQueue.size() >= 8){}
@@ -87,7 +112,7 @@ public class CriticalityExperimenter extends Experimenter{
 
 						}
 						Experimenter exp = new CriticalityExperimenter(
-							(int) runName, j, inputSize, true, FallibleMethods.get(fallmeth));
+							(int) runName, errorPoint, inputSize, true, FallibleMethods.get(fallmeth));
 						Future theFuture = thePool.submit(exp);
 						CheckFuture cf = new CheckFuture(theFuture);
 						checkThread.submit(cf);

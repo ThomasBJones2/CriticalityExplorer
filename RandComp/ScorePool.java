@@ -1,6 +1,7 @@
 package RandComp;
 
 import java.math.BigInteger;
+import java.math.BigDecimal;
 import java.math.*;
 
 public class ScorePool{
@@ -30,10 +31,10 @@ public class ScorePool{
 
 
 		public static Score absolutePercentValueBigInteger(BigInteger error, BigInteger correct){
-			BigInteger newError = (error == null)?BigInteger.ZERO:error;
-			BigInteger newCorrect = (correct == null)?BigInteger.ZERO:correct;
+			double newError = (error == null)?0.0:error.doubleValue();
+			double newCorrect = (correct == null)?0.0:correct.doubleValue();
 			return new Score(
-			(((error.subtract(correct)).abs()).divide(correct.abs().add(BigInteger.ONE))).doubleValue(), 
+			Math.abs(newError - newCorrect)/Math.abs(newCorrect + 1.0), 
 			"Absolute_Percent_Value"); 
 		}
 

@@ -1,5 +1,6 @@
 package RandComp;
 
+import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.CSVWriter;
 
 import java.util.*;
@@ -36,6 +37,8 @@ public abstract class Experimenter implements Runnable{
 	static List<String> FallibleMethods = new ArrayList<String>();
 
 	static CSVWriter outputWriter;
+
+	static CSVReader inputReader;
 
 	static String outputFile;
 
@@ -203,7 +206,7 @@ public abstract class Experimenter implements Runnable{
 		errorObject = runObject(iObject2, errorObject, rand2, true);
 
 		if(experimentRunning) {
-			printFinalResults(correctObject, errorObject);
+			saveFinalResults(correctObject, errorObject);
 		}
 	}
 
@@ -253,7 +256,10 @@ public abstract class Experimenter implements Runnable{
 				experimentTypeName + 
 				inputSize + ".csv";
 
-			outputWriter = new CSVWriter(new FileWriter(new File(outputFile)));
+			outputWriter = new CSVWriter(new FileWriter(new File(outputFile), true));
+			inputReader = new CSVReader(new FileReader(new File(outputFile)));
+
+			EF.readResultsAndResetExperiment(inputReader);
 
 			EF.runExperiment(threadQueue, thePool, checkThreadQueue, checkThread, inputSize, loopCount);
 		
@@ -262,16 +268,13 @@ public abstract class Experimenter implements Runnable{
 				  System.out.println("Awaiting completion of threads.");
 			}
 		
-			System.out.println("Printing Average Error Data data for size: " + inputSize);	
+			System.out.println("Done Printing Error Data for size: " + inputSize);	
 		
 			outputWriter.close();
 			RandomMethod.clearAspect();
 		}
 	}
 
-	public static void readResultsAndResetExperiment(){
-
-	}
 	
 	String[] concat(String[] first, String[] second) {
     List<String> both = new ArrayList<String>(first.length + second.length);
@@ -280,7 +283,20 @@ public abstract class Experimenter implements Runnable{
     return both.toArray(new String[both.size()]);
 	}
 
-	public synchronized void printFinalResults(
+	public synchronized void saveState(String[] state){
+		for(String stat : state){
+			System.out.println(stat);
+
+		}
+		outputWriter.writeNext(state);
+		try{
+			outputWriter.flush();
+		} catch (IOException e) {
+			System.out.println("There was a problem flushing the result printer to csv " + e);
+		}
+	}
+
+	public synchronized void saveFinalResults(
 		Experiment correctObject, 
 		Experiment errorObject){
 

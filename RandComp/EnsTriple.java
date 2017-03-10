@@ -22,11 +22,16 @@ public class EnsTriple{
 	double average(){
 		double out = 0;
 		for(double dp : dataPoints){
-			if(dp == Double.POSITIVE_INFINITY)
-				System.out.println("Found one: " + dp + dataPoints.size());
+			//if(dp == Double.POSITIVE_INFINITY)
+				//System.out.println("Found one: " + dp + dataPoints.size());
 			out += dp;
 		}
-		out /= dataPoints.size();
+		if(Double.isFinite(out)){
+			out /= dataPoints.size();			
+		}
+		else {
+			out = Double.MAX_VALUE;
+		}
 		return out;
 	}
 
@@ -42,8 +47,12 @@ public class EnsTriple{
 		for(double dp : dataPoints){
 			out += (dp - avg)*(dp - avg);
 		}
-		out /= dataPoints.size();
-		return Math.sqrt(out/dataPoints.size());
+		if(Double.isFinite(out)){
+			out /= dataPoints.size();
+			return Math.sqrt(out/dataPoints.size());
+		} else {
+			return Double.MAX_VALUE;
+		}
 	}
 
 	void resolve(){
