@@ -128,10 +128,11 @@ public class Location{
 		for(String string : strings){
 			String[] subStrings = string.split(" ");
 			if(subStrings[0].equals("location:")){
-				out.dLocations.add(
+				DefinedLocation newDLocation = 
 					new DefinedLocation(subStrings[1], 
-							 Double.parseDouble(subStrings[2]))
-				);
+							 Double.parseDouble(subStrings[2]));
+				newDLocation.pertinent = true;
+				out.dLocations.add(newDLocation);
 			} else if(subStrings[0].equals("score:")){
 				out.scores.add(
 					new Score(Double.parseDouble(subStrings[2]),

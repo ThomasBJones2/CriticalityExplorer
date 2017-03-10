@@ -60,6 +60,7 @@ public class DataEnsemble<T extends EnsTriple>{
 			//System.out.println("on location " + count);
 			count ++;
 			for(Score score : location.scores){
+				//System.out.println("looking at score: " + score.name);
 
 				for(DefinedLocation dLocation : location.dLocations){
 					if(dLocation.pertinent){

@@ -13,6 +13,7 @@ public class GraphBuilder{
 
 	static String imageRootDirectory = "./output_images/";
 	static String rawDataOutputDirectory = "./output/";
+	static String processedRootDirectory = "./output_processed/";
 	static String inputClassName, experimentClassName, experimentTypeName;
 
 	public static void main(String[] args){
@@ -33,7 +34,11 @@ public class GraphBuilder{
 				rawDataOutputDirectory = args[4];
 			}
 
-			readDataIn();
+			for(int inputSize = 10; inputSize <= 1000; inputSize *= 10){
+				readDataIn(inputSize);
+				printAllProcessedData(
+					new DataEnsemble<EnsTriple>(readInLocations,EnsTriple::new ), inputSize);
+			}
 
 		}
 		
@@ -47,36 +52,32 @@ public class GraphBuilder{
 	}
 
 
-	public static void readDataIn(){
-		for(int inputSize = 10; inputSize <= 1000; inputSize *= 10){
-			String inputFile = rawDataOutputDirectory + 
-				inputClassName + 
-				experimentClassName + 
-				experimentTypeName + 
-				inputSize + ".csv";
-			
-			readInLocations = new ArrayList<>();
-	
-			try{
-				CSVReader inputReader = new CSVReader(new FileReader(new File(inputFile)));
+	public static void readDataIn(int inputSize){
+		String inputFile = rawDataOutputDirectory + 
+			inputClassName + 
+			experimentClassName + 
+			experimentTypeName + 
+			inputSize + ".csv";
+		
+		readInLocations = new ArrayList<>();
 
-				List<String[]> allLocations = inputReader.readAll();
+		try{
+			CSVReader inputReader = new CSVReader(new FileReader(new File(inputFile)));
 
-				for(String[] location : allLocations){
-					readInLocations.add(Location.buildFromStringArray(location));
-				}
+			List<String[]> allLocations = inputReader.readAll();
 
-				printReadInData();
-
-			} catch (IOException e){
-				System.out.println("The file doesn't exist ---" + 
-					" you've probably not run the experiment" + e); 
-
+			for(String[] location : allLocations){
+				readInLocations.add(Location.buildFromStringArray(location));
 			}
+
+		} catch (IOException e){
+			System.out.println("The file doesn't exist ---" + 
+				" you've probably not run the experiment" + e); 
+
 		}
 	}
 
-	/*private static void clearOutputOnInputSize (String directoryName, 
+	private static void clearOutputOnInputSize (String directoryName, 
 			int input_size, 
 			String fileTerminal){
 		File directory = new File(directoryName);
@@ -123,38 +124,6 @@ public class GraphBuilder{
 			System.out.print(E);
 		}
 
-	}
-
-	private static void printAllRawData (ArrayList<Location> outputLocations, int inputSize){
-		clearOutputOnInputSize(rawRootDirectory, inputSize, ".csv");
-	
-		for(int i = 0; i < outputLocations.size(); i ++){
-			Score[] scores = outputLocations.get(i).get_scores();
-			ArrayList<DefinedLocation> locations = outputLocations.get(i).dLocations;
-			for(int j = 0; j < scores.length; j++) {
-				for(int k = 0; k < locations.size(); k ++){
-					if(locations.get(k).pertinent)
-						if(locations.get(k).location > ERROR_POINTS)
-							outputLocations.get(i).print();
-						//System.out.println("bob is here");
-						//scores[j].print();
-						//System.out.println("name " + scores[j].name);
-						//System.out.println("location name " + locations.get(k).name);
-						//System.out.println("location value " + locations.get(k).location);
-						//System.out.println("rawRootDirectory " + rawRootDirectory);
-						//System.out.println("input size "  + inputSize);
-
-						printOutput(scores[j].name,
-								scores[j].score,
-								null,
-								null,
-								locations.get(k).name,
-							 	locations.get(k).location,
-								rawRootDirectory,
-								inputSize);
-				}
-			}
-		}
 	}
 
 	private static String cleanString(String in){
@@ -240,7 +209,9 @@ public class GraphBuilder{
 			int inputSize
 			){
 
-		clearOutputOnInputSize(processedRootDirectory, inputSize, ".csv");
+		System.out.println(dataEnsemble.scores.size());
+
+		//clearOutputOnInputSize(processedRootDirectory, inputSize, ".csv");
 		for(int i = 0; i < dataEnsemble.scores.size(); i ++) {
 			DataEnsemble<EnsTriple>.EnsScore score = dataEnsemble.scores.get(i);
 			for(int j = 0; j < score.locations.size(); j ++){
@@ -272,5 +243,5 @@ public class GraphBuilder{
 			}
 		}
 
-	}*/
+	}
 }
