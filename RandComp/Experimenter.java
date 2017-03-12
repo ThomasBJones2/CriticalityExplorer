@@ -19,7 +19,8 @@ public abstract class Experimenter implements Runnable{
 	static final int MAX_RUN_TIME = 10000;
 
 	static String inputClassName, experimentClassName, experimentTypeName;
-	
+
+	static final int[] inputSizes = {10, 100, 250, 500};	
 	
 	String fallibleMethodName;
 	int errorPoint, runName, experimentSize;	
@@ -231,7 +232,11 @@ public abstract class Experimenter implements Runnable{
 			throws InterruptedException, IOException{
 		
 		RandomMethod.clearAspect();
-		for(int inputSize = 10, loopCount = 0; inputSize <= 1000; inputSize *= 10, loopCount ++){
+
+		int loopCount = 0;
+		for(int inputSize : inputSizes) {
+		//for(int inputSize = 10; inputSize <= 1000; inputSize *= 10){
+			
 			ArrayBlockingQueue<Runnable> threadQueue = 
 				new ArrayBlockingQueue<Runnable>(8);
 			ThreadPoolExecutor thePool = 
@@ -272,6 +277,7 @@ public abstract class Experimenter implements Runnable{
 		
 			outputWriter.close();
 			RandomMethod.clearAspect();
+			loopCount ++;
 		}
 	}
 
@@ -284,10 +290,9 @@ public abstract class Experimenter implements Runnable{
 	}
 
 	public synchronized void saveState(String[] state){
-		for(String stat : state){
-			System.out.println(stat);
-
-		}
+		//for(String stat : state){
+		//	System.out.println(stat);
+		//}
 		outputWriter.writeNext(state);
 		try{
 			outputWriter.flush();
