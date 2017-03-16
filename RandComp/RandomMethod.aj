@@ -6,6 +6,8 @@ import java.lang.Thread;
 
 public aspect RandomMethod{
 
+	public static String scoreName;
+
 	static ArrayList<Location> locations = new ArrayList<>();
 
 	static ArrayList<Integer> timeCounts = new ArrayList<>();
@@ -184,7 +186,9 @@ public aspect RandomMethod{
 			if(
 					curId.errorful &&
 					(
-					 (rand.nextDouble() < eProbability.getProbability(shortMethodName, theLocation) && 
+					 (rand.nextDouble() < eProbability.getProbability(scoreName, 
+																															shortMethodName, 
+																															theLocation) && 
 						(
 							(epsilonTest) ||
 							unForcedError(

@@ -22,6 +22,8 @@ public interface ExperimentFunction{
 			int loopCount);
 
 		public void translateLastState(String[] result);
+		public void resetExperiment();
+
 
 		default public String[] getLastState(List<String[]> results){
 			String[] out = null;
@@ -33,7 +35,8 @@ public interface ExperimentFunction{
 			return out;
 		}
 
-		default public void readResultsAndResetExperiment(CSVReader inputReader){
+		default public void readResultsAndResetExperiment(CSVReader inputReader){		
+			resetExperiment();
 			try{
 				List<String[]> results = inputReader.readAll();
 				String[] lastState = getLastState(results);

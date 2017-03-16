@@ -12,6 +12,8 @@ import java.io.*;
 import java.lang.annotation.Annotation;
 import org.reflections.Reflections;
 import org.reflections.scanners.*;
+
+
 public abstract class Experimenter implements Runnable{
 
 	public static final int ERROR_POINTS = 1000;
@@ -35,7 +37,7 @@ public abstract class Experimenter implements Runnable{
 
 	static String rawDataOutputDirectory = "./output/";
 
-	static List<String> FallibleMethods = new ArrayList<String>();
+	static List<String> fallibleMethods = new ArrayList<String>();
 
 	static CSVWriter outputWriter;
 
@@ -87,7 +89,7 @@ public abstract class Experimenter implements Runnable{
 				initialize(inputClassName);
 				initialize(experimentClassName);
 
-				//FallibleMethods = getMethodsAnnotatedWith(Randomize.class);
+				//fallibleMethods = getMethodsAnnotatedWith(Randomize.class);
 				((Experimenter)getNewObject(experimentTypeName)).runMain();
 
 			} catch (IllegalArgumentException E){
@@ -154,7 +156,7 @@ public abstract class Experimenter implements Runnable{
 		try{
 			experiment.experiment(input);
 		} catch (Exception e){
-			//System.out.println("Non SDC error: " + errorful + " " + e);
+			System.out.println("Non SDC error: " + errorful + " " + e);
 			nonSDCError = e;
 			sdcError = false;
 		}
@@ -311,12 +313,12 @@ public abstract class Experimenter implements Runnable{
 			errorScore = ScorePool.nullScore(nonSDCError);
 		}			
 
-		String[] timeCount = new String[1];
+		String[] timeCount = new String[1];		
 		timeCount[0] = "timeCount: " + locLocation.timeCount;
 	
 		String[] locationStrings = getLocationStrings(locLocation);
 		String[] scoreStrings = getScoreStrings(scores, errorScore);
-			
+		
 		outputWriter.writeNext(concat(timeCount, concat(locationStrings, scoreStrings)));
 
 		try{
@@ -434,18 +436,18 @@ public abstract class Experimenter implements Runnable{
 	}
 
 	public static synchronized void addToFallibleMethods(String methodName){
-		if(!FallibleMethods.contains(methodName) 
+		if(!fallibleMethods.contains(methodName) 
 				&& methodName != null && 
 				!methodName.equals("null")){
 			
-			FallibleMethods.add(new String(methodName));
+			fallibleMethods.add(new String(methodName));
 		}
 	}
 
 	public static void printFallibleMethods(){
 		System.out.println("Printing Fallible Methods");	
 		
-		for(String f : FallibleMethods){
+		for(String f : fallibleMethods){
 			System.out.println(f);
 		}
 		try{
@@ -453,6 +455,50 @@ public abstract class Experimenter implements Runnable{
 		} catch (Exception E){
 			System.out.println(E);
 		}
+	}
+
+	static RunTimeTriple<Long>[][] getRunTimes() throws InterruptedException{
+		RunTimeTriple<Long>[] nearOut = new RunTimeTriple[inputSizes.length];
+
+		
+		int loopCount = 0;
+		for(int inputSize : inputSizes){	
+			long avgRunTime = System.currentTimeMillis();
+			ArrayList<Thread> threads = new ArrayList<>();
+			
+				for(int i = 0; i < 10; i ++){
+					Experimenter exp = new CriticalityExperimenter(i, i, inputSize, false, "All");
+					Thread thread = new Thread(exp);
+					threads.add(thread);
+					thread.start();
+				}
+				for(Thread t : threads){
+					t.join(MAX_RUN_TIME);
+					if(t.isAlive()) System.out.println("interupting " + t.toString()); t.interrupt();
+				}
+				avgRunTime = (System.currentTimeMillis() - avgRunTime)/10;
+				nearOut[loopCount] = new RunTimeTriple<Long>(avgRunTime,
+						(long)RandomMethod.getAverageTimeCount());
+				System.out.println("The average run time is: " + avgRunTime);
+				System.out.println("The average error point is: " + RandomMethod.getAverageTimeCount());
+				RandomMethod.clearAspect();
+			//Thread.sleep(10000);
+			loopCount ++;		
+		}
+		RunTimeTriple<Long>[][] out = runTimeBoost(nearOut);
+
+		return out;
+	}
+
+	static RunTimeTriple<Long>[][] runTimeBoost(RunTimeTriple<Long>[] rtt){
+		RunTimeTriple<Long>[][] out = new RunTimeTriple[fallibleMethods.size()][rtt.length];
+		for(int j = 0; j < fallibleMethods.size(); j ++){
+			for(int i = 0; i < rtt.length; i ++){
+				out[j][i] = new RunTimeTriple(rtt[i]);
+				out[j][i].name = fallibleMethods.get(j);
+			}
+		}
+		return out;
 	}
 
 

@@ -7,14 +7,7 @@ import java.io.*;
 
 //This class is used to build graphs from raw experiment data files
 
-public class GraphBuilder{
-
-	static ArrayList<Location> readInLocations;
-
-	static String imageRootDirectory = "./output_images/";
-	static String rawDataOutputDirectory = "./output/";
-	static String processedRootDirectory = "./output_processed/";
-	static String inputClassName, experimentClassName, experimentTypeName;
+public class GraphBuilder extends DataExtractor {
 
 	public static void main(String[] args){
 		if(args[0].equals("h") || args[0].equals("H")){
@@ -25,57 +18,25 @@ public class GraphBuilder{
  					+ "Data_output_directory");
 		} else {
 
-			inputClassName = args[0]; 
-			experimentClassName = args[1];	
-			experimentTypeName = args[2];
+			GraphBuilder theBuilder = new GraphBuilder(args[0], args[1], args[2]);
 
 			if(args.length == 5){
-				imageRootDirectory = args[3];
-				rawDataOutputDirectory = args[4];
+				theBuilder.imageRootDirectory = args[3];
+				theBuilder.rawDataOutputDirectory = args[4];
 			}
 
-			for(int inputSize = 10; inputSize <= 1000; inputSize *= 10){
-				readDataIn(inputSize);
-				printAllProcessedData(
+			for(int inputSize : Experimenter.inputSizes){
+				theBuilder.readDataIn(inputSize);
+				//Here is where we actually print stuff out!
+				theBuilder.printAllProcessedData(
 					new DataEnsemble<EnsTriple>(readInLocations,EnsTriple::new ), inputSize);
 			}
 
 		}
-		
-
 	}
 
-	public static void printReadInData(){
-			for(Location location : readInLocations){
-				location.print();
-			}
-	}
-
-
-	public static void readDataIn(int inputSize){
-		String inputFile = rawDataOutputDirectory + 
-			inputClassName + 
-			experimentClassName + 
-			experimentTypeName + 
-			inputSize + ".csv";
-		
-		readInLocations = new ArrayList<>();
-
-		try{
-			CSVReader inputReader = new CSVReader(new FileReader(new File(inputFile)));
-
-			List<String[]> allLocations = inputReader.readAll();
-
-			for(String[] location : allLocations){
-				if (!location[0].equals("#"))
-					readInLocations.add(Location.buildFromStringArray(location));
-			}
-
-		} catch (IOException e){
-			System.out.println("The file doesn't exist ---" + 
-				" you've probably not run the experiment" + e); 
-
-		}
+	GraphBuilder(String inputClassName, String experimentClassName, String experimentTypeName){
+			super(inputClassName, experimentClassName, experimentTypeName);
 	}
 
 	private static void clearOutputOnInputSize (String directoryName, 
@@ -180,7 +141,7 @@ public class GraphBuilder{
 		plotter2.plot();		
 		
 	}
-	private static void printAllNoSDCData(DataEnsemble<NoSDCEnsTriple> dataEnsemble, 
+	private void printAllNoSDCData(DataEnsemble<NoSDCEnsTriple> dataEnsemble, 
 			int inputSize
 			){
 
@@ -206,7 +167,7 @@ public class GraphBuilder{
 
 	}
 
-	private static void printAllProcessedData(DataEnsemble<EnsTriple> dataEnsemble, 
+	private void printAllProcessedData(DataEnsemble<EnsTriple> dataEnsemble, 
 			int inputSize
 			){
 

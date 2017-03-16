@@ -68,6 +68,11 @@ public class CriticalityExperimenter extends Experimenter{
 			}
 		}
 
+		public void resetExperiment(){
+			fallmethStart = 0;
+			errorPointStart = 0;	
+		}
+
 
 		public void runExperiment(ArrayBlockingQueue<Runnable> threadQueue, 
 				ThreadPoolExecutor thePool, 
@@ -78,14 +83,14 @@ public class CriticalityExperimenter extends Experimenter{
 
 			//System.out.println("there are " + 
 				//rTimes[inputSizeloopCount].errorPoints + " errorpoints");
-			for(int fallmeth = fallmethStart; fallmeth < FallibleMethods.size(); fallmeth ++){
+			for(int fallmeth = fallmethStart; fallmeth < fallibleMethods.size(); fallmeth ++){
 				for(int errorPoint = errorPointStart; 
 						errorPoint < Math.min(ERROR_POINTS, 
 							rTimes[fallmeth][inputSizeloopCount].errorPoints); 
 						errorPoint ++){ 
 					String[] state = {"#", "fallmeth: " + fallmeth, "errorPoint: " + errorPoint};
 					saveState(state);
-					//String[] derp = {"!", "fallmeth: " + FallibleMethods.get(fallmeth)};
+					//String[] derp = {"!", "fallmeth: " + fallibleMethods.get(fallmeth)};
 					//saveState(derp);
 					for(int runTime = 0; 
 						runTime < rTimes[fallmeth][inputSizeloopCount].runTime; 
@@ -102,17 +107,17 @@ public class CriticalityExperimenter extends Experimenter{
 									Math.min(ERROR_POINTS, 
 										rTimes[fallmeth][inputSizeloopCount].errorPoints))/100) == 0){
 							System.out.println("Now on fallible method: " + 
-									FallibleMethods.get(fallmeth) + 
+									fallibleMethods.get(fallmeth) + 
 									"runtime: " + runTime + " and errorPoint " + errorPoint);
 						}
 						while(threadQueue.size() >= 8){}
 						while(checkThreadQueue.size() >= 8){}
-						if(FallibleMethods.get(fallmeth) == null){
+						if(fallibleMethods.get(fallmeth) == null){
 							System.out.println("well the fallmeth: " + fallmeth + "gives us a null method");
 
 						}
 						Experimenter exp = new CriticalityExperimenter(
-							(int) runName, errorPoint, inputSize, true, FallibleMethods.get(fallmeth));
+							(int) runName, errorPoint, inputSize, true, fallibleMethods.get(fallmeth));
 						Future theFuture = thePool.submit(exp);
 						CheckFuture cf = new CheckFuture(theFuture);
 						checkThread.submit(cf);
@@ -141,47 +146,6 @@ public class CriticalityExperimenter extends Experimenter{
 				}
 			}
 		}
-	}
-
-	static RunTimeTriple<Long>[][] getRunTimes() throws InterruptedException{
-		RunTimeTriple<Long>[] nearOut = new RunTimeTriple[3];
-
-		for(int q = 10, c = 0; q <= 1000; q *= 10, c ++){		
-			long avgRunTime = System.currentTimeMillis();
-			ArrayList<Thread> threads = new ArrayList<>();
-			
-				for(int i = 0; i < 10; i ++){
-					Experimenter exp = new CriticalityExperimenter(i, i, q, false, "All");
-					Thread thread = new Thread(exp);
-					threads.add(thread);
-					thread.start();
-				}
-				for(Thread t : threads){
-					t.join(MAX_RUN_TIME);
-					if(t.isAlive()) System.out.println("interupting " + t.toString()); t.interrupt();
-				}
-				avgRunTime = (System.currentTimeMillis() - avgRunTime)/10;
-				nearOut[c] = new RunTimeTriple<Long>(avgRunTime,
-						(long)RandomMethod.getAverageTimeCount());
-				System.out.println("The average run time is: " + avgRunTime);
-				System.out.println("The average error point is: " + RandomMethod.getAverageTimeCount());
-				RandomMethod.clearAspect();
-			//Thread.sleep(10000);
-		}
-		RunTimeTriple<Long>[][] out = runTimeBoost(nearOut);
-
-		return out;
-	}
-
-	static RunTimeTriple<Long>[][] runTimeBoost(RunTimeTriple<Long>[] rtt){
-		RunTimeTriple<Long>[][] out = new RunTimeTriple[FallibleMethods.size()][rtt.length];
-		for(int j = 0; j < FallibleMethods.size(); j ++){
-			for(int i = 0; i < rtt.length; i ++){
-				out[j][i] = new RunTimeTriple(rtt[i]);
-				out[j][i].name = FallibleMethods.get(j);
-			}
-		}
-		return out;
 	}
 
 	static void printRunTimes(RunTimeTriple<Long>[][] rTime){

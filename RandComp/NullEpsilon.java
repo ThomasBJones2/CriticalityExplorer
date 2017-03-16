@@ -5,7 +5,7 @@ public class NullEpsilon implements EpsilonProbability{
 	double probability = 0.0;
 	
 	
-	public double getProbability(String methodName, Location location){
+	public double getProbability(String scoreName, String methodName, Location location){
 		return probability;
 	}
 
@@ -20,6 +20,8 @@ public class NullEpsilon implements EpsilonProbability{
 	public String getName(){
 		return "NullEpsilon";
 	}
+
+	public void setInputSize(int inputSize){}
 
 	public void printName(){
 		System.out.println("NullEpsilon");
