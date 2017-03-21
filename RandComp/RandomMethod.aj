@@ -6,8 +6,6 @@ import java.lang.Thread;
 
 public aspect RandomMethod{
 
-	public static String scoreName;
-
 	static ArrayList<Location> locations = new ArrayList<>();
 
 	static ArrayList<Integer> timeCounts = new ArrayList<>();
@@ -33,6 +31,15 @@ public aspect RandomMethod{
 		double out = 0;
 		for(int i = 0; i < timeCounts.size(); i ++){
 			out += ((double) timeCounts.get(i) / (double) timeCounts.size());
+		}
+		return (int)out;
+	}
+
+	public static int getMaxTimeCount(){
+		double out = 0;
+		for(int i = 0; i < timeCounts.size(); i ++){
+			if(out < (double) timeCounts.get(i))
+				out = (double) timeCounts.get(i);
 		}
 		return (int)out;
 	}
@@ -131,10 +138,10 @@ public aspect RandomMethod{
 			if(forcedError(theLocation.getDefinedLocationFromName(methodName).location, 
 						methodName,
 						curId)){
-
 				theLocation.burnIn();
 			}
 			if(epsilonTest){
+				
 				theLocation.clearPertinence();
 				DefinedLocation epsilonHandle	= new DefinedLocation(eProbability.getName(), eProbability.getLocation());
 				epsilonHandle.pertinent = true;
@@ -186,8 +193,8 @@ public aspect RandomMethod{
 			if(
 					curId.errorful &&
 					(
-					 (rand.nextDouble() < eProbability.getProbability(scoreName, 
-																															shortMethodName, 
+					 (rand.nextDouble() < eProbability.getProbability(curId.scoreName, 
+																															methodName, 
 																															theLocation) && 
 						(
 							(epsilonTest) ||
@@ -206,6 +213,7 @@ public aspect RandomMethod{
 					){
 //					unForcedError(theLocation.timeCount - 1, curId)) || 
 //					forcedError(theLocation.timeCount - 1, methodName, curId)) {
+				theLocation.incrementFailCount();
 				return randomizedCall(targetObject, args, randMethodName, rand);
 			}
 		}

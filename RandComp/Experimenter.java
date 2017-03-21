@@ -16,7 +16,9 @@ import org.reflections.scanners.*;
 
 public abstract class Experimenter implements Runnable{
 
-	public static final int ERROR_POINTS = 1000;
+	public static final int ERROR_POINTS = 2000;
+
+	public static String criticalityExperimentName = "RandComp.CriticalityExperimenter";
 
 	static final int MAX_RUN_TIME = 10000;
 
@@ -24,7 +26,7 @@ public abstract class Experimenter implements Runnable{
 
 	static final int[] inputSizes = {10, 100, 250, 500};	
 	
-	String fallibleMethodName;
+	String fallibleMethodName, scoreName;
 	int errorPoint, runName, experimentSize;	
 
 	boolean experimentRunning, sdcError = true;
@@ -52,13 +54,15 @@ public abstract class Experimenter implements Runnable{
 		int errorPoint,
 		int experimentSize,
 		boolean experimentRunning,
-		String fallibleMethodName){
+		String fallibleMethodName,
+		String scoreName){
 
 		this.errorPoint = errorPoint;
 		this.runName = runName;
 		this.experimentSize = experimentSize;
 		this.experimentRunning = experimentRunning;
 		this.fallibleMethodName = fallibleMethodName;
+		this.scoreName = scoreName;
 	}
 
 	public abstract void runMain() throws InterruptedException, IOException;
@@ -138,7 +142,8 @@ public abstract class Experimenter implements Runnable{
 			errorPoint, 
 			Thread.currentThread().getId(), 
 			rand,
-			fallibleMethodName);
+			fallibleMethodName,
+			scoreName);
 
 		if(curId.methodName == null){
 			System.out.println("found null methodName in runObject");
@@ -150,8 +155,8 @@ public abstract class Experimenter implements Runnable{
 		}
 		addId(curId);
 		RandomMethod.createLocation(curId);
-		if (experimentRunning == false)
-			System.out.println("The error point is: " + errorPoint + " " + errorful);
+		//if (experimentRunning == false)
+			//System.out.println("The error point is: " + errorPoint + " " + errorful);
 
 		try{
 			experiment.experiment(input);
@@ -180,6 +185,8 @@ public abstract class Experimenter implements Runnable{
 	}
 
 	Experiment errorObject, correctObject;
+
+	public abstract void dropZeros();
 
 	@Override
 	public void run(){
@@ -230,6 +237,34 @@ public abstract class Experimenter implements Runnable{
 		}
 	}
 
+	static ArrayBlockingQueue<Runnable> threadQueue = null;
+	static ThreadPoolExecutor thePool = null;
+	static ArrayBlockingQueue<Runnable> checkThreadQueue = null;
+	static ThreadPoolExecutor checkThread = null;
+
+	static void resetThreading (){
+
+			threadQueue = 
+				new ArrayBlockingQueue<Runnable>(8);
+			thePool = 
+				new ThreadPoolExecutor(numThreads,
+					numThreads,
+					0, 
+					TimeUnit.SECONDS,
+					threadQueue);
+
+			checkThreadQueue = 
+				new ArrayBlockingQueue<Runnable>(8);
+			checkThread = 
+				new ThreadPoolExecutor(numThreads,
+						numThreads,
+						0,
+						TimeUnit.SECONDS,
+						checkThreadQueue);
+
+	}
+
+
 	public static void runExperiments(ExperimentFunction EF)
 			throws InterruptedException, IOException{
 		
@@ -238,24 +273,8 @@ public abstract class Experimenter implements Runnable{
 		int loopCount = 0;
 		for(int inputSize : inputSizes) {
 		//for(int inputSize = 10; inputSize <= 1000; inputSize *= 10){
-			
-			ArrayBlockingQueue<Runnable> threadQueue = 
-				new ArrayBlockingQueue<Runnable>(8);
-			ThreadPoolExecutor thePool = 
-				new ThreadPoolExecutor(numThreads,
-					numThreads,
-					0, 
-					TimeUnit.SECONDS,
-					threadQueue);
 
-			ArrayBlockingQueue<Runnable> checkThreadQueue = 
-				new ArrayBlockingQueue<Runnable>(8);
-			ThreadPoolExecutor checkThread = 
-				new ThreadPoolExecutor(numThreads,
-						numThreads,
-						0,
-						TimeUnit.SECONDS,
-						checkThreadQueue);
+			resetThreading();
 
 			outputFile = rawDataOutputDirectory + 
 				inputClassName + 
@@ -268,7 +287,7 @@ public abstract class Experimenter implements Runnable{
 
 			EF.readResultsAndResetExperiment(inputReader);
 
-			EF.runExperiment(threadQueue, thePool, checkThreadQueue, checkThread, inputSize, loopCount);
+			EF.runExperiment(inputSize, loopCount);
 		
 			thePool.shutdown();
 			while (!thePool.awaitTermination(60, TimeUnit.SECONDS)) {
@@ -313,13 +332,17 @@ public abstract class Experimenter implements Runnable{
 			errorScore = ScorePool.nullScore(nonSDCError);
 		}			
 
-		String[] timeCount = new String[1];		
-		timeCount[0] = "timeCount: " + locLocation.timeCount;
-	
+		String[] extras = new String[2];		
+		extras[0] = "timeCount: " + locLocation.timeCount;
+
+		//this must be a score because economy epsilon, etc. use failcount score
+		//to prove that they have the same or greater number of runs
+		extras[1] = "score: failCount " + locLocation.getFailCount();	
+
 		String[] locationStrings = getLocationStrings(locLocation);
 		String[] scoreStrings = getScoreStrings(scores, errorScore);
 		
-		outputWriter.writeNext(concat(timeCount, concat(locationStrings, scoreStrings)));
+		outputWriter.writeNext(concat(extras, concat(locationStrings, scoreStrings)));
 
 		try{
 			outputWriter.flush();
@@ -337,6 +360,7 @@ public abstract class Experimenter implements Runnable{
 	}
 
 	public String[] getScoreStrings(Score[] scores, Score errorScore){
+		
 		String[] theScores = new String[scores.length + (errorScore==null?0:1)];
 		for(int i = 0; i < scores.length; i ++){
 			theScores[i] = "score: " + scores[i].toString();
@@ -349,8 +373,8 @@ public abstract class Experimenter implements Runnable{
 
 	public String[] getLocationStrings(Location location){
 		ArrayList<String> locationOutputList = location.outputIterator();		
-		String[] locationOutput = locationOutputList.toArray(new String[locationOutputList.size()]);
-
+		String[] locationOutput = 
+			locationOutputList.toArray(new String[locationOutputList.size()]);
 		return locationOutput;
 	}
 	
@@ -466,8 +490,8 @@ public abstract class Experimenter implements Runnable{
 			long avgRunTime = System.currentTimeMillis();
 			ArrayList<Thread> threads = new ArrayList<>();
 			
-				for(int i = 0; i < 10; i ++){
-					Experimenter exp = new CriticalityExperimenter(i, i, inputSize, false, "All");
+				for(int i = 0; i < ERROR_POINTS; i ++){
+					Experimenter exp = new CriticalityExperimenter(i, i, inputSize, false, "All", "All");
 					Thread thread = new Thread(exp);
 					threads.add(thread);
 					thread.start();
@@ -476,11 +500,11 @@ public abstract class Experimenter implements Runnable{
 					t.join(MAX_RUN_TIME);
 					if(t.isAlive()) System.out.println("interupting " + t.toString()); t.interrupt();
 				}
-				avgRunTime = (System.currentTimeMillis() - avgRunTime)/10;
+				avgRunTime = (System.currentTimeMillis() - avgRunTime)/ERROR_POINTS;
 				nearOut[loopCount] = new RunTimeTriple<Long>(avgRunTime,
-						(long)RandomMethod.getAverageTimeCount());
+						(long)RandomMethod.getMaxTimeCount());
 				System.out.println("The average run time is: " + avgRunTime);
-				System.out.println("The average error point is: " + RandomMethod.getAverageTimeCount());
+				System.out.println("The max error point is: " + RandomMethod.getMaxTimeCount());
 				RandomMethod.clearAspect();
 			//Thread.sleep(10000);
 			loopCount ++;		

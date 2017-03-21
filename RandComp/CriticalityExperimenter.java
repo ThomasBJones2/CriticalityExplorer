@@ -19,12 +19,14 @@ public class CriticalityExperimenter extends Experimenter{
 		int errorPoint,
 		int experimentSize,
 		boolean experimentRunning,
-		String fallibleMethodName){
+		String fallibleMethodName,
+		String scoreName){
 		super(runName, 
 			errorPoint, 
 			experimentSize, 
 			experimentRunning, 
-			fallibleMethodName);
+			fallibleMethodName,
+			scoreName);
 	}
 
 
@@ -36,6 +38,12 @@ public class CriticalityExperimenter extends Experimenter{
 		System.out.println("Grabbing Criticality Experiment...");
 		return new CriticalityExperimenter();
 	}
+
+	@Override
+	public void dropZeros(){
+			Location.dropZeros = true;
+	}
+
 	
 	@Override
 	public void runMain() throws InterruptedException, IOException{
@@ -74,12 +82,9 @@ public class CriticalityExperimenter extends Experimenter{
 		}
 
 
-		public void runExperiment(ArrayBlockingQueue<Runnable> threadQueue, 
-				ThreadPoolExecutor thePool, 
-				ArrayBlockingQueue<Runnable> checkThreadQueue, 
-				ThreadPoolExecutor checkThread,
+		public void runExperiment(
 				int inputSize,
-				int inputSizeloopCount){
+				int inputSizeloopCount) throws InterruptedException{
 
 			//System.out.println("there are " + 
 				//rTimes[inputSizeloopCount].errorPoints + " errorpoints");
@@ -117,7 +122,9 @@ public class CriticalityExperimenter extends Experimenter{
 
 						}
 						Experimenter exp = new CriticalityExperimenter(
-							(int) runName, errorPoint, inputSize, true, fallibleMethods.get(fallmeth));
+							(int) runName, errorPoint, inputSize, true, 
+							fallibleMethods.get(fallmeth),
+							"All");
 						Future theFuture = thePool.submit(exp);
 						CheckFuture cf = new CheckFuture(theFuture);
 						checkThread.submit(cf);
@@ -130,8 +137,6 @@ public class CriticalityExperimenter extends Experimenter{
 		}
 
 	}
-
-
 
 	static void changeToExperimentTime(RunTimeTriple<Long>[][] in){
 		for(int i = 0; i < in.length; i ++){

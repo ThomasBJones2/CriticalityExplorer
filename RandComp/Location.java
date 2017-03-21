@@ -6,10 +6,11 @@ public class Location{
 	int runName;
 	long threadId;
 	int timeCount = 0;
+	int failCount = 0;
+	static boolean dropZeros = false;
 	ArrayList<Score> scores = new ArrayList<>();
 	ArrayList<DefinedLocation> dLocations = new ArrayList<>();
 //	String failedMethod;
-
 
 	Location burnIn;
 	
@@ -26,6 +27,8 @@ public class Location{
 		for(DefinedLocation d : in.dLocations){
 			this.dLocations.add(new DefinedLocation(d));
 		}
+		this.failCount = in.failCount; //Note that this is passed through a boxed integer on purpose
+																	 //burnIn should share failCount with parent!
 //		this.failedMethod = in.failedMethod;
 	}
 
@@ -84,6 +87,17 @@ public class Location{
 		return dLocations;
 	}
 
+	public void incrementFailCount(){
+		failCount++;
+		if(burnIn != null){
+			burnIn.failCount = failCount;
+		}
+	}
+
+	public int getFailCount(){
+		return failCount;
+	}
+
 //	public DefinedLocation getFailedLocation(){
 //		return getDefinedLocationFromName(failedMethod);
 //	}
@@ -122,27 +136,46 @@ public class Location{
 		return out;
 	}
 
+	static boolean isValidStringArray(String[] strings){
+		if(dropZeros){
+			for(String string: strings){
+				String[] subStrings = string.split(" ");
+				if(subStrings[0].equals("failcount:") && 
+					Integer.parseInt(subStrings[1]) >= 1)
+					return true;
+				if(subStrings[0].equals("score:") &&
+					subStrings[1].equals("failCount") &&
+					Integer.parseInt(subStrings[2]) >= 1)
+					return true;
+			}
+			return false;
+		}
+		return true;
+	}
 
 	public static Location buildFromStringArray(String[] strings){
-		Location out = new Location(0,0);
-		for(String string : strings){
-			String[] subStrings = string.split(" ");
-			if(subStrings[0].equals("location:")){
-				DefinedLocation newDLocation = 
-					new DefinedLocation(subStrings[1], 
-							 Double.parseDouble(subStrings[2]));
-				newDLocation.pertinent = true;
-				out.dLocations.add(newDLocation);
-			} else if(subStrings[0].equals("score:")){
-				out.scores.add(
-					new Score(Double.parseDouble(subStrings[2]),
-						subStrings[1])
-				);								 
-			} else if(subStrings[0].equals("timeCount:")){
-				out.timeCount = Integer.parseInt(subStrings[1]);								 
+		if(isValidStringArray(strings)){
+			Location out = new Location(0,0);
+			for(String string : strings){
+				String[] subStrings = string.split(" ");
+				if(subStrings[0].equals("location:")){
+					DefinedLocation newDLocation = 
+						new DefinedLocation(subStrings[1], 
+								 Double.parseDouble(subStrings[2]));
+					newDLocation.pertinent = true;
+					out.dLocations.add(newDLocation);
+				} else if(subStrings[0].equals("score:")){
+					out.scores.add(
+						new Score(Double.parseDouble(subStrings[2]),
+							subStrings[1])
+					);								 
+				} else if(subStrings[0].equals("timeCount:")){
+					out.timeCount = Integer.parseInt(subStrings[1]);								 
+				}
 			}
+			return out;
 		}
-		return out;
+		return null;
 	}
 
 	public void addBurnInScores(ArrayList<Score> in){

@@ -9,6 +9,7 @@ public class RunId{
 	int errorPoint;
 	long threadId;
 	String methodName;
+	String scoreName;
 
 	Random rand;
 
@@ -18,7 +19,8 @@ public class RunId{
 			int errorPoint, 
 			long threadId, 
 			Random rand,
-			String fallibleMethodName){
+			String fallibleMethodName,
+			String scoreName){
 		this.runName = runName;
 		this.errorful = errorful;
 		this.threadId = threadId;
@@ -26,6 +28,7 @@ public class RunId{
 		this.experiment = experiment;
 		this.rand = rand;
 		this.methodName = fallibleMethodName;
+		this.scoreName = scoreName;
 	}
 
 	RunId(long threadId){
@@ -70,6 +73,7 @@ public class RunId{
 		System.out.println("errorful: " + errorful);
 		System.out.println("errorPoint: " + errorPoint);
 		System.out.println("threadId: " + threadId);
+		System.out.println("scoreName: " + scoreName);	
 		System.out.println();
 	}
 

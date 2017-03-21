@@ -14,10 +14,10 @@ public class ScorePool{
 			"Absolute_Percent_Value"); 
 		}
 
-		public static Score absoluteValueBigInteger(BigInteger error, BigInteger correct){ 
+		public static Score absoluteValueBigInteger(BigInteger error, BigInteger correct){
 			BigInteger newError = (error == null)?BigInteger.ZERO:error;
 			BigInteger newCorrect = (correct == null)?BigInteger.ZERO:correct;
-			double score = error.subtract(correct).abs().doubleValue();
+			double score = newError.subtract(newCorrect).abs().doubleValue();
 			return new Score(score, "Absolute_Value"); 
 		}
 
@@ -25,7 +25,7 @@ public class ScorePool{
 			BigInteger newError = (error == null)?BigInteger.ZERO:error;
 			BigInteger newCorrect = (correct == null)?BigInteger.ZERO:correct;
 			return new Score(
-				Math.log((error.subtract(correct).add(BigInteger.ONE)).abs().doubleValue()), 
+				Math.log((newError.subtract(newCorrect)).abs().doubleValue() + 1.0), 
 				"Absolute_Logarithm_Value"); 
 		}
 
@@ -41,13 +41,17 @@ public class ScorePool{
 
 		public static Score manhattanDistance(String error, String correct){
 			String name = "Manhattan_Distance";
-			double errorOut = StringDistances.manhattanDistance(error, correct);
+			String newError = (error == null)?"":error;
+			String newCorrect = (correct == null)?"":correct;
+			double errorOut = StringDistances.manhattanDistance(newError, newCorrect);
 			return new Score(errorOut, name);
 		}
 
 		public static Score symbolDistance(String error, String correct){
 			String name = "Symbol_Distance";
-			double errorOut = StringDistances.symbolDistance(error, correct);
+			String newError = (error == null)?"":error;
+			String newCorrect = (correct == null)?"":correct;
+			double errorOut = StringDistances.symbolDistance(newError, newCorrect);
 			return new Score(errorOut, name);
 		}
 

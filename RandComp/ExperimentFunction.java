@@ -14,12 +14,9 @@ import org.reflections.scanners.*;
 
 public interface ExperimentFunction{
 
-	public void runExperiment(ArrayBlockingQueue<Runnable> threadQueue, 
-			ThreadPoolExecutor thePool, 
-			ArrayBlockingQueue<Runnable> checkThreadQueue, 
-			ThreadPoolExecutor checkThread,
+	public void runExperiment(
 			int inputSize,
-			int loopCount);
+			int loopCount) throws InterruptedException;
 
 		public void translateLastState(String[] result);
 		public void resetExperiment();

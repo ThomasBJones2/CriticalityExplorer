@@ -18,12 +18,15 @@ public class GraphBuilder extends DataExtractor {
  					+ "Data_output_directory");
 		} else {
 
+
 			GraphBuilder theBuilder = new GraphBuilder(args[0], args[1], args[2]);
 
 			if(args.length == 5){
 				theBuilder.imageRootDirectory = args[3];
 				theBuilder.rawDataOutputDirectory = args[4];
 			}
+
+			((Experimenter)Experimenter.getNewObject(theBuilder.experimentTypeName)).dropZeros();
 
 			for(int inputSize : Experimenter.inputSizes){
 				theBuilder.readDataIn(inputSize);

@@ -16,6 +16,10 @@ public class DataEnsemble<T extends EnsTriple>{
 			name = score.name;
 		}
 
+		void printName(){
+			System.out.println("EnsScore name: " + name);
+		}
+
 		EnsLocation getLocation(DefinedLocation locLocation){
 			for(EnsLocation location : locations){
 				if(location.name.equals(locLocation.name))
@@ -42,6 +46,8 @@ public class DataEnsemble<T extends EnsTriple>{
 		double median = Double.MAX_VALUE;
 		ArrayList<T> triples = new ArrayList<>();
 
+
+		EnsLocation(){}
 
 		public int size(){
 			return triples.size();
@@ -78,10 +84,14 @@ public class DataEnsemble<T extends EnsTriple>{
 		}
 
 		T getTriple(int locationCount){
-			if(triples.size() > locationCount){
+			if(triples.size() > locationCount && locationCount >= 0){
 				return triples.get(locationCount);
 			}
 			return null;
+		}
+
+		void printName(){
+			System.out.println("EnsLocation name: " + name);
 		}
 	}
 
@@ -136,18 +146,27 @@ public class DataEnsemble<T extends EnsTriple>{
 		}
 	}
 
+	static int getCountFromLocation(Location location, String methodName){
+		DefinedLocation dLoc = location.getDefinedLocationFromName(methodName); 
+		if(dLoc != null){
+			return (int) dLoc.location;
+		}
+		return -1;
+
+	}
+
 	double getCriticality(String scoreName, String methodName, Location location){
 		EnsScore score = getScore(scoreName);
 		if(score != null) {
 			EnsLocation ensLocation = score.getLocation(methodName);
-
-			int locationCount = (int)location.getDefinedLocationFromName(methodName).location;
-
-			T theTriple = ensLocation.getTriple(locationCount);
-			if(theTriple != null) {
-				return theTriple.avg;
-			} else {
-				return 0.0;
+			if(ensLocation != null){
+				int locationCount = getCountFromLocation(location, methodName);
+				T theTriple = ensLocation.getTriple(locationCount);
+				if(theTriple != null) {
+					return theTriple.avg;
+				} else {
+					return 0.0;
+				}
 			}
 		}
 
@@ -159,10 +178,10 @@ public class DataEnsemble<T extends EnsTriple>{
 		EnsScore score = getScore(scoreName);
 		if(score != null) {
 			EnsLocation ensLocation = score.getLocation(methodName);
-
-			int locationCount = (int)location.getDefinedLocationFromName(methodName).location;
-
-			return ensLocation.size() < locationCount;
+			if(ensLocation != null){
+				int locationCount = getCountFromLocation(location, methodName);
+				return locationCount < ensLocation.size();
+			}
 		}
 
 		return false;
@@ -183,13 +202,20 @@ public class DataEnsemble<T extends EnsTriple>{
 
 	void resolveScores(){
 		for(EnsScore score : scores) {
+			//score.printName();
 			for(EnsLocation location: score.locations) {
+				//location.printName();
 				for(T triple: location.triples) {
 					triple.resolve();
+					//triple.print();
 				}
 				location.calculateMedian();
 			}
 		}
+	}
+
+	DataEnsemble(){
+		ctor = null;	
 	}
 
 	DataEnsemble(ArrayList<Location> locationsWithScores, Supplier<? extends T> ctor){

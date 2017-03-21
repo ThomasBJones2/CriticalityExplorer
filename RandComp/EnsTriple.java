@@ -24,14 +24,17 @@ public class EnsTriple{
 		for(double dp : dataPoints){
 			//if(dp == Double.POSITIVE_INFINITY)
 				//System.out.println("Found one: " + dp + dataPoints.size());
+			//System.out.println(dp);
 			out += dp;
 		}
+		//System.out.println("out1: "  + out);
 		if(Double.isFinite(out)){
 			out /= dataPoints.size();			
 		}
 		else {
 			out = Double.MAX_VALUE;
 		}
+		//System.out.println("out2: " + out);
 		return out;
 	}
 
