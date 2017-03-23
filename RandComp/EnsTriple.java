@@ -8,8 +8,30 @@ public class EnsTriple{
 	double avg;
 	double stdErr;
 	double location;
+	double median;
 	int count;
 	ArrayList<Double> dataPoints = new ArrayList<>();
+
+	public void clearData(){
+		dataPoints = null;
+	}
+
+	double median(){
+			double out = Double.MAX_VALUE;
+			if(dataPoints != null){
+				double[] values = new double[dataPoints.size()];
+				for(int i = 0; i < dataPoints.size(); i ++){
+					values[i] = dataPoints.get(i);
+				}
+				Arrays.sort(values);
+				if (values.length % 2 == 0){
+					out = (values[values.length/2] + values[values.length/2 - 1])/2.0;
+				} else {
+					out = values[values.length/2];
+				}
+			} 
+			return out;
+	}
 
 	public EnsTriple build(){
 		return new EnsTriple();
@@ -62,6 +84,8 @@ public class EnsTriple{
 		avg = average();
 		stdErr = standardErr();
 		count = dataPoints.size();
+		median = median();
+		clearData();
 	}
 
 	boolean nearEqual(double a, double b){

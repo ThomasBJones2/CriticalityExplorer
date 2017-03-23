@@ -113,7 +113,10 @@ public class DataEnsemble<T extends EnsTriple>{
 
 	public void addScores(ArrayList<Location> locationsWithScores){
 		int count = 0;
-		for(Location location : locationsWithScores){
+		while(locationsWithScores.size() > 0){
+			Location location = locationsWithScores.remove(locationsWithScores.size() - 1);
+
+		//for(Location location : locationsWithScores){
 			//System.out.println("on location " + count);
 			count ++;
 			for(Score score : location.scores){
@@ -210,6 +213,16 @@ public class DataEnsemble<T extends EnsTriple>{
 					//triple.print();
 				}
 				location.calculateMedian();
+			}
+		}
+	}
+
+	void clearData(){
+		for(EnsScore score : scores) {
+			for(EnsLocation location: score.locations) {
+				for(T triple: location.triples) {
+					triple.clearData();
+				}
 			}
 		}
 	}
