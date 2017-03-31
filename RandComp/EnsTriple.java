@@ -9,11 +9,17 @@ public class EnsTriple{
 	double stdErr;
 	double location;
 	double median;
+	double avgTimeCount;
+	double avgFailCount;
 	int count;
 	ArrayList<Double> dataPoints = new ArrayList<>();
+	ArrayList<Double> timeCounts = new ArrayList<>();
+	ArrayList<Double> failCounts = new ArrayList<>();
 
 	public void clearData(){
 		dataPoints = null;
+		failCounts = null;
+		timeCounts = null;
 	}
 
 	double median(){
@@ -41,9 +47,17 @@ public class EnsTriple{
 		dataPoints.add(score.score);
 	}
 
-	double average(){
+	void addTimeCount(double timeCount){
+		timeCounts.add(timeCount);
+	}
+
+	void addFailCount(double failCount){
+		failCounts.add(failCount);
+	}
+
+	double average(ArrayList<Double> theDataPoints){
 		double out = 0;
-		for(double dp : dataPoints){
+		for(double dp : theDataPoints){
 			//if(dp == Double.POSITIVE_INFINITY)
 				//System.out.println("Found one: " + dp + dataPoints.size());
 			//System.out.println(dp);
@@ -51,7 +65,7 @@ public class EnsTriple{
 		}
 		//System.out.println("out1: "  + out);
 		if(Double.isFinite(out)){
-			out /= dataPoints.size();			
+			out /= theDataPoints.size();			
 		}
 		else {
 			out = Double.MAX_VALUE;
@@ -81,7 +95,9 @@ public class EnsTriple{
 	}
 
 	void resolve(){
-		avg = average();
+		avg = average(dataPoints);
+		avgFailCount = average(failCounts);
+		avgTimeCount = average(timeCounts);
 		stdErr = standardErr();
 		count = dataPoints.size();
 		median = median();

@@ -143,6 +143,8 @@ public class DataEnsemble<T extends EnsTriple>{
 							locLocation.triples.add(locTriple);
 						}
 						locTriple.addScore(score);
+						locTriple.addTimeCount(location.timeCount);
+						locTriple.addFailCount(location.failCount);
 					}
 				}
 			}

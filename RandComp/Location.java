@@ -165,12 +165,18 @@ public class Location{
 					newDLocation.pertinent = true;
 					out.dLocations.add(newDLocation);
 				} else if(subStrings[0].equals("score:")){
-					out.scores.add(
-						new Score(Double.parseDouble(subStrings[2]),
-							subStrings[1])
-					);								 
+					if(!subStrings[1].equals("failCount")){
+						out.scores.add(
+							new Score(Double.parseDouble(subStrings[2]),
+								subStrings[1])
+						);
+					} else {
+						out.failCount = Integer.parseInt(subStrings[2]);
+					}								 
 				} else if(subStrings[0].equals("timeCount:")){
-					out.timeCount = Integer.parseInt(subStrings[1]);								 
+					out.timeCount = Integer.parseInt(subStrings[1]);						 
+				} else if(subStrings[0].equals("failCount:")){
+					out.failCount = Integer.parseInt(subStrings[1]);
 				}
 			}
 			return out;
