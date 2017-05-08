@@ -18,7 +18,7 @@ public class DataExtractor {
 
 	public static void main(String[] args){
 		if(args[0].equals("h") || args[0].equals("H")){
-			System.out.println("Welcome to the GraphBuilding Service");
+			System.out.println("Welcome to the DataExtraction Service");
 			System.out.println("There are two ways to use this service: \n" +
 					"(1) java.jar <name> Input_Object Main_Object Experiment_Type  OR \n"+
 				  "(2) java.jar <name> Input_Object Main_Object Experiment_Type Images_Directory "
@@ -43,6 +43,7 @@ public class DataExtractor {
 			this.inputClassName = inputClassName; 
 			this.experimentClassName = experimentClassName;	
 			this.experimentTypeName = experimentTypeName;
+			((Experimenter)Experimenter.getNewObject(experimentTypeName)).dropZeros();
 	}
 
 	public static void printReadInData(){

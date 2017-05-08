@@ -46,21 +46,51 @@ public class EconomyEpsilon implements EpsilonProbability{
 		}
 		this.ratioShift = ratioShift;
 	}
+
+
+
+	public int getUpCount(){
+		return criticalityEnsemble.get(inputSize).getUpCountSum();
+	}
+
+	public int getDownCount(){
+		return criticalityEnsemble.get(inputSize).getDownCountSum();
+	}
+
+	public void printCounts(){
+		criticalityEnsemble.get(inputSize).printCounts();
+	}
+
 	
 	public double getProbability(String scoreName, String methodName, Location location){
 		double criticality = criticalityEnsemble.get(inputSize).getCriticality(scoreName, 
 																																					methodName, 
 																																					location);
 		double median = criticalityEnsemble.get(inputSize).getMedian(scoreName, methodName);
+
+
+		int upCount = criticalityEnsemble.get(inputSize).getUpCount(scoreName, methodName);
+		int downCount = criticalityEnsemble.get(inputSize).getDownCount(scoreName, methodName);
+		double modifier = downCount==0?1.0:((double)upCount/(double)downCount);
+		median = median*modifier;
+
+
 		if(criticalityEnsemble.get(inputSize).isValidLocation(scoreName,
 																													methodName,
 																													location)){
 
 			if (criticality > median) {
-			//	System.out.println(methodName + " " + scoreName + " " + DataEnsemble.getCountFromLocation(location, methodName) + " " + criticality + " " + median);
+				upCount ++;
+				criticalityEnsemble.get(inputSize).setUpCount(scoreName,methodName,upCount);
+				//if(methodName.equals("InputObjects.NaiveMultiply.add"))
+			  //System.out.println(methodName + " " + scoreName + " " + 
+						//DataEnsemble.getCountFromLocation(location, methodName) + " " + 
+						//criticality + " " + median + " " + modifier);
 				return avgProbability*ratioShift;
 			}
 			else{
+				downCount ++;
+				criticalityEnsemble.get(inputSize).setDownCount(scoreName,methodName,downCount);
 				return avgProbability*(2.0 - ratioShift);
 			}
 		}

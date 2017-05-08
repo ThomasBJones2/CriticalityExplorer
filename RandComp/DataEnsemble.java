@@ -46,22 +46,89 @@ public class DataEnsemble<T extends EnsTriple>{
 		double median = Double.MAX_VALUE;
 		ArrayList<T> triples = new ArrayList<>();
 
+		int upCount = 0, downCount = 0;
+
+		int getDownCount(){
+			return downCount;
+		}
+
+		int getUpCount(){
+			return upCount;
+		}
+
+		void setDownCount(int val){
+			downCount = val;
+		}
+
+		void setUpCount(int val){
+			upCount = val;
+		}
+
 
 		EnsLocation(){}
 
 		public int size(){
 			return triples.size();
 		}
+
+		
+		void replicate(double[] averages, int i, double value, int num_vals, int maxErrorPoints){
+			for(int j = i; j < i + num_vals; j ++){
+				averages[j] = value;
+			}
+			for(int j = i + num_vals; j < i + maxErrorPoints; j ++){
+				averages[j] = 0;
+			}
+		}
+
+		double[] clearZeros(double[] averages){
+			int numZeros = 0;			
+			for(int i = 0; i < averages.length; i ++){
+				if(averages[i] == 0)
+					numZeros ++;
+			}
+
+			double[] out = new double[averages.length - numZeros];
+			int curIndex = 0;			
+			for(int i = 0; i < averages.length; i ++){
+				if(averages[i] != 0){
+					out[curIndex] = averages[i];
+					curIndex ++;
+				}
+			}
+			return out;
+		}
+
+		int getMaxErrorPoints(){
+			int out = 0;
+			for(T triple : triples){
+				if(out < triple.count)
+					out = triple.count;
+			}
+			return out;
+		}
 	
 		void calculateMedian(){
-			double[] averages = new double[triples.size()];
+
+			int maxErrorPoints = getMaxErrorPoints();
+
+			double[] averages = new double[triples.size()*maxErrorPoints];
 			for(int i = 0; i < triples.size(); i ++){
-				averages[i] = triples.get(i).avg;
+				replicate(averages, 
+					i*maxErrorPoints, 
+					triples.get(i).avg, 
+					triples.get(i).count,
+					maxErrorPoints);
 			}
+			//System.out.println("averages.length " + averages.length);
+			//averages = clearZeros(averages);
+			//System.out.println("averages.length " + averages.length);
+
+
 			Arrays.sort(averages);
-			if (averages.length % 2 == 0){
+			if (averages.length % 2 == 0 && averages.length >= 2){
 				median = (averages[averages.length/2] + averages[averages.length/2 - 1])/2.0;
-			} else {
+			} else if(averages.length % 2 == 1) {
 				median = averages[averages.length/2];
 			}
 
@@ -84,8 +151,9 @@ public class DataEnsemble<T extends EnsTriple>{
 		}
 
 		T getTriple(int locationCount){
-			if(triples.size() > locationCount && locationCount >= 0){
-				return triples.get(locationCount);
+			for(T triple : triples){
+				if((int)(triple.location + 0.000000001) == locationCount)
+					return triple;
 			}
 			return null;
 		}
@@ -154,14 +222,15 @@ public class DataEnsemble<T extends EnsTriple>{
 	static int getCountFromLocation(Location location, String methodName){
 		DefinedLocation dLoc = location.getDefinedLocationFromName(methodName); 
 		if(dLoc != null){
-			return (int) dLoc.location;
+			return (int) (dLoc.location + 0.0000000000001);
 		}
 		return -1;
 
 	}
 
 	double getCriticality(String scoreName, String methodName, Location location){
-		EnsScore score = getScore(scoreName);
+		String newScoreName = "Absolute_Logarithm_Value";
+		EnsScore score = getScore(newScoreName);
 		if(score != null) {
 			EnsLocation ensLocation = score.getLocation(methodName);
 			if(ensLocation != null){
@@ -193,7 +262,9 @@ public class DataEnsemble<T extends EnsTriple>{
 	}
 
 	double getMedian(String scoreName, String methodName){
-		EnsScore score = getScore(scoreName);
+		String newScoreName = "Absolute_Logarithm_Value";		
+
+		EnsScore score = getScore(newScoreName);
 		if(score != null) {
 			EnsLocation ensLocation = score.getLocation(methodName);
 			if(ensLocation != null) {
@@ -202,6 +273,88 @@ public class DataEnsemble<T extends EnsTriple>{
 		}
 
 		return Double.MAX_VALUE;
+
+	}
+
+	public void printCounts(){
+		for(EnsScore score : scores){
+			for(EnsLocation location : score.locations){
+				System.out.println(score.name + " " 
+					+ location.name + " " 
+					+ location.getUpCount() + " " 
+					+ location.getDownCount());
+			}
+
+		}
+	}
+
+
+	int getUpCountSum(){
+		int out = 0;
+		for(EnsScore score : scores){
+			for(EnsLocation location : score.locations){
+				out += location.getUpCount();
+			}
+
+		}
+		return out;
+	}
+
+	int getDownCountSum(){
+		int out = 0;
+		for(EnsScore score : scores){
+			for(EnsLocation location : score.locations){
+				out += location.getDownCount();
+			}
+
+		}
+		return out;
+	}
+
+	void setDownCount(String scoreName, String methodName, int val){
+		EnsScore score = getScore(scoreName);
+		if(score != null) {
+			EnsLocation ensLocation = score.getLocation(methodName);
+			if(ensLocation != null) {
+				ensLocation.setDownCount(val);
+			}
+		}
+	}
+
+	void setUpCount(String scoreName, String methodName, int val){
+		EnsScore score = getScore(scoreName);
+		if(score != null) {
+			EnsLocation ensLocation = score.getLocation(methodName);
+			if(ensLocation != null) {
+				ensLocation.setUpCount(val);
+			}
+		}
+	}
+
+
+	int getDownCount(String scoreName, String methodName){
+		EnsScore score = getScore(scoreName);
+		if(score != null) {
+			EnsLocation ensLocation = score.getLocation(methodName);
+			if(ensLocation != null) {
+				return ensLocation.getDownCount();
+			}
+		}
+
+		return 0;
+
+	}
+
+	int getUpCount(String scoreName, String methodName){
+		EnsScore score = getScore(scoreName);
+		if(score != null) {
+			EnsLocation ensLocation = score.getLocation(methodName);
+			if(ensLocation != null) {
+				return ensLocation.getUpCount();
+			}
+		}
+
+		return 0;
 
 	}
 

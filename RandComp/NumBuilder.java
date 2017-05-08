@@ -31,8 +31,6 @@ public class NumBuilder extends DataExtractor {
 				theBuilder.processedDataDirectory = args[3];
 			}
 
-			((Experimenter)Experimenter.getNewObject(theBuilder.experimentTypeName)).dropZeros();
-
 			for(int inputSize : Experimenter.inputSizes){
 				theBuilder.readDataIn(inputSize);
 				//Here is where we actually print stuff out!
@@ -48,6 +46,23 @@ public class NumBuilder extends DataExtractor {
 	}
 
 
+	private static String strip(String in){
+		String[] outStrings = in.split("[.]");
+		if(outStrings.length > 0)
+			return outStrings[outStrings.length - 1];
+		else
+			return "";
+	}
+
+	private static String createDirectory(String directory,
+			String inputClassName, 
+			String experimentClassName, 
+			String experimentTypeName){
+			return directory + 
+						strip(inputClassName) + "-" +
+						strip(experimentClassName) + "-" +
+						strip(experimentTypeName) + "/";
+	}
 
 	private static String createFile(String directory,
 			String inputClassName, 
@@ -56,13 +71,13 @@ public class NumBuilder extends DataExtractor {
 			String locationName,
 			String scoreName,
 			int inputSize){
-			return directory + "_" +
-						inputClassName + "_" +
-						experimentClassName + "_" +
-						experimentTypeName + "_" +
-						locationName + "_" +
-						scoreName + "_" +
-						inputSize;
+			return createDirectory(directory, 
+						inputClassName,
+						experimentClassName, 
+						experimentTypeName) +
+						locationName + "-" +
+						scoreName + "-" +
+						inputSize + ".csv";
 	}
 
 
@@ -81,19 +96,37 @@ public class NumBuilder extends DataExtractor {
 			for(int j = 0; j < score.locations.size(); j ++){
 				DataEnsemble<EnsTriple>.EnsLocation location = score.locations.get(j);
 
-				String[][] theData = new String[location.triples.size()][8];
+				String[][] theData = new String[location.triples.size() + 1][8];
+				String[] headers = {"#location value,", 
+					"score average at location,", 
+					"score std error at location,",
+					"number of data points,",
+					"score median at location,",
+					"median of all scores,",
+					"average timeCount (number of fallible operations executed),",
+					"average failCount (number of fallible operations that actually failed),"
+				};
+
+				theData[0] = headers;
+				
 				for(int q = 0; q < location.triples.size(); q ++) {
 					EnsTriple triple = location.triples.get(q);
-					theData[q][0] = "" + triple.location;
-					theData[q][1] = "" + triple.avg;
-					theData[q][2] = "" + triple.stdErr;
-					theData[q][3] = "" + triple.count;
-					theData[q][4] = "" + triple.median;
-					theData[q][5] = "" + location.median;
-					theData[q][6] = "" + triple.avgTimeCount;
-					theData[q][7] = "" + triple.avgFailCount;
+					theData[q+1][0] = "" + triple.location;
+					theData[q+1][1] = "" + triple.avg;
+					theData[q+1][2] = "" + triple.stdErr;
+					theData[q+1][3] = "" + triple.count;
+					theData[q+1][4] = "" + triple.median;
+					theData[q+1][5] = "" + location.median;
+					theData[q+1][6] = "" + triple.avgTimeCount;
+					theData[q+1][7] = "" + triple.avgFailCount;
 				}
 		
+
+				String directoryName = createDirectory(processedDataDirectory, 
+					inputClassName, 
+					experimentClassName, 
+					experimentTypeName);
+
 				String fileName = createFile(processedDataDirectory, 
 					inputClassName, 
 					experimentClassName, 
@@ -103,10 +136,21 @@ public class NumBuilder extends DataExtractor {
 					inputSize);
 			
 				try{
-					CSVWriter outputWriter = new CSVWriter(new FileWriter(new File(fileName)), ' ');
+
+    			File directory = new File(String.valueOf(directoryName));
+    			if (! directory.exists()){
+        		directory.mkdir();
+        		// If you require it to make the entire directory path including parents,
+        		// use directory.mkdirs(); here instead.
+    			}
+
+					CSVWriter outputWriter = new CSVWriter(new FileWriter(new File(fileName)), 
+						' ',
+						CSVWriter.NO_QUOTE_CHARACTER);
 					for(String[] line : theData){
 						outputWriter.writeNext(line);
 					}
+					outputWriter.close();
 				}	catch (IOException e){
 
 					System.out.println("Couldn't write output to file " + e);

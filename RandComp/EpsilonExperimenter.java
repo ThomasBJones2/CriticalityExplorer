@@ -139,6 +139,7 @@ public class EpsilonExperimenter extends Experimenter{
 						long runName = runTime + (long)(probability*10000.0*1000.0);
 						if(runName % 100 == 0){
 							System.out.println("Now on runtime: " + runTime);
+							probabilityShape.printCounts();
 						}
 						while(threadQueue.size() >= 8){}
 						while(checkThreadQueue.size() >= 8){}

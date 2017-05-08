@@ -26,8 +26,6 @@ public class GraphBuilder extends DataExtractor {
 				theBuilder.rawDataOutputDirectory = args[4];
 			}
 
-			((Experimenter)Experimenter.getNewObject(theBuilder.experimentTypeName)).dropZeros();
-
 			for(int inputSize : Experimenter.inputSizes){
 				theBuilder.readDataIn(inputSize);
 				//Here is where we actually print stuff out!

@@ -12,4 +12,8 @@ public interface EpsilonProbability {
 	public void setInputSize(int inputSize);
 
 	public void printName(); 
+
+	default public int getUpCount(){ return 0;}
+	default public int getDownCount(){ return 0;}
+	default public void printCounts(){}
 }
