@@ -14,6 +14,8 @@ import org.reflections.scanners.*;
 
 public class CriticalityExperimenter extends Experimenter{
 
+	static double EPSILON_PROBABILITY = 0.01; //0.0;
+
 	CriticalityExperimenter(
 		int runName, 
 		int errorPoint,
@@ -47,6 +49,7 @@ public class CriticalityExperimenter extends Experimenter{
 	
 	@Override
 	public void runMain() throws InterruptedException, IOException{
+			RandomMethod.eProbability.setProbability(EPSILON_PROBABILITY);
 			RunTimeTriple<Long>[][] rTime = getRunTimes();
 			printRunTimes(rTime);
 			changeToExperimentTime(rTime);

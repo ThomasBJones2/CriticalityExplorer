@@ -284,7 +284,7 @@ public class DataEnsemble<T extends EnsTriple>{
 					+ location.getUpCount() + " " 
 					+ location.getDownCount());
 			}
-
+			
 		}
 	}
 

@@ -24,18 +24,21 @@ public class ScorePool{
 		public static Score logarithmAbsoluteValueBigInteger(BigInteger error, BigInteger correct){ 
 			BigInteger newError = (error == null)?BigInteger.ZERO:error;
 			BigInteger newCorrect = (correct == null)?BigInteger.ZERO:correct;
+			double out = Math.log((newError.subtract(newCorrect)).abs().doubleValue() + 1.0);
 			return new Score(
-				Math.log((newError.subtract(newCorrect)).abs().doubleValue() + 1.0), 
+				out,
 				"Absolute_Logarithm_Value"); 
 		}
 
 
 		public static Score absolutePercentValueBigInteger(BigInteger error, BigInteger correct){
-			double newError = (error == null)?0.0:error.doubleValue();
-			double newCorrect = (correct == null)?0.0:correct.doubleValue();
+			BigDecimal newError = (error == null)?BigDecimal.ZERO:new BigDecimal(error);
+			BigDecimal newCorrect = (correct == null)?BigDecimal.ZERO:new BigDecimal(correct);
+			BigDecimal out = newError.subtract(newCorrect).
+				divide(newCorrect.add(BigDecimal.ONE),90,BigDecimal.ROUND_HALF_UP).abs();
 			return new Score(
-			Math.abs(newError - newCorrect)/Math.abs(newCorrect + 1.0), 
-			"Absolute_Percent_Value"); 
+				out.doubleValue(),
+				"Absolute_Percent_Value"); 
 		}
 
 
