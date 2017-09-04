@@ -3,7 +3,7 @@ package InputObjects;
 import RandComp.*;
 import java.util.Random;
 import java.util.ArrayList;
-import java.math.BigInteger
+import java.math.BigInteger;
 import java.lang.Math;
 
 public class Matrix implements Input<Matrix>{
@@ -17,6 +17,12 @@ public class Matrix implements Input<Matrix>{
 	public Matrix(int n){
 		size = n;
 		values = new BigInteger[n][n];
+	}
+
+	public void randomize(Random rand){
+		for(int i = 0; i < size; i ++)
+			for(int j = 0; j < size; j ++)
+				values[i][j] = new BigInteger(size, rand); 
 	}
 
 	public double frobeniusNorm(Matrix otherMatrix){
@@ -58,8 +64,6 @@ public class Matrix implements Input<Matrix>{
 		return Double.MAX_VALUE;
 	}
 
-
-
 	public Matrix(Matrix inMatrix){copy(inMatrix);}
 
 	public static Matrix emptyObject(){return new Matrix();}
@@ -72,14 +76,6 @@ public class Matrix implements Input<Matrix>{
 		return new ArrayList<DefinedLocation>();
 	}
 
-
-	public void randomize(Random rand){
-		for(int i = 0; i < size; i ++)
-			for(int j = 0; j < size; j ++)
-				values[i][j] = new BigInteger(size, rand)
-
-	}
-
 	public int size(){
 		return this.size;
 	}
@@ -90,7 +86,7 @@ public class Matrix implements Input<Matrix>{
 		values = new BigInteger[size][size];
 		for(int i = 0; i < size; i ++)
 			for(int j = 0; j < size; j ++)
-				values[i][j] = inMatrix[i][j];
+				values[i][j] = inMatrix.values[i][j];
 	}
 
 }

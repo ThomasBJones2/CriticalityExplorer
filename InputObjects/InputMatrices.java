@@ -9,14 +9,14 @@ public class InputMatrices implements Input<InputMatrices>{
 	Matrix A, B;
 	int size;
 
-	public Matrix(){}
+	InputMatrices(){}
 
-	public InputMatrices(int n){
+	InputMatrices(int n){
 		A = new Matrix(n);
 		B = new Matrix(n);
 	}
 
-	public InputMatrices(InputMatrices inMatrices){copy(inMatrices);}
+	InputMatrices(InputMatrices inMatrices){copy(inMatrices);}
 
 	public static InputMatrices emptyObject(){return new InputMatrices();}
 
@@ -30,8 +30,8 @@ public class InputMatrices implements Input<InputMatrices>{
 
 
 	public void randomize(Random rand){
-		A = A.Randomize(rand);
-		B = B.Randomize(rand);
+		A.randomize(rand);
+		B.randomize(rand);
 	}
 
 	public int size(){
@@ -40,8 +40,8 @@ public class InputMatrices implements Input<InputMatrices>{
 
 
 	public void copy(InputMatrices inMatrices){
-		A = inMatrices.A.copy();
-		B = inMatrices.B.copy();
+		A.copy(inMatrices.A);
+		B.copy(inMatrices.B);
 		size = inMatrices.size;
 	}
 

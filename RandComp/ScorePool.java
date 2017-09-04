@@ -3,6 +3,7 @@ package RandComp;
 import java.math.BigInteger;
 import java.math.BigDecimal;
 import java.math.*;
+import InputObjects.Matrix;
 
 public class ScorePool{
 		public static Score absoluteValue(double error, double correct){ 
