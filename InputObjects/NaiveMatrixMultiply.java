@@ -38,8 +38,8 @@ public class NaiveMatrixMultiply
 
 	public Score[] scores(SumExperiment correctObject){
 		Score[] out = new Score [2];
-		out[0] = ScorePool.MatrixScore1(this.output, correctObject.output);
-		out[1] = ScorePool.absoluteValue(this.output, correctObject.output);
+		out[0] = ScorePool.FrobeniusNorm(this.output, correctObject.output);
+		out[1] = ScorePool.InfinityNorm(this.output, correctObject.output);
 		return out; 
 
 	}

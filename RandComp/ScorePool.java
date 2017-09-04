@@ -58,6 +58,21 @@ public class ScorePool{
 			return new Score(errorOut, name);
 		}
 
+
+		public static Score frobeniusNorm(Matrix error, Matrix correct){
+			String name = "Frobenius_Norm";
+			double errorOut = correct.frobeniusNorm(error);
+			return new Score(errorOut, name);
+		}
+
+		public static Score infinityNorm(Matrix error, Matrix correct){
+			String name = "Infinity_Norm";
+			double errorOut = correct.infinityNorm(error);
+			return new Score(errorOut, name);
+		}
+
+
+
 		public static Score nullScore(){
 			return new Score(0,"null_score");
 		}
@@ -65,5 +80,6 @@ public class ScorePool{
 		public static Score nullScore(Exception e){
 			return new Score(0,e.toString());
 		}
+
 
 }
