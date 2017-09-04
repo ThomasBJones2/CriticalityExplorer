@@ -166,8 +166,7 @@ public aspect RandomMethod{
 			//through 'non-sdc' error methods...
 			if(Thread.currentThread().isInterrupted()){
 				theLocation.burnIn();
-				int[] a = new int[0];
-				a[-1] = 7;
+				throw new RuntimeException();
 			}
 
 			String methodName = thisJoinPointStaticPart.
@@ -243,11 +242,22 @@ public aspect RandomMethod{
 
 			return m.invoke(targetObject, arguments);
 		} catch (IllegalAccessException e) {
-			System.out.println("IllegalAccessException " + e);
+			System.out.println("RandomizedCall (RandomMethod.aj) IllegalAccessException " + e);
 		} catch (InvocationTargetException e) {
-			System.out.println("InvocationTargetException " + e);
+
+			System.out.println("random methodName: " + randMethodName);
+			for(Object arg : args){
+				System.out.println(arg);
+			}
+			System.out.println("Done with args");
+			System.out.println("targetObject " + targetObject);
+
+			e.printStackTrace();
+			System.out.println("now also getting internal exception");
+			e.getTargetException().printStackTrace();
+			System.out.println("RandomizedCall (RandomMethod.aj) InvocationTargetException " + e);
 		} catch (NoSuchMethodException e) {
-			System.out.println("NoSuchMethodException " + e);
+			System.out.println("RandomizedCall (RandomMethod.aj) NoSuchMethodException " + e);
 		}
 		return null;
 	}

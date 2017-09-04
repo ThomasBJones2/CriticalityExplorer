@@ -41,12 +41,15 @@ public class NaiveMultiply
 
 	@Randomize
 	public BigInteger add(BigInteger a, BigInteger b){
-		return a.add(b);
+		BigInteger out = a.add(b);
+		return out;
 	}
 
 	public BigInteger addRand(Random rand, BigInteger a, BigInteger b){
 		BigInteger out = a.add(b);
-		out = out.flipBit(Math.abs(rand.nextInt(out.bitLength())));
+		if(out.bitLength() > 0){
+			out = out.flipBit(Math.abs(rand.nextInt(out.bitLength())));
+		}
 		return out;
 	}
 

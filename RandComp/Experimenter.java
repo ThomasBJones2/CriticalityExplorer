@@ -24,7 +24,7 @@ public abstract class Experimenter implements Runnable{
 
 	static String inputClassName, experimentClassName, experimentTypeName;
 
-	static final int[] inputSizes = {10, 100, 250, 500};	
+	static final int[] inputSizes = {3, 5, 10}; //{10, 50, 100}; //{10, 100, 250, 500};	
 	
 	String fallibleMethodName, scoreName;
 	int errorPoint, runName, experimentSize;	
@@ -32,6 +32,8 @@ public abstract class Experimenter implements Runnable{
 	boolean experimentRunning, sdcError = true;
 
 	Exception nonSDCError;
+
+	static int nonSDCCount = 0;
 		
 	Location locLocation;
 
@@ -117,6 +119,12 @@ public abstract class Experimenter implements Runnable{
 		return theId;
 	}
 
+	public static void incrementNonSDCCount(){
+		rwLock.writeLock().lock();
+		nonSDCCount ++;
+		rwLock.writeLock().unlock();
+	}
+
 	public static void addId(RunId inId){
 		rwLock.writeLock().lock();
 		runIds.add(inId);
@@ -161,7 +169,10 @@ public abstract class Experimenter implements Runnable{
 		try{
 			experiment.experiment(input);
 		} catch (Exception e){
-			System.out.println("Non SDC error: " + errorful + " " + e);
+			//e.printStackTrace();
+			incrementNonSDCCount();
+			System.out.println("Non SDC error: " + errorful + 
+					" non SDC Count " + nonSDCCount +  " " + e);
 			nonSDCError = e;
 			sdcError = false;
 		}
@@ -403,12 +414,10 @@ public abstract class Experimenter implements Runnable{
 	
 		} catch (ClassNotFoundException E) {
 			System.out.println(inName + " is not a class, please add to the classpath: " + E);
-//		} catch (InstantiationException E) {
-//			System.out.println("Trouble instantiating " + inName + ": " + E);
 		} catch (IllegalAccessException E) {
 			System.out.println("Trouble accessing " + inName + ": " + E);
 		} catch (NoSuchMethodException E) {
-			System.out.println("Trouble building random input using an input size on class" + inName + ". Is it possible that you don't have a constructor for input size or that the constructor is private?" + E);
+			System.out.println("Trouble initializing class" + inName + ". Is it possible that you don't have an initialization method for that class?" + E);
 		} catch (InvocationTargetException E) {
 			System.out.println("Trouble getting random inputs:" + E);
 		}
@@ -420,13 +429,10 @@ public abstract class Experimenter implements Runnable{
 			Method clsMethod = cls.getMethod("newInputOfSize", int.class);
 
 			Constructor ctor = cls.getConstructor(int.class);
-			//Object clsInstance = ctor.newInstance(size);		
 			Object clsInstance = clsMethod.invoke(null, (Object) size);
 			return clsInstance;
 		} catch (ClassNotFoundException E) {
 			System.out.println(inName + " is not a class, please add to the classpath: " + E);
-//		} catch (InstantiationException E) {
-//			System.out.println("Trouble instantiating " + inName + ": " + E);
 		} catch (IllegalAccessException E) {
 			System.out.println("Trouble accessing " + inName + ": " + E);
 		} catch (NoSuchMethodException E) {
