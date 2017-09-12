@@ -12,6 +12,8 @@ public aspect RandomMethod{
 
 	double NEAR_DIST = 0.0000000001;
 
+	public static boolean randomize = true;
+
 	public static EpsilonProbability eProbability = new NullEpsilon();
 	public static boolean epsilonTest = false;
 	
@@ -152,71 +154,73 @@ public aspect RandomMethod{
 	}
 
 	Object around() : Randomize(){
-		Object targetObject = thisJoinPoint.getTarget();    	
-		final Object[] args = thisJoinPoint.getArgs();
 
-		RunId curId = new RunId(Thread.currentThread().getId());
-		curId = Experimenter.getId(curId);
+		if(randomize){
+			Object targetObject = thisJoinPoint.getTarget();    	
+			final Object[] args = thisJoinPoint.getArgs();
 
-		if(curId.getExperiment() == true){
-			Random rand = curId.getRand();
-			Location theLocation = getLocation(curId);
+			RunId curId = new RunId(Thread.currentThread().getId());
+			curId = Experimenter.getId(curId);
 
-			//This forces a non-sdc error which allows us to clean up execution
-			//through 'non-sdc' error methods...
-			if(Thread.currentThread().isInterrupted()){
-				theLocation.burnIn();
-				throw new RuntimeException();
-			}
+			if(curId.getExperiment() == true){
+				Random rand = curId.getRand();
+				Location theLocation = getLocation(curId);
 
-			String methodName = thisJoinPointStaticPart.
-				getSignature().
-				getDeclaringTypeName()
-				+ "." + thisJoinPointStaticPart.
-				getSignature().
-				getName();
+				//This forces a non-sdc error which allows us to clean up execution
+				//through 'non-sdc' error methods...
+				if(Thread.currentThread().isInterrupted()){
+					theLocation.burnIn();
+					throw new RuntimeException();
+				}
 
-			Experimenter.addToFallibleMethods(methodName);
+				String methodName = thisJoinPointStaticPart.
+					getSignature().
+					getDeclaringTypeName()
+					+ "." + thisJoinPointStaticPart.
+					getSignature().
+					getName();
 
-			updateLocations(theLocation, curId, methodName, (AbstractLocation) targetObject);
-			//increment time count seperately to account for 0 indexing
-			theLocation.timeCount ++;
-			
-			String shortMethodName = thisJoinPointStaticPart.
-				getSignature().
-				getName();
+				Experimenter.addToFallibleMethods(methodName);
 
-			String randMethodName = shortMethodName + "Rand";
+				updateLocations(theLocation, curId, methodName, (AbstractLocation) targetObject);
+				//increment time count seperately to account for 0 indexing
+				theLocation.timeCount ++;
+				
+				String shortMethodName = thisJoinPointStaticPart.
+					getSignature().
+					getName();
 
-			//must account for early increment due to return...
-			if(
-					curId.errorful &&
-					(
-					 (rand.nextDouble() < eProbability.getProbability(curId.scoreName, 
-																															methodName, 
-																															theLocation) && 
+				String randMethodName = shortMethodName + "Rand";
+
+				//must account for early increment due to return...
+				if(
+						curId.errorful &&
 						(
-							(epsilonTest) ||
-							unForcedError(
-								theLocation.getDefinedLocationFromName(methodName).getLocation() - 1, 
-								methodName,
+						 (rand.nextDouble() < eProbability.getProbability(curId.scoreName, 
+																																methodName, 
+																																theLocation) && 
+							(
+								(epsilonTest) ||
+								unForcedError(
+									theLocation.getDefinedLocationFromName(methodName).getLocation() - 1, 
+									methodName,
+									curId)
+							)
+						) || (
+							!epsilonTest &&	
+							forcedError(theLocation.getDefinedLocationFromName(methodName).getLocation() - 1, 
+								methodName, 
 								curId)
-						)
-					) || (
-						!epsilonTest &&	
-						forcedError(theLocation.getDefinedLocationFromName(methodName).getLocation() - 1, 
-							methodName, 
-							curId)
-						)
-						) 
-					){
-//					unForcedError(theLocation.timeCount - 1, curId)) || 
-//					forcedError(theLocation.timeCount - 1, methodName, curId)) {
-				theLocation.incrementFailCount();
-				return randomizedCall(targetObject, args, randMethodName, rand);
+							)
+							) 
+						){
+	//					unForcedError(theLocation.timeCount - 1, curId)) || 
+	//					forcedError(theLocation.timeCount - 1, methodName, curId)) {
+					theLocation.incrementFailCount();
+					return randomizedCall(targetObject, args, randMethodName, rand);
+				}
 			}
 		}
-
 
 		return proceed();
 	}

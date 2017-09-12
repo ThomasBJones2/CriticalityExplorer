@@ -6,7 +6,7 @@ import java.util.ArrayList;
 
 public class InputMatrices implements Input<InputMatrices>{
 
-	Matrix A, B;
+	public Matrix A, B;
 	int size;
 
 	public InputMatrices(){}
@@ -16,6 +16,20 @@ public class InputMatrices implements Input<InputMatrices>{
 		this.A = new Matrix(n);
 		this.B = new Matrix(n);
 	}
+
+
+	public InputMatrices(Matrix A, Matrix B){
+		if(A.size == B.size){
+			this.size = A.size;
+			this.A = new Matrix();
+		  this.B = new Matrix();
+			this.A.copy(A);
+			this.B.copy(B);
+		} else {
+			throw new IllegalArgumentException();
+		}
+	}
+
 
 	public InputMatrices(InputMatrices inMatrices){copy(inMatrices);}
 
@@ -38,7 +52,6 @@ public class InputMatrices implements Input<InputMatrices>{
 	public int size(){
 		return this.size;
 	}
-
 
 	public void copy(InputMatrices inMatrices){
 		this.size = inMatrices.size;

@@ -80,6 +80,91 @@ public class Matrix implements Input<Matrix>{
 		return this.size;
 	}
 
+	public Matrix add(Matrix addMatrix){
+		Matrix out = new Matrix(this.size);
+		if(addMatrix.size == this.size){
+			for(int i = 0; i < size; i ++){
+				for(int j = 0; j < size; j ++){
+					out.values[i][j] = this.values[i][j].add(addMatrix.values[i][j]);
+				}
+			}
+			return out;
+		} else {
+			throw new IllegalArgumentException();
+		}
+	}
+
+	public Matrix subtract(Matrix subMatrix){
+		Matrix out = new Matrix(this.size);
+		if(subMatrix.size == this.size){
+			for(int i = 0; i < size; i ++){
+				for(int j = 0; j < size; j ++){
+					out.values[i][j] = this.values[i][j].subtract(subMatrix.values[i][j]);
+				}
+			}
+			return out;
+		} else {
+			throw new IllegalArgumentException();
+		}
+	}
+
+	public String toString(){
+		String out = "";
+		for(int i = 0; i < this.size; i ++){
+			for(int j = 0; j < this.size; j ++){
+				out += this.values[i][j] + " ";
+			}
+			out += "\n\n";
+		}
+		return out;
+	}
+
+	public void print(){
+		System.out.println(this.toString());	
+	}
+
+	public static int i_translate(int i, int quarterNumber, int size){
+		if(quarterNumber < 2){
+			return i;
+		}
+		return i + size;
+	}
+
+	public static int j_translate(int j, int quarterNumber, int size){
+		if(quarterNumber % 2 == 0){
+			return j;
+		}
+		return j + size;
+	}
+
+	public static Matrix merge(Matrix A, Matrix B, Matrix C, Matrix D){
+		Matrix out = new Matrix(A.size*2);
+		if(A.size == B.size && C.size == D.size && B.size == C.size){
+			for(int i = 0; i < A.size; i ++){
+				for(int j = 0; j < A.size; j ++){
+					out.values[i_translate(i, 0, A.size)][j_translate(j, 0, A.size)] = A.values[i][j];
+					out.values[i_translate(i, 1, B.size)][j_translate(j, 1, B.size)] = B.values[i][j];
+					out.values[i_translate(i, 2, C.size)][j_translate(j, 2, C.size)] = C.values[i][j];
+					out.values[i_translate(i, 3, D.size)][j_translate(j, 3, D.size)] = D.values[i][j];
+				}
+			}
+		} else {
+			throw new IllegalArgumentException();
+		}
+		return out;
+	}
+
+	public static Matrix halfSplit(Matrix inMatrix, int quarterNumber){
+		Matrix out = new Matrix(inMatrix.size/2);
+		for(int i = 0; i < out.size; i ++){
+			for(int j = 0; j < out.size; j ++){
+				out.values[i][j] = 
+					inMatrix.values[i_translate(i, quarterNumber, out.size)]
+					[j_translate(j, quarterNumber, out.size)];
+			}
+		}
+		return out;	
+	}
 
 	public void copy(Matrix inMatrix){
 		size = inMatrix.size;

@@ -16,21 +16,22 @@ public class NaiveMatrixMultiply
 
 	public void experiment(InputMatrices in){
 		inputs = in;
-		naiveMultiply(in);
+		output = naiveMultiply(in);
 	}
 
-	public void naiveMultiply(InputMatrices input){
-		output = new Matrix(input.size);
+	public Matrix naiveMultiply(InputMatrices input){
+		Matrix out = new Matrix(input.size);
 		for(int i = 0; i < input.size; i ++){
 			for(int j = 0; j < input.size; j ++){
-				output.values[i][j] = BigInteger.ZERO;
+				out.values[i][j] = BigInteger.ZERO;
 				for(int k = 0; k < input.size; k ++){
 					NaiveMultiply mult = NaiveMultiply.emptyObject();
-					mult.multiply(new InputIntegers(inputs.A.values[i][k], inputs.B.values[k][j]));
-					output.values[i][j] = output.values[i][j].add(mult.theProduct);
+					mult.multiply(new InputIntegers(input.A.values[i][k], input.B.values[k][j]));
+					out.values[i][j] = out.values[i][j].add(mult.theProduct);
 				}
 			}
 		}
+		return out;
 	}
 
 	public ArrayList<DefinedLocation> getCurrentLocations(){
