@@ -10,6 +10,7 @@
 	<properties>
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
+		<aspectj.version>1.8.11</aspectj.version>
 	</properties>
 
 	<dependencies>
@@ -27,18 +28,18 @@
 			<version>1.0.0</version>
 		</dependency>
 
-		<!-- https://mvnrepository.com/artifact/org.aspectj/aspectjrt -->
-		<dependency>
-			<groupId>org.aspectj</groupId>
-			<artifactId>aspectjrt</artifactId>
-			<version>1.8.11</version>
-		</dependency>
-
 		<!-- https://mvnrepository.com/artifact/org.aspectj/aspectjweaver -->
 		<dependency>
 			<groupId>org.aspectj</groupId>
 			<artifactId>aspectjweaver</artifactId>
-			<version>1.8.11</version>
+			<version>1.8.7</version>
+		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/org.aspectj/aspectjrt -->
+		<dependency>
+			<groupId>org.aspectj</groupId>
+			<artifactId>aspectjrt</artifactId>
+			<version>1.8.7</version>
 		</dependency>
 
 		<!-- https://mvnrepository.com/artifact/com.google.guava/guava -->
@@ -75,12 +76,29 @@
 			<artifactId>reflections</artifactId>
 			<version>0.9.10</version>
 		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/org.aspectj/aspectjtools -->
+		<dependency>
+		  <groupId>org.aspectj</groupId>
+			<artifactId>aspectjtools</artifactId>
+			<version>1.8.7</version>
+		</dependency>
+
+
+    <!-- https://mvnrepository.com/artifact/org.aspectj/aspectjlib -->
+    <dependency>
+	    <groupId>org.aspectj</groupId>
+			<artifactId>aspectjlib</artifactId>
+			<version>1.6.2</version>
+		</dependency>
+
+
 	</dependencies>
 
   <build>
     <plugins>
 				<!-- disable compiler because compiler chokes on ITDs -->
-			
+
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
@@ -94,7 +112,7 @@
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>aspectj-maven-plugin</artifactId>
-				<version>1.8</version>
+				<version>1.7</version>
 
 				<configuration>
 					<showWeaveInfo>true</showWeaveInfo>
@@ -105,11 +123,12 @@
 					<encoding>UTF-8</encoding>
 					<verbose>true</verbose>
 					<failOnError>false</failOnError>
+
 				</configuration>
-				
+
 				<executions>
 					<execution>
-						<phase>process-sources</phase>
+            <phase>process-sources</phase>
 						<goals>
 							<goal>compile</goal>       <!-- use this goal to weave all your main classes -->
 							<goal>test-compile</goal>  <!-- use this goal to weave all your test classes -->
@@ -121,11 +140,40 @@
 					<dependency>
 						<groupId>org.aspectj</groupId>
 						<artifactId>aspectjrt</artifactId>
-						<version>1.8.11</version>
+						<version>1.8.7</version>
 					</dependency> 
 				</dependencies>
-
 			</plugin>
+
+
+			<plugin>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<version>2.5.5</version>
+				<configuration>
+          <appendAssemblyId>false</appendAssemblyId>
+					<descriptorRefs>
+					  <descriptorRef>jar-with-dependencies</descriptorRef>
+					</descriptorRefs>
+					<archive>
+						<manifest>
+							<mainClass>com.criticalityworkbench.randcomphandler.Experimenter</mainClass>
+						</manifest>
+					</archive>
+				</configuration>
+
+				<executions>
+					<execution>
+						<id>a-make-assembly</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+
+
 		</plugins>
 	</build>
 

@@ -25,7 +25,7 @@ public abstract class Experimenter implements Runnable{
 
 	static String inputClassName, experimentClassName, experimentTypeName;
 
-	static final int[] inputSizes = {4,8,16}; //{10, 50, 100}; //{10, 100, 250, 500};	
+	static int[] inputSizes = {4,8,16}; //{10, 50, 100}; //{10, 100, 250, 500};	
 	
 	String fallibleMethodName, scoreName;
 	int errorPoint, runName, experimentSize;	
@@ -83,16 +83,15 @@ public abstract class Experimenter implements Runnable{
   public static String handler(String argument) throws IOException{
 			String[] new_args = argument.split(" ");
 			if(new_args[0].equals("h")){ 
-				System.out.println("Now you are in the handler... Here the first and second " + 
-						"items in the arguments should be the same as before while the third argument " +
-					  "is the errorpoint under examination and the fourth argument is the " + 
-					  "fallible method name under examination ");
+				System.out.println("");
 				return(null);
 			} else {	
 
 				inputClassName = new_args[0]; 
 				experimentClassName = new_args[1];	
 				experimentTypeName = new_args[4];
+        int experimentSize = Integer.parseInt(new_args[5]);
+				inputSizes = new int[] {experimentSize};
 
 
         writerForOutput = new StringWriter();
@@ -122,16 +121,33 @@ public abstract class Experimenter implements Runnable{
 	}
 
 	public static void main(String args[]) throws IOException{
-		if(args[0].equals("h") || args[0].equals("H")){
+		if(args[0].equals("h") || 
+				args[0].equals("H") ||
+				args[0].equals("help") ||
+				args[0].equals("Help") ||
+				args[0].equals("--help") ||
+				args[0].equals("--Help")){
 			System.out.println("Welcome to the RandomComputation Service");
 			System.out.println("There are two ways to use this service: \n" +
 					"(1) java.jar RandJava.jar Input_Object Main_Object Experiment_Type(i.e.\n" +
 					"CriticalityExperimenter) OR \n"+
-				  "(2) java.jar RandJava.jar Input_Object Main_Object Experiment_Type "
- 					+ "Data_output_directory");
+				  "(2) java.jar RandJava.jar Input_Object Main_Object Experiment_Type \n" +
+ 					"Data_output_directory \n"+
+					"Alternatively you can call the handler by setting the 5th input to \n" +
+					"org.criticalityworkbench.randcomphandler.CriticalityExperimenter \n" + 
+					"in the handler... Here the first and second \n" + 
+					"items in the arguments should be the same as before while the third argument \n" +
+					"is the errorpoint under examination and and the fourth argument is the \n" +
+				  "fallible method index, The sixth argument is the scale \n" + 
+					"of the computation \n");
 		} else if(args[4].
-				equals("org.criticalityworkbench.randcomphandler.CriticalityExperimenter")){
-				System.out.println(handler(args[0] + " " + args[1] + " " + args[2]));
+				equals("com.criticalityworkbench.randcomphandler.CriticalityExperimenter")){
+				System.out.println(handler(args[0] + 
+							" " + args[1] + 
+							" " + args[2] + 
+							" " + args[3] + 
+							" " + args[4] + 
+							" " + args[5] ));
 		} else {
 			inputClassName = args[0]; 
 			experimentClassName = args[1];	
