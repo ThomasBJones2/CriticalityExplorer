@@ -17,11 +17,9 @@ import org.reflections.scanners.*;
 public abstract class Experimenter implements Runnable{
 
 	public static final int ERROR_POINTS = 4000;
-	public static final int NUM_RUNS = 1000;
+	public static final int NUM_RUNS = 10; //1000;
 
 	public static String criticalityExperimentName = "RandComp.CriticalityExperimenter";
-
-	static final int MAX_RUN_TIME = 100000;
 
 	static String inputClassName, experimentClassName, experimentTypeName;
 
@@ -38,6 +36,10 @@ public abstract class Experimenter implements Runnable{
 		
 	Location locLocation;
 
+  static long MAX_RUN_TIME = 2*60*1000; //This is the number of milliseconds one run might take
+
+  static RunTimeTriple<Long> singleRunTime; 
+
 	static final int numThreads = 16;
 
 	static String rawDataOutputDirectory = "./output/";
@@ -53,6 +55,8 @@ public abstract class Experimenter implements Runnable{
   static Writer writerForOutput = null;
 
 	static Reader readerForInput = null;
+
+  static Collection<Future<?>> theFutures = new ArrayList<Future<?>>(); 
 
 	Experimenter(){}
 
@@ -181,35 +185,36 @@ public abstract class Experimenter implements Runnable{
 
 	}
 
-	public static ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock(); 
-  public static ReentrantReadWriteLock outputStringLock = new ReentrantReadWriteLock();
+	public static ReentrantReadWriteLock IdLock = new ReentrantReadWriteLock(true); 
+	public static ReentrantReadWriteLock insdcLock = new ReentrantReadWriteLock(true); 
+  public static ReentrantReadWriteLock outputStringLock = new ReentrantReadWriteLock(true);
 
 
 	public static ArrayList<RunId> runIds;
 
 	public static RunId getId(RunId inId){
-		rwLock.readLock().lock();
+		IdLock.readLock().lock();
 		RunId theId = runIds.get(runIds.indexOf(inId));
-		rwLock.readLock().unlock();
+		IdLock.readLock().unlock();
 		return theId;
 	}
 
 	public static void incrementNonSDCCount(){
-		rwLock.writeLock().lock();
+		insdcLock.writeLock().lock();
 		nonSDCCount ++;
-		rwLock.writeLock().unlock();
+		insdcLock.writeLock().unlock();
 	}
 
 	public static void addId(RunId inId){
-		rwLock.writeLock().lock();
+		IdLock.writeLock().lock();
 		runIds.add(inId);
-		rwLock.writeLock().unlock();
+		IdLock.writeLock().unlock();
 	}
 
 	public static void removeId(RunId inId){
-		rwLock.writeLock().lock();
+		IdLock.writeLock().lock();
 		runIds.remove(runIds.indexOf(inId));
-		rwLock.writeLock().unlock();
+		IdLock.writeLock().unlock();
 	}
 
 	private static void printAspect(){}
@@ -218,6 +223,7 @@ public abstract class Experimenter implements Runnable{
 			Experiment experiment, 
 			Random rand, 
 			boolean errorful){
+
 
 		RunId curId = new RunId(2*runName + (errorful?1:0), 
 			true,
@@ -231,7 +237,7 @@ public abstract class Experimenter implements Runnable{
 		if(curId.methodName == null){
 			System.out.println("found null methodName in runObject");
 			try{
-				Thread.sleep(MAX_RUN_TIME);
+				Thread.sleep(MAX_RUN_TIME/1000);
 			} catch (Exception E){
 				System.out.println(E);
 			}
@@ -244,7 +250,10 @@ public abstract class Experimenter implements Runnable{
 		try{
 			experiment.experiment(input);
 		} catch (Exception e){
-			//e.printStackTrace();
+			Location theLocation = RandomMethod.getLocation(curId);
+			
+			System.out.println("printing the location!" + theLocation);
+			theLocation.burnIn();
 			incrementNonSDCCount();
 			System.out.println("Non SDC error: " + errorful + 
 					" non SDC Count " + nonSDCCount +  " " + e);
@@ -256,6 +265,11 @@ public abstract class Experimenter implements Runnable{
 		RandomMethod.registerTimeCount();
 		if(errorful){
 			locLocation = RandomMethod.getLocation(curId).getBurnIn();
+			if(locLocation == null){
+          Location l = RandomMethod.getLocation(curId);
+					l.burnIn();
+					locLocation = l.getBurnIn();
+			}
 		}
 		RandomMethod.clearLocation(curId);
 		removeId(curId);
@@ -290,6 +304,7 @@ public abstract class Experimenter implements Runnable{
 		RunId curId = new RunId(Thread.currentThread().getId());
 		curId.setExperiment(false);
 		addId(curId); 
+		
 		errorObject = (Experiment)getNewObject(experimentClassName);
 		correctObject = (Experiment)getNewObject(experimentClassName);
 		Input iObject1 = (Input)getNewInputObject(inputClassName, experimentSize);
@@ -304,6 +319,7 @@ public abstract class Experimenter implements Runnable{
 		if(experimentRunning) {
 			saveFinalResults(correctObject, errorObject);
 		}
+
 	}
 
 	static class CheckFuture implements Runnable{
@@ -316,7 +332,7 @@ public abstract class Experimenter implements Runnable{
 		@Override
 		public void run(){
 			try{
-				theFuture.get(MAX_RUN_TIME*2, TimeUnit.MILLISECONDS);
+				theFuture.get(MAX_RUN_TIME, TimeUnit.MILLISECONDS);
 			} catch (Exception e){
 				theFuture.cancel(true);
 			}
@@ -325,29 +341,17 @@ public abstract class Experimenter implements Runnable{
 
 	static ArrayBlockingQueue<Runnable> threadQueue = null;
 	static ThreadPoolExecutor thePool = null;
-	static ArrayBlockingQueue<Runnable> checkThreadQueue = null;
-	static ThreadPoolExecutor checkThread = null;
 
 	static void resetThreading (){
 
 			threadQueue = 
-				new ArrayBlockingQueue<Runnable>(8);
+				new ArrayBlockingQueue<Runnable>(NUM_RUNS);
 			thePool = 
 				new ThreadPoolExecutor(numThreads,
 					numThreads,
 					0, 
 					TimeUnit.SECONDS,
 					threadQueue);
-
-			checkThreadQueue = 
-				new ArrayBlockingQueue<Runnable>(8);
-			checkThread = 
-				new ThreadPoolExecutor(numThreads,
-						numThreads,
-						0,
-						TimeUnit.SECONDS,
-						checkThreadQueue);
-
 	}
 
 
@@ -383,9 +387,22 @@ public abstract class Experimenter implements Runnable{
 
 			EF.runExperiment(inputSize, loopCount);
 		
-			thePool.shutdown();
+			Thread.sleep(MAX_RUN_TIME);
+
+			for (Future<?> future : theFutures){
+				try{
+           System.out.println(future.get());
+				} catch (Exception E){
+           System.out.println("There was a future exception " + E);
+				}
+
+			}
+			thePool.shutdownNow(); //to kill things immediately
+			RandomMethod.in_debug_termination = true;
+      //thePool.shutdown();
 			while (!thePool.awaitTermination(60, TimeUnit.SECONDS)) {
-				  System.out.println("Awaiting completion of threads.");
+				  System.out.println("Awaiting completion of threads." +
+							thePool.isTerminating());
 			}
 		
 			System.out.println("Done Printing Error Data for size: " + inputSize);	
@@ -419,14 +436,13 @@ public abstract class Experimenter implements Runnable{
 		Experiment correctObject, 
 		Experiment errorObject){
 
-		
 
 		outputStringLock.writeLock().lock();
 		Score[] scores = errorObject.scores(correctObject);				
 		Score errorScore = null;		
 		if(!sdcError) {
 			errorScore = ScorePool.nullScore(nonSDCError);
-		}			
+		}
 
 		String[] extras = new String[2];		
 		extras[0] = "timeCount: " + locLocation.timeCount;
@@ -438,6 +454,7 @@ public abstract class Experimenter implements Runnable{
 		String[] locationStrings = getLocationStrings(locLocation);
 		String[] scoreStrings = getScoreStrings(scores, errorScore);
 		
+
 		outputWriter.writeNext(concat(extras, concat(locationStrings, scoreStrings)));
 
 		try{
@@ -598,7 +615,6 @@ public abstract class Experimenter implements Runnable{
 				System.out.println("The average run time is: " + avgRunTime);
 				System.out.println("The max error point is: " + RandomMethod.getMaxTimeCount());
 				RandomMethod.clearAspect();
-			//Thread.sleep(10000);
 			loopCount ++;		
 		}
 		RunTimeTriple<Long>[][] out = runTimeBoost(nearOut);

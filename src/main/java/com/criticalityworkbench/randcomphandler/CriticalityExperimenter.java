@@ -52,6 +52,7 @@ public class CriticalityExperimenter extends Experimenter{
 	public void runMain() throws InterruptedException, IOException{
 			RandomMethod.eProbability.setProbability(EPSILON_PROBABILITY);
 			RunTimeTriple<Long>[][] rTime = getRunTimes();
+			singleRunTime = rTime[0][0];
 			printRunTimes(rTime);
 			changeToExperimentTime(rTime);
 			printRunTimes(rTime);
@@ -111,8 +112,7 @@ public class CriticalityExperimenter extends Experimenter{
 							fallibleMethods.get(fallmeth) + 
 							"runtime: " + runTime + " and errorPoint " + errorPoint);
 				}
-				while(threadQueue.size() >= 8){}
-				while(checkThreadQueue.size() >= 8){}
+				while(threadQueue.size() >= NUM_RUNS){}
 				if(fallibleMethods.get(fallmeth) == null){
 					System.out.println("well the fallmeth: " + fallmeth + "gives us a null method");
 
@@ -121,9 +121,7 @@ public class CriticalityExperimenter extends Experimenter{
 					(int) runName, errorPoint, inputSize, true, 
 					fallibleMethods.get(fallmeth),
 					"All");
-				Future theFuture = thePool.submit(exp);
-				CheckFuture cf = new CheckFuture(theFuture);
-				checkThread.submit(cf);
+				theFutures.add(thePool.submit(exp));
 			}
 		}
 
@@ -135,7 +133,7 @@ public class CriticalityExperimenter extends Experimenter{
 				System.out.println((in[i][j].runTime*in[i][j].errorPoints));
 				if (in[i][j].runTime > 0 && in[i][j].errorPoints>0) {
 					in[i][j].runTime = 
-						Math.min(24*60*60/(in[i][j].runTime), (long)NUM_RUNS);
+						Math.min(MAX_RUN_TIME/(in[i][j].runTime*5), (long)NUM_RUNS);
 						
 				} else {
 					in[i][j].runTime = 0L;

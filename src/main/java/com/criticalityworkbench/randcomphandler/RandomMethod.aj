@@ -69,8 +69,10 @@ public aspect RandomMethod{
 		}
 	}
 
-
+	pointcut anyInputObjectCall(): call(* com.criticalityworkbench.inputobjects..* (..));
+	
 	pointcut Randomize(): call(@Randomize * *(..));
+
 
 	pointcut PrintAspect() : call(void *.printAspect());
 
@@ -153,6 +155,14 @@ public aspect RandomMethod{
 	
 	}
 
+  public static boolean in_debug_termination = false;
+
+  before() : anyInputObjectCall(){
+			if(Thread.currentThread().isInterrupted()){
+				throw new RuntimeException();
+			}
+	}
+
 	Object around() : Randomize(){
 
 		if(randomize){
@@ -168,11 +178,6 @@ public aspect RandomMethod{
 
 				//This forces a non-sdc error which allows us to clean up execution
 				//through 'non-sdc' error methods...
-				if(Thread.currentThread().isInterrupted()){
-					theLocation.burnIn();
-					throw new RuntimeException();
-				}
-
 				String methodName = thisJoinPointStaticPart.
 					getSignature().
 					getDeclaringTypeName()

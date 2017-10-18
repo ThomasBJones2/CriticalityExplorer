@@ -141,13 +141,10 @@ public class EpsilonExperimenter extends Experimenter{
 							System.out.println("Now on runtime: " + runTime);
 							probabilityShape.printCounts();
 						}
-						while(threadQueue.size() >= 8){}
-						while(checkThreadQueue.size() >= 8){}
+						while(threadQueue.size() >= NUM_RUNS){}
 						Experimenter exp = grabThisClass(
 							(int) runName, runTime, inputSize, true, "All", scoreName);
-						Future theFuture = thePool.submit(exp);
-						CheckFuture cf = new CheckFuture(theFuture);
-						checkThread.submit(cf);
+						thePool.submit(exp);
 					}
 					thePool.shutdown();
 					while (!thePool.awaitTermination(60, TimeUnit.SECONDS)) {
