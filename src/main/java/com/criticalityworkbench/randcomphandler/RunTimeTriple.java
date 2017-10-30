@@ -5,9 +5,13 @@ public class RunTimeTriple<E>{
 	E runTime;
 	E errorPoints;
 
+  public String toString(){
+    return "name: " + name + " runTime: " 
+				+ runTime + " errorPoints: " + errorPoints;
+	}
+
 	public void print(){
-		System.out.println("name: " + name + " runTime: " 
-				+ runTime + " errorPoints: " + errorPoints);
+		System.out.println(this.toString());
 	}
 
 	public RunTimeTriple(E runTime, E errorPoints){

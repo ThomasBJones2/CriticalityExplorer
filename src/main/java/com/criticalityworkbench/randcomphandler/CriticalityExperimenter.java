@@ -47,12 +47,20 @@ public class CriticalityExperimenter extends Experimenter{
 			Location.dropZeros = true;
 	}
 
-	
+  public String getRunTimeString(){
+		RunTimeTriple<Long>[][] rTime = null; 
+		try{
+      rTime = getRunTimes();
+		} catch(Exception E){
+      System.out.println("Exception in getRunTimeString " + E);
+		}
+		return runTimesToString(rTime);
+	}
+
 	@Override
 	public void runMain() throws InterruptedException, IOException{
 			RandomMethod.eProbability.setProbability(EPSILON_PROBABILITY);
-			RunTimeTriple<Long>[][] rTime = getRunTimes();
-			singleRunTime = rTime[0][0];
+			RunTimeTriple<Long>[][] rTime = rTimeTriple; //getRunTimes();
 			printRunTimes(rTime);
 			changeToExperimentTime(rTime);
 			printRunTimes(rTime);
@@ -100,19 +108,18 @@ public class CriticalityExperimenter extends Experimenter{
 				runTime ++){
 				long runName = 
 					fallmeth*rTimes[fallmeth][inputSizeloopCount].runTime
-					*Math.min(ERROR_POINTS, rTimes[fallmeth][inputSizeloopCount].errorPoints)
+					*Math.min(NUM_RUNS, rTimes[fallmeth][inputSizeloopCount].errorPoints)
 					+ errorPoint*
-						Math.min(ERROR_POINTS, rTimes[fallmeth][inputSizeloopCount].runTime) 
+						Math.min(NUM_RUNS, rTimes[fallmeth][inputSizeloopCount].runTime) 
 					+ runTime;
 				if(runName % 
 						((rTimes[fallmeth][inputSizeloopCount].runTime*
-							Math.min(ERROR_POINTS, 
+							Math.min(NUM_RUNS, 
 								rTimes[fallmeth][inputSizeloopCount].errorPoints))/100) == 0){
 					System.out.println("Now on fallible method: " + 
 							fallibleMethods.get(fallmeth) + 
 							"runtime: " + runTime + " and errorPoint " + errorPoint);
 				}
-				while(threadQueue.size() >= NUM_RUNS){}
 				if(fallibleMethods.get(fallmeth) == null){
 					System.out.println("well the fallmeth: " + fallmeth + "gives us a null method");
 
@@ -121,6 +128,7 @@ public class CriticalityExperimenter extends Experimenter{
 					(int) runName, errorPoint, inputSize, true, 
 					fallibleMethods.get(fallmeth),
 					"All");
+				while(threadQueue.size() >= numThreads*3){}
 				theFutures.add(thePool.submit(exp));
 			}
 		}
@@ -142,12 +150,20 @@ public class CriticalityExperimenter extends Experimenter{
 		}
 	}
 
-	static void printRunTimes(RunTimeTriple<Long>[][] rTime){
+	static String runTimesToString(RunTimeTriple<Long>[][] rTime){
+		String outString = "";
 				for(int i = 0; i < rTime.length; i++){
 					for(int j = 0; j < rTime[i].length; j ++){
-						rTime[i][j].print();
+						outString += rTime[i][j].toString() + "\n";
 					}
 				}
+		return outString;
+	}
+
+
+
+	static void printRunTimes(RunTimeTriple<Long>[][] rTime){
+	    System.out.print(runTimesToString(rTime));
 	}
 
 

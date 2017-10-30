@@ -16,8 +16,8 @@ import org.reflections.scanners.*;
 
 public abstract class Experimenter implements Runnable{
 
-	public static final int ERROR_POINTS = 4000;
-	public static final int NUM_RUNS = 10; //1000;
+	public static final int RUNTIME_ERROR_POINTS = 10;
+	public static final int NUM_RUNS = 1000;
 
 	public static String criticalityExperimentName = "RandComp.CriticalityExperimenter";
 
@@ -38,9 +38,9 @@ public abstract class Experimenter implements Runnable{
 
   static long MAX_RUN_TIME = 2*60*1000; //This is the number of milliseconds one run might take
 
-  static RunTimeTriple<Long> singleRunTime; 
+  //static RunTimeTriple<Long> singleRunTime; 
 
-	static final int numThreads = 16;
+	static final int numThreads = 100;
 
 	static String rawDataOutputDirectory = "./output/";
 
@@ -57,6 +57,8 @@ public abstract class Experimenter implements Runnable{
 	static Reader readerForInput = null;
 
   static Collection<Future<?>> theFutures = new ArrayList<Future<?>>(); 
+
+  static RunTimeTriple<Long>[][] rTimeTriple;
 
 	Experimenter(){}
 
@@ -84,6 +86,39 @@ public abstract class Experimenter implements Runnable{
     return("# " + errorPoint + "\n# " + fallMethName);
 	}
 
+  public static String runTimeHandler(String argument) throws IOException{
+			String[] new_args = argument.split(" ");
+			
+			String out = "";
+			if(new_args[0].equals("h")){ 
+				System.out.println("");
+				return(null);
+			} else {	
+
+				inputClassName = new_args[1]; 
+				experimentClassName = new_args[2];	
+				experimentTypeName = new_args[3];
+        int experimentSize = Integer.parseInt(new_args[4]);
+				inputSizes = new int[] {experimentSize};
+
+				Experimenter.runIds = new ArrayList<>();		
+
+				try{
+					testInputObjects();
+					initialize(inputClassName);
+					initialize(experimentClassName);
+
+					out = ((CriticalityExperimenter)getNewObject(experimentTypeName)).getRunTimeString();
+
+				} catch (IllegalArgumentException E){
+					System.out.println("illegal argument exception at top level of experimenter program");
+					System.out.println(E);
+				}
+			
+			}
+			return out;
+	}
+
   public static String handler(String argument) throws IOException{
 			String[] new_args = argument.split(" ");
 			if(new_args[0].equals("h")){ 
@@ -95,7 +130,18 @@ public abstract class Experimenter implements Runnable{
 				experimentClassName = new_args[1];	
 				experimentTypeName = new_args[4];
         int experimentSize = Integer.parseInt(new_args[5]);
+        int runTime = Integer.parseInt(new_args[6]);
+				int errorPoints = Integer.parseInt(new_args[7]);
+        
+
 				inputSizes = new int[] {experimentSize};
+        fallibleMethods = Arrays.asList(new_args[8].split("/"));   
+				
+				RunTimeTriple<Long>[] rtt = new RunTimeTriple[1];
+				rtt[0] = new RunTimeTriple<Long>((long)Math.max(1, runTime),
+					(long)errorPoints);
+				rTimeTriple = runTimeBoost(rtt); 
+
 
 
         writerForOutput = new StringWriter();
@@ -144,14 +190,24 @@ public abstract class Experimenter implements Runnable{
 					"is the errorpoint under examination and and the fourth argument is the \n" +
 				  "fallible method index, The sixth argument is the scale \n" + 
 					"of the computation \n");
-		} else if(args[4].
+		} else if (args[0].equals("runTime")){ 
+					System.out.println(runTimeHandler(args[0] + 
+							" " + args[1] + 
+							" " + args[2] + 
+							" " + args[3] + 
+							" " + args[4] ));
+		}
+		else if(args[4].
 				equals("com.criticalityworkbench.randcomphandler.CriticalityExperimenter")){
 				System.out.println(handler(args[0] + 
 							" " + args[1] + 
 							" " + args[2] + 
 							" " + args[3] + 
 							" " + args[4] + 
-							" " + args[5] ));
+							" " + args[5] + 
+							" " + args[6] + 
+							" " + args[7] +
+							" " + args[8]));
 		} else {
 			inputClassName = args[0]; 
 			experimentClassName = args[1];	
@@ -345,7 +401,7 @@ public abstract class Experimenter implements Runnable{
 	static void resetThreading (){
 
 			threadQueue = 
-				new ArrayBlockingQueue<Runnable>(NUM_RUNS);
+				new ArrayBlockingQueue<Runnable>(numThreads*3);
 			thePool = 
 				new ThreadPoolExecutor(numThreads,
 					numThreads,
@@ -388,15 +444,6 @@ public abstract class Experimenter implements Runnable{
 			EF.runExperiment(inputSize, loopCount);
 		
 			Thread.sleep(MAX_RUN_TIME);
-
-			for (Future<?> future : theFutures){
-				try{
-           System.out.println(future.get());
-				} catch (Exception E){
-           System.out.println("There was a future exception " + E);
-				}
-
-			}
 			thePool.shutdownNow(); //to kill things immediately
 			RandomMethod.in_debug_termination = true;
       //thePool.shutdown();
@@ -597,24 +644,37 @@ public abstract class Experimenter implements Runnable{
 		int loopCount = 0;
 		for(int inputSize : inputSizes){	
 			long avgRunTime = System.currentTimeMillis();
-			ArrayList<Thread> threads = new ArrayList<>();
 			
-				for(int i = 0; i < ERROR_POINTS; i ++){
-					Experimenter exp = new CriticalityExperimenter(i, i, inputSize, false, "All", "All");
-					Thread thread = new Thread(exp);
-					threads.add(thread);
-					thread.start();
-				}
-				for(Thread t : threads){
-					t.join(MAX_RUN_TIME);
-					if(t.isAlive()) System.out.println("interupting " + t.toString()); t.interrupt();
-				}
-				avgRunTime = (System.currentTimeMillis() - avgRunTime)/ERROR_POINTS;
-				nearOut[loopCount] = new RunTimeTriple<Long>(avgRunTime,
-						(long)RandomMethod.getMaxTimeCount());
-				System.out.println("The average run time is: " + avgRunTime);
-				System.out.println("The max error point is: " + RandomMethod.getMaxTimeCount());
-				RandomMethod.clearAspect();
+			ArrayBlockingQueue<Runnable> locThreadQueue = null;
+			ThreadPoolExecutor locPool = null;
+			Collection<Future<?>> locFutures = new ArrayList<Future<?>>(); 
+			locThreadQueue = 
+				new ArrayBlockingQueue<Runnable>(numThreads*3);
+			locPool = 
+				new ThreadPoolExecutor(numThreads,
+					numThreads,
+					0, 
+					TimeUnit.SECONDS,
+					locThreadQueue);
+
+
+			for(int i = 0; i < RUNTIME_ERROR_POINTS; i ++){
+				while(locThreadQueue.size() >= numThreads*3){}
+				Experimenter exp = new CriticalityExperimenter(i, i, inputSize, false, "All", "All");
+				locFutures.add(locPool.submit(exp));
+			}
+			locPool.shutdown(); 
+			while (!locPool.awaitTermination(60, TimeUnit.SECONDS)) {
+				  System.out.println("Awaiting completion of threads." +
+							locPool.isTerminating());
+			}
+	
+			avgRunTime = (System.currentTimeMillis() - avgRunTime)/RUNTIME_ERROR_POINTS;
+			nearOut[loopCount] = new RunTimeTriple<Long>(Math.max(1, avgRunTime),
+					(long)RandomMethod.getMaxTimeCount());
+			System.out.println("The average run time is: " + avgRunTime);
+			System.out.println("The max error point is: " + RandomMethod.getMaxTimeCount());
+			RandomMethod.clearAspect();
 			loopCount ++;		
 		}
 		RunTimeTriple<Long>[][] out = runTimeBoost(nearOut);
