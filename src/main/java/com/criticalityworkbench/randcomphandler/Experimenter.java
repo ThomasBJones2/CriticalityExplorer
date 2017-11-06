@@ -167,6 +167,7 @@ public abstract class Experimenter implements Runnable{
 				}
 			
 			}
+			System.out.println(writerForOutput.toString());
 			return writerForOutput.toString();
 	}
 
@@ -440,10 +441,10 @@ public abstract class Experimenter implements Runnable{
 			inputReader = new CSVReader(readerForInput);
 
 			EF.readResultsAndResetExperiment(inputReader);
-
+      long start_time = System.currentTimeMillis();
 			EF.runExperiment(inputSize, loopCount);
-		
-			Thread.sleep(MAX_RUN_TIME);
+		  long wait_time = start_time + MAX_RUN_TIME - System.currentTimeMillis();
+			Thread.sleep(wait_time);
 			thePool.shutdownNow(); //to kill things immediately
 			RandomMethod.in_debug_termination = true;
       //thePool.shutdown();

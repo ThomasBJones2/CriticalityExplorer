@@ -101,6 +101,7 @@ public class CriticalityExperimenter extends Experimenter{
 			int fallmeth = fallmethStart;
 			int errorPoint = errorPointStart; 
 
+
 			String[] state = {"#", "fallmeth: " + fallmeth, "errorPoint: " + errorPoint};
 			saveState(state);
 			for(int runTime = 0; 
@@ -112,10 +113,7 @@ public class CriticalityExperimenter extends Experimenter{
 					+ errorPoint*
 						Math.min(NUM_RUNS, rTimes[fallmeth][inputSizeloopCount].runTime) 
 					+ runTime;
-				if(runName % 
-						((rTimes[fallmeth][inputSizeloopCount].runTime*
-							Math.min(NUM_RUNS, 
-								rTimes[fallmeth][inputSizeloopCount].errorPoints))/100) == 0){
+				if(runTime % 100 == 0){
 					System.out.println("Now on fallible method: " + 
 							fallibleMethods.get(fallmeth) + 
 							"runtime: " + runTime + " and errorPoint " + errorPoint);
