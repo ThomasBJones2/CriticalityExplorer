@@ -15,8 +15,9 @@ import org.reflections.scanners.*;
 
 public class CriticalityExperimenter extends Experimenter{
 
-	static double EPSILON_PROBABILITY = 0.01; //0.0;
-
+	static double EPSILON_PROBABILITY = 0.0;
+	static double RUNTIME_PROBABILITY = 0.01;
+	
 	CriticalityExperimenter(
 		int runName, 
 		int errorPoint,
@@ -50,6 +51,7 @@ public class CriticalityExperimenter extends Experimenter{
   public String getRunTimeString(){
 		RunTimeTriple<Long>[][] rTime = null; 
 		try{
+			RandomMethod.eProbability.setProbability(RUNTIME_PROBABILITY);
       rTime = getRunTimes();
 		} catch(Exception E){
       System.out.println("Exception in getRunTimeString " + E);
@@ -87,6 +89,10 @@ public class CriticalityExperimenter extends Experimenter{
 				if(r[0].equals("errorPoint:"))
 					this.errorPointStart = Integer.parseInt(r[1]);
 			}
+			System.out.println("errorPointStart " + 
+					this.errorPointStart + 
+					" fallmeth " + 
+					this.fallmethStart);
 		}
 
 		public void resetExperiment(){

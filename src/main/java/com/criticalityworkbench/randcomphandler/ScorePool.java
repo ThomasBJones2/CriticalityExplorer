@@ -59,6 +59,13 @@ public class ScorePool{
 			return new Score(errorOut, name);
 		}
 
+		public static Score logFrobeniusNorm(Matrix error, Matrix correct){
+			String name = "Log_Frobenius_Norm";
+			double errorOut = correct.frobeniusNorm(error);
+			errorOut = Math.log(errorOut + 1.0); 
+			return new Score(errorOut, name);
+		}
+
 
 		public static Score frobeniusNorm(Matrix error, Matrix correct){
 			String name = "Frobenius_Norm";

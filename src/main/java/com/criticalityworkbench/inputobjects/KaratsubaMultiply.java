@@ -15,7 +15,7 @@ public class KaratsubaMultiply extends NaiveMultiply {
 	public static KaratsubaMultiply emptyObject(){return new KaratsubaMultiply();}
 
 	@Override
-	void multiply(InputIntegers xy){
+	public void multiply(InputIntegers xy){
 		BigInteger x = xy.getX();
 		BigInteger y = xy.getY();
 

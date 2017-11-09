@@ -39,9 +39,10 @@ public class NaiveMatrixMultiply
 	}
 
 	public Score[] scores(NaiveMatrixMultiply correctObject){
-		Score[] out = new Score [2];
+		Score[] out = new Score [3];
 		out[0] = ScorePool.frobeniusNorm(this.output, correctObject.output);
 		out[1] = ScorePool.infinityNorm(this.output, correctObject.output);
+		out[2] = ScorePool.logFrobeniusNorm(this.output, correctObject.output);
 		return out; 
 
 	}

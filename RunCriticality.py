@@ -5,21 +5,26 @@ from subprocess import call
 import matplotlib.pyplot as plt
 import argparse
 import time
+import glob
 from multiprocessing import Pool
 
 IS_DEBUG = False #True
 
 def pool_work(arg_dict):
-    RunCriticality().run_single_criticality_error_point( 
-                    arg_dict['input_object'], 
-                    arg_dict['experiment_object'], 
-                    error_point = arg_dict['error_point'],
-                    fallible_method = arg_dict['fallible_method'],
-                    fallible_method_num = arg_dict['fallible_method_num'],
-                    experiment_size = arg_dict['experiment_size'], 
-                    run_time = arg_dict['run_time'],
-                    error_points = arg_dict['error_points'],
-                    fallible_methods_list = arg_dict['fallible_methods_list'])
+    try:
+        RunCriticality().run_single_criticality_error_point( 
+                        arg_dict['input_object'], 
+                        arg_dict['experiment_object'], 
+                        error_point = arg_dict['error_point'],
+                        fallible_method = arg_dict['fallible_method'],
+                        fallible_method_num = arg_dict['fallible_method_num'],
+                        experiment_size = arg_dict['experiment_size'], 
+                        run_time = arg_dict['run_time'],
+                        error_points = arg_dict['error_points'],
+                        fallible_methods_list = arg_dict['fallible_methods_list'])
+    except:
+        print("bad step on fm: " + str(arg_dict['fallible_method_num']) +\
+                " ep: " + str(arg_dict['error_point']))
 
 class RunCriticality(object):
     def __init__(self):
@@ -28,7 +33,8 @@ class RunCriticality(object):
         self.client = boto3.client('lambda', config=config)
         self.memory_string = "aws lambda update-function-configuration --function-name RunTimeHandler --region us-west-2 --memory-size "
         self.run_time_test_command =  "runTime com.criticalityworkbench.inputobjects.InputMatrices com.criticalityworkbench.inputobjects.NaiveMatrixMultiply com.criticalityworkbench.randcomphandler.CriticalityExperimenter 1"
-
+        self.rand_comp_base_string = 'com.criticalityworkbench.randcomphandler.'
+        self.input_objects_base_string = 'com.criticalityworkbench.inputobjects.'
 
     def set_timeouts(self):
         self.set_timeout('RunTimeHandler', 300)
@@ -38,12 +44,11 @@ class RunCriticality(object):
             input_object = "InputMatrices", 
             experiment_object = "NaiveMatrixMultiply", 
             experiment_size = "1"):
-        input_base_string = "com.criticalityworkbench.inputobjects." 
-        experimenter_name = "com.criticalityworkbench.randcomphandler.CriticalityExperimenter"
+        experimenter_name = "CriticalityExperimenter"
         out = "runTime " +\
-                input_base_string + input_object + " " +\
-                input_base_string + experiment_object + " " +\
-                experimenter_name + " " +\
+                self.input_objects_base_string + input_object + " " +\
+                self.input_objects_base_string + experiment_object + " " +\
+                self.rand_comp_base_string + experimenter_name + " " +\
                 experiment_size
         return out
 
@@ -153,6 +158,30 @@ class RunCriticality(object):
                 out += "/"
         return out
 
+    def get_raw_criticality_file_name(self, 
+            input_object,
+            experiment_object,
+            experiment_size, 
+            fallible_method,
+            error_point):
+
+            return str(input_object) + "_" +\
+                str(experiment_object) + "_" +\
+                str(experiment_size) + "_" +\
+                str(fallible_method) + "_" +\
+                str(error_point)
+
+    def get_criticality_file_name(self, 
+            input_object,
+            experiment_object,
+            experiment_size):
+
+            return str(input_object) + "_" +\
+                str(experiment_object) + "_" +\
+                "CriticalityExperimenter" + "_" +\
+                str(experiment_size) +\
+                ".csv"
+
     def run_single_criticality_error_point( 
                     self, 
                     input_object, 
@@ -166,13 +195,17 @@ class RunCriticality(object):
                     fallible_methods_list):
 
         fallible_methods_str = self.stringify_fallible_methods(fallible_methods_list)
-        print("fallible method " + str(fallible_method_num) + " error point " + str(error_point))
+        print("fallible method " + str(fallible_method_num) +\
+                " of " + str(len(fallible_methods_list)) +\
+                " error point " + str(error_point) +\
+                " of " + str(error_points))
         directory_name = "./raw_lambda_results/"
-        file_name = str(input_object) + "_" +\
-            str(experiment_object) + "_" +\
-            str(experiment_size) + "_" +\
-            str(fallible_method) + "_" +\
-            str(error_point)
+        file_name = self.get_raw_criticality_file_name(
+                input_object,
+                experiment_object,
+                experiment_size,
+                fallible_method,
+                error_point)
         total_name = os.path.join(directory_name, file_name)
         f = open(total_name, 'a')
         
@@ -241,36 +274,110 @@ class RunCriticality(object):
                 input_object, 
                 experiment_object, 
                 experiment_size)
+        print(run_time_command)
+       
 
-        
         run_time, error_points, fallible_methods_list = \
             self.get_run_time_error_points_and_fallible_methods(run_time_command)
-        
-        max_eps_per_step = self.get_max_eps_per_step()
-        pool = Pool(max_eps_per_step)
-        print("max eps per step: ", max_eps_per_step)
+        dpapx = float(2*60*1000)/float(run_time)
+        print("fallible methods: " + str(fallible_methods_list))
+        print("RunTime of: " + str(run_time) +\
+                " data points collected of (approx): " + str(dpapx) +\
+                " errorpoints of: " + str(error_points))
+      
+        print(self.create_criticality_command( 
+            input_object, 
+            experiment_object, 
+            "0",
+            "0",
+            "4", 
+            run_time,
+            error_points,
+            fallible_methods_list[0]))
+        if not self.dry_run: 
+            max_eps_per_step = self.get_max_eps_per_step()
+            pool = Pool(max_eps_per_step)
+            print("max eps per step: ", max_eps_per_step)
+            for fm, fallible_method in enumerate(fallible_methods_list):
+                for start in range(0, self.get_max_eps(error_points), max_eps_per_step):
+                    try:
+                        eps = range(start, min(error_points, start + max_eps_per_step))
+                        eps = [self.build_arg_dict( 
+                            input_object, 
+                            experiment_object, 
+                            ep,
+                            fallible_method,
+                            fm,
+                            experiment_size, 
+                            run_time,
+                            error_points,
+                            fallible_methods_list) for ep in eps]
+                        pool.map(pool_work, eps)
+                    except KeyboardInterrupt:
+                        print("Keyboard interrupt, control c")
+                        pool.close()
+                        pool.join()
+                        sys.exit(1)
+            pool.close()
+            pool.join()
+
+        results_directory = "./results/"
+        crit_file = self.get_criticality_file_name(
+                    input_object,
+                    experiment_object,
+                    experiment_size, 
+                    )
+        crit_file = os.path.join(results_directory, crit_file)
+        out_file = open(crit_file, 'w')
         for fm, fallible_method in enumerate(fallible_methods_list):
-            for start in range(0, self.get_max_eps(error_points), max_eps_per_step):
-                try:
-                    eps = range(start, min(error_points, start + max_eps_per_step))
-                    eps = [self.build_arg_dict( 
-                        input_object, 
-                        experiment_object, 
-                        ep,
+            for ep in range(0, self.get_max_eps(error_points)):
+                directory_name = "./raw_lambda_results/"
+                file_name = self.get_raw_criticality_file_name(
+                        input_object,
+                        experiment_object,
+                        experiment_size,
                         fallible_method,
-                        fm,
-                        experiment_size, 
-                        run_time,
-                        error_points,
-                        fallible_methods_list) for ep in eps]
-                    pool.map(pool_work, eps)
-                except KeyboardInterrupt:
-                    print("Keyboard interrupt, control c")
-                    pool.close()
-                    pool.join()
-                    sys.exit(1)
-        pool.close()
-        pool.join()
+                        ep)
+                total_name = os.path.join(directory_name, file_name)
+                try:
+                    f = open(total_name, 'r')
+                    for i, line in enumerate(f.readlines()):
+                        if i == 0:
+                            out_file.write("#,fallmeth: " +\
+                                    str(fm) +\
+                                    ",errorPoint: " +\
+                                    str(ep) +\
+                                    "\n")
+                        else:
+                            if not line == "\n" and not '#' in line:
+                                out_file.write(line)
+                    f.close()
+                except:
+                    pass
+        out_file.close()
+
+
+    def criticality_graph_run(self, 
+        input_object,
+        experiment_object,
+        experiment_size,
+        criticality_graph_directory,
+        processed_data_directory):
+        
+        call(['java', 
+            '-cp', 
+            './target/CriticalityWorkbench-1.0-SNAPSHOT.jar', 
+            self.rand_comp_base_string + 'GraphBuilder',
+            self.input_objects_base_string + str(input_object),
+            self.input_objects_base_string + str(experiment_object),
+            self.rand_comp_base_string + 'CriticalityExperimenter',
+            criticality_graph_directory,
+            './results/',
+            experiment_size,
+            processed_data_directory,
+            ])
+ 
+
 
 def create_argparser():
     parser = argparse.ArgumentParser( description='LSTM')
@@ -280,7 +387,17 @@ def create_argparser():
                         help='the experiment object', default='NaiveMatrixMultiply')
     parser.add_argument('--experiment_size', type=str,
                         help='the experiment size', default='8')
+    parser.add_argument('--criticality_graph_directory', type=str,
+                        help='the directory where we dump graphs', default='')
+    parser.add_argument('--processed_data_directory', type=str,
+                        help='the directory where we dump graphs', default='./processed_data/')
 
+    parser.add_argument('--clear_raw_data', type=str, default ='n',
+            help='clear the raw lambda data for this experiment')
+
+    parser.add_argument('--limited_command', type=str, default = '')
+    parser.add_argument('--dry_run', type=str, default='y')
+    
     return parser
 
 
@@ -290,9 +407,32 @@ if __name__ == "__main__":
     input_object = args.input_object
     experiment_object = args.experiment_object
     experiment_size = args.experiment_size
+    criticality_graph_directory = args.criticality_graph_directory
+    processed_data_directory = args.processed_data_directory
+
 
     crit = RunCriticality()
-    crit.set_timeouts()
-    crit.run_criticality(input_object, experiment_object, experiment_size)
+    crit.dry_run = args.dry_run == 'y'
 
+    if args.clear_raw_data == 'y':
+        file_name = input_object + "_" + experiment_object + "_" + experiment_size +\
+                "*" + args.limited_command + "*"
+        file_names = "./raw_lambda_results/" + file_name
+        print(file_names)
+        files = glob.glob(file_names)
+        for f in files:
+            os.remove(f)
+    else:
+        crit.set_timeouts()
+        crit.run_criticality(input_object, experiment_object, experiment_size)
+        
+
+
+        if criticality_graph_directory != '':
+            crit.criticality_graph_run(input_object, 
+                    experiment_object, 
+                    experiment_size, 
+                    criticality_graph_directory,
+                    processed_data_directory
+                    )
 

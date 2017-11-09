@@ -15,16 +15,27 @@ public class GraphBuilder extends DataExtractor {
 			System.out.println("There are two ways to use this service: \n" +
 					"(1) java.jar <name> Input_Object Main_Object Experiment_Type  OR \n"+
 				  "(2) java.jar <name> Input_Object Main_Object Experiment_Type Images_Directory "
- 					+ "Data_output_directory");
+ 					+ "Data_output_directory <input_size> <processed_data_directory>");
 		} else {
 
 
 			GraphBuilder theBuilder = new GraphBuilder(args[0], args[1], args[2]);
 
-			if(args.length == 5){
+			if(args.length >= 5){
 				theBuilder.imageRootDirectory = args[3];
 				theBuilder.rawDataOutputDirectory = args[4];
 			}
+
+			if(args.length >= 6){
+				Experimenter.inputSizes = new int[1];
+				Experimenter.inputSizes[0] = Integer.parseInt(args[5]);
+			}
+
+			if(args.length >= 7){
+				theBuilder.processedRootDirectory = args[6];
+			}
+
+
 
 			for(int inputSize : Experimenter.inputSizes){
 				theBuilder.readDataIn(inputSize);
@@ -50,17 +61,19 @@ public class GraphBuilder extends DataExtractor {
 	}
 
 
-	private static String createFile(String directory,
+	private String createFile(String directory,
 			String scoreName,
 			String locationName,
 			int inputSize){
-			return directory + 
-						scoreName + "_on_" +
+			return directory +
+			      inputClassName.split("[.]")[inputClassName.split("[.]").length - 1] + "_" +
+					  experimentClassName.split("[.]")[experimentClassName.split("[.]").length - 1] + "_" +
+            scoreName.split("[.]")[scoreName.split("[.]").length - 1] + "_on_" +
 						locationName + "_" +
 						inputSize;
 	}
 
-	private static void printOutput(String scoreName, 
+	private void printOutput(String scoreName, 
 			double score, 
 			Double stdErr,
 			Integer count,
@@ -93,7 +106,7 @@ public class GraphBuilder extends DataExtractor {
 		return  in.replaceAll("\\$","\\\\\\$").replaceAll("\\ ", "\\\\ ");
 	}
 	
-	private static void printNoSDCGraph(String scoreName, String locationName,
+	private void printNoSDCGraph(String scoreName, String locationName,
 																	String outputDirectory,
 																	int inputSize,
 																	double[][] plottable){
@@ -111,7 +124,7 @@ public class GraphBuilder extends DataExtractor {
 		plotter.plot();		
 	}
 
-	private static void printGraph(String scoreName, String locationName,
+	private void printGraph(String scoreName, String locationName,
 																	String inputDirectory, 
 																	String outputDirectory,
 																	int inputSize,
@@ -121,7 +134,6 @@ public class GraphBuilder extends DataExtractor {
 																		scoreName,
 																		locationName,
 																		inputSize) +  ".png";
-
 		String numRunsOutputName = createFile(outputDirectory,
 																		scoreName,
 																		locationName,

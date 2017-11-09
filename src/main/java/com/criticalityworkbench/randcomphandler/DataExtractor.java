@@ -55,10 +55,14 @@ public class DataExtractor {
 
 
 	public void readDataIn(int inputSize){
+		String ic = inputClassName.split("[.]")[inputClassName.split("[.]").length - 1];
+		String ec = experimentClassName.split("[.]")[experimentClassName.split("[.]").length - 1];
+		String et = experimentTypeName.split("[.]")[experimentTypeName.split("[.]").length - 1];
+		
 		String inputFile = rawDataOutputDirectory + 
-			inputClassName + 
-			experimentClassName + 
-			experimentTypeName + 
+			ic + "_" +
+			ec + "_" +
+			et + "_" + 
 			inputSize + ".csv";
 		
 		readInLocations = new ArrayList<>();

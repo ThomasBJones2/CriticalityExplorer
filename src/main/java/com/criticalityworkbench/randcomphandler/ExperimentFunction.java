@@ -35,8 +35,12 @@ public interface ExperimentFunction{
 		default public void readResultsAndResetExperiment(CSVReader inputReader){		
 			resetExperiment();
 			try{
+				
 				List<String[]> results = inputReader.readAll();
+				
 				String[] lastState = getLastState(results);
+				for(String state : lastState)
+				    System.out.println("derp state: " + state);
 				if (lastState != null) {
 					translateLastState(lastState);
 				}

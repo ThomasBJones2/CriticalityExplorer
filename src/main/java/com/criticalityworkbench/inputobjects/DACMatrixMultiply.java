@@ -6,7 +6,7 @@ import java.lang.reflect.*;
 import java.math.BigInteger;
 import java.util.Random; 
 
-
+//Implements Strassen's Matrix Multiplication
 public class DACMatrixMultiply
 	implements Experiment<InputMatrices, DACMatrixMultiply> {
 	Matrix output;
@@ -61,9 +61,10 @@ public class DACMatrixMultiply
 	}
 
 	public Score[] scores(DACMatrixMultiply correctObject){
-		Score[] out = new Score [2];
+		Score[] out = new Score [3];
 		out[0] = ScorePool.frobeniusNorm(this.output, correctObject.output);
 		out[1] = ScorePool.infinityNorm(this.output, correctObject.output);
+		out[2] = ScorePool.logFrobeniusNorm(this.output, correctObject.output);
 		return out; 
 
 	}

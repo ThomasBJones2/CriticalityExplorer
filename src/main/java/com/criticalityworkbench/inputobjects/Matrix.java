@@ -25,6 +25,17 @@ public class Matrix implements Input<Matrix>{
 				values[i][j] = new BigInteger(BIG_INT_SIZE, rand); 
 	}
 
+	public void randomizeHalfZero(Random rand){
+		for(int i = 0; i < size; i ++)
+			for(int j = 0; j < size; j ++)
+				if(j < size/2)
+				    values[i][j] = new BigInteger(BIG_INT_SIZE, rand); 
+		    else
+					  values[i][j] = BigInteger.ZERO;
+	}
+
+
+
 	public double frobeniusNorm(Matrix otherMatrix){
 		double out = 0;
 		if(otherMatrix.size == size) {

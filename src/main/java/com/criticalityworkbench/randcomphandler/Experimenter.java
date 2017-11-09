@@ -83,7 +83,7 @@ public abstract class Experimenter implements Runnable{
 	public static Experimenter emptyObject(){return null;}
 
   public static String getResetString(String errorPoint, String fallMethName){
-    return("# " + errorPoint + "\n# " + fallMethName);
+    return("#,errorPoint: " + errorPoint + ",fallmeth: " + fallMethName);
 	}
 
   public static String runTimeHandler(String argument) throws IOException{
@@ -146,7 +146,11 @@ public abstract class Experimenter implements Runnable{
 
         writerForOutput = new StringWriter();
 
-        readerForInput = new StringReader(getResetString(new_args[2], new_args[3]));
+        readerForInput = new StringReader(
+						    getResetString(new_args[2], 
+							  fallibleMethods.get(Integer.parseInt(new_args[3]))
+							)
+						);
 	
 
 				Experimenter.runIds = new ArrayList<>();		
@@ -444,9 +448,24 @@ public abstract class Experimenter implements Runnable{
       long start_time = System.currentTimeMillis();
 			EF.runExperiment(inputSize, loopCount);
 		  long wait_time = start_time + MAX_RUN_TIME - System.currentTimeMillis();
-			Thread.sleep(wait_time);
-			thePool.shutdownNow(); //to kill things immediately
+			for(long i = 0; i < wait_time; i += 1000){
+        boolean all_done = true;
+				for(Future<?> f : theFutures){
+          all_done &= f.isDone();
+				}
+				if(all_done)
+					i = wait_time;
+				System.out.println("main thread waiting... " + i + " of " + wait_time + " " + all_done);
+			  Thread.sleep(1000);
+			}
+			thePool.shutdownNow(); 
 			RandomMethod.in_debug_termination = true;
+			for(Future<?> f : theFutures){
+		      f.cancel(true);
+			}
+
+
+			//to kill things immediately
       //thePool.shutdown();
 			while (!thePool.awaitTermination(60, TimeUnit.SECONDS)) {
 				  System.out.println("Awaiting completion of threads." +
