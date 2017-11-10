@@ -3,6 +3,7 @@ package com.criticalityworkbench.randcomphandler;
 import java.util.*;
 import java.lang.reflect.*;
 import java.lang.Thread;
+import org.aspectj.lang.JoinPoint;
 
 public aspect RandomMethod{
 
@@ -16,7 +17,9 @@ public aspect RandomMethod{
 
 	public static EpsilonProbability eProbability = new NullEpsilon();
 	public static boolean epsilonTest = false;
-	
+
+  public static boolean use_decompose = false;
+
 	public static void clearAspect(){
 		locations = new ArrayList<>();
 		timeCounts = new ArrayList<>();
@@ -72,7 +75,8 @@ public aspect RandomMethod{
 	pointcut anyInputObjectCall(): call(* com.criticalityworkbench.inputobjects..* (..));
 	
 	pointcut Randomize(): call(@Randomize * *(..));
-
+	
+	pointcut Randomize_Decompose(): call(@Randomize_Decompose * *(..));
 
 	pointcut PrintAspect() : call(void *.printAspect());
 
@@ -163,9 +167,9 @@ public aspect RandomMethod{
 			}
 	}
 
-	Object around() : Randomize(){
 
-		if(randomize){
+	Object around() : Randomize(){
+		if(randomize && !use_decompose){
 			Object targetObject = thisJoinPoint.getTarget();    	
 			final Object[] args = thisJoinPoint.getArgs();
 
@@ -228,6 +232,73 @@ public aspect RandomMethod{
 		}
 
 		return proceed();
+	}
+
+	Object around() : Randomize_Decompose(){
+		if(randomize && use_decompose){
+			Object targetObject = thisJoinPoint.getTarget();    	
+			final Object[] args = thisJoinPoint.getArgs();
+
+			RunId curId = new RunId(Thread.currentThread().getId());
+			curId = Experimenter.getId(curId);
+
+			if(curId.getExperiment() == true){
+				Random rand = curId.getRand();
+				Location theLocation = getLocation(curId);
+
+				//This forces a non-sdc error which allows us to clean up execution
+				//through 'non-sdc' error methods...
+				String methodName = thisJoinPointStaticPart.
+					getSignature().
+					getDeclaringTypeName()
+					+ "." + thisJoinPointStaticPart.
+					getSignature().
+					getName();
+
+				Experimenter.addToFallibleMethods(methodName);
+
+				updateLocations(theLocation, curId, methodName, (AbstractLocation) targetObject);
+				//increment time count seperately to account for 0 indexing
+				theLocation.timeCount ++;
+				
+				String shortMethodName = thisJoinPointStaticPart.
+					getSignature().
+					getName();
+
+				String randMethodName = shortMethodName + "Rand";
+
+				//must account for early increment due to return...
+				if(
+						curId.errorful &&
+						(
+						 (rand.nextDouble() < eProbability.getProbability(curId.scoreName, 
+																																methodName, 
+																																theLocation) && 
+							(
+								(epsilonTest) ||
+								unForcedError(
+									theLocation.getDefinedLocationFromName(methodName).getLocation() - 1, 
+									methodName,
+									curId)
+							)
+						) || (
+							!epsilonTest &&	
+							forcedError(theLocation.getDefinedLocationFromName(methodName).getLocation() - 1, 
+								methodName, 
+								curId)
+							)
+							) 
+						){
+	//					unForcedError(theLocation.timeCount - 1, curId)) || 
+	//					forcedError(theLocation.timeCount - 1, methodName, curId)) {
+					theLocation.incrementFailCount();
+					return randomizedCall(targetObject, args, randMethodName, rand);
+				}
+			}
+		}
+
+		return proceed();
+
 	}
 
 	Object randomizedCall(Object targetObject, 

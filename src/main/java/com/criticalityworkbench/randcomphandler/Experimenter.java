@@ -19,7 +19,8 @@ public abstract class Experimenter implements Runnable{
 	public static final int RUNTIME_ERROR_POINTS = 10;
 	public static final int NUM_RUNS = 1000;
 
-	public static String criticalityExperimentName = "RandComp.CriticalityExperimenter";
+	public static String criticalityExperimentName = 
+		"com.criticalityworkbench.randcomphandler.CriticalityExperimenter";
 
 	static String inputClassName, experimentClassName, experimentTypeName;
 
@@ -103,6 +104,12 @@ public abstract class Experimenter implements Runnable{
 
 				Experimenter.runIds = new ArrayList<>();		
 
+        if(new_args[5].equals("Decompose")){
+            RandomMethod.use_decompose = true;
+				} else {
+					  RandomMethod.use_decompose = false;
+				}
+
 				try{
 					testInputObjects();
 					initialize(inputClassName);
@@ -136,7 +143,14 @@ public abstract class Experimenter implements Runnable{
 
 				inputSizes = new int[] {experimentSize};
         fallibleMethods = Arrays.asList(new_args[8].split("/"));   
-				
+			
+        if(new_args[9].equals("Decompose")){
+            RandomMethod.use_decompose = true;
+						System.out.println("RandomMethod use Decompose is set to True");
+				} else {
+            RandomMethod.use_decompose = false;
+				}
+
 				RunTimeTriple<Long>[] rtt = new RunTimeTriple[1];
 				rtt[0] = new RunTimeTriple<Long>((long)Math.max(1, runTime),
 					(long)errorPoints);
@@ -200,7 +214,8 @@ public abstract class Experimenter implements Runnable{
 							" " + args[1] + 
 							" " + args[2] + 
 							" " + args[3] + 
-							" " + args[4] ));
+							" " + args[4] + 
+							" " + args[5]));
 		}
 		else if(args[4].
 				equals("com.criticalityworkbench.randcomphandler.CriticalityExperimenter")){
@@ -212,20 +227,29 @@ public abstract class Experimenter implements Runnable{
 							" " + args[5] + 
 							" " + args[6] + 
 							" " + args[7] +
-							" " + args[8]));
+							" " + args[8] + 
+							" " + args[9]));
 		} else {
 			inputClassName = args[0]; 
 			experimentClassName = args[1];	
 			experimentTypeName = args[2];
+			rawDataOutputDirectory = args[3];
+      
+			int experimentSize = Integer.parseInt(args[4]);
+			inputSizes = new int[] {experimentSize};
 
 
+      fallibleMethods = Arrays.asList(args[5].split("/"));   
 
 
-			if(args.length == 4){
-				rawDataOutputDirectory = args[3];
+			if(args[6].equals("Decompose")){
+					RandomMethod.use_decompose = true;
+			} else {
+					RandomMethod.use_decompose = false;
 			}
 
-		
+
+
 			Experimenter.runIds = new ArrayList<>();		
 
 			try{
@@ -235,7 +259,7 @@ public abstract class Experimenter implements Runnable{
 
 				//fallibleMethods = getMethodsAnnotatedWith(Randomize.class);
 				((Experimenter)getNewObject(experimentTypeName)).runMain();
-
+       
 			} catch (IllegalArgumentException E){
 				System.out.println("illegal argument exception at top level of experimenter program");
 				System.out.println(E);
@@ -243,7 +267,8 @@ public abstract class Experimenter implements Runnable{
 				System.out.println(E);
 			}
 		}
-
+    System.out.println("Now at the last line of Main in experimenter!");
+		System.exit(0);
 	}
 
 	public static ReentrantReadWriteLock IdLock = new ReentrantReadWriteLock(true); 
@@ -429,9 +454,9 @@ public abstract class Experimenter implements Runnable{
 			resetThreading();
 
       outputFile = rawDataOutputDirectory + 
-				inputClassName + 
-				experimentClassName + 
-				experimentTypeName + 
+				inputClassName.split("[.]")[inputClassName.split("[.]").length - 1] + "_" +
+				experimentClassName.split("[.]")[experimentClassName.split("[.]").length - 1] + "_" +
+				experimentTypeName.split("[.]")[experimentClassName.split("[.]").length - 1] + "_" +
 				inputSize + ".csv";
 
 			if(writerForOutput == null)
@@ -475,6 +500,7 @@ public abstract class Experimenter implements Runnable{
 			System.out.println("Done Printing Error Data for size: " + inputSize);	
 		
 			outputWriter.close();
+			inputReader.close();
 			RandomMethod.clearAspect();
 			loopCount ++;
 		}

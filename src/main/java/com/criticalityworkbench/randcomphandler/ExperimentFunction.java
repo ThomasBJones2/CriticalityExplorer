@@ -39,9 +39,10 @@ public interface ExperimentFunction{
 				List<String[]> results = inputReader.readAll();
 				
 				String[] lastState = getLastState(results);
-				for(String state : lastState)
-				    System.out.println("derp state: " + state);
 				if (lastState != null) {
+					for(String state : lastState)
+							System.out.println("state in final state: " + state);
+
 					translateLastState(lastState);
 				}
 

@@ -12,7 +12,11 @@ public class DACMatrixMultiply
 	Matrix output;
 	InputMatrices inputs;
 
-	DACMatrixMultiply(){}
+	//'empty object' must be scorable
+	DACMatrixMultiply(){
+	    output = new Matrix(1);
+      output.randomize(new Random());
+	}
 
 	public static DACMatrixMultiply emptyObject(){return new DACMatrixMultiply();}
 
@@ -58,6 +62,10 @@ public class DACMatrixMultiply
 
 	public ArrayList<DefinedLocation> getCurrentLocations(){
 		return output.getCurrentLocations();
+	}
+
+  public String toString(){
+    return output.toString();
 	}
 
 	public Score[] scores(DACMatrixMultiply correctObject){

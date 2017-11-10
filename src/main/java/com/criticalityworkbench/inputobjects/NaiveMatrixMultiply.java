@@ -19,6 +19,10 @@ public class NaiveMatrixMultiply
 		output = naiveMultiply(in);
 	}
 
+	public String toString(){
+      return output.toString();
+	}
+
 	public Matrix naiveMultiply(InputMatrices input){
 		Matrix out = new Matrix(input.size);
 		for(int i = 0; i < input.size; i ++){

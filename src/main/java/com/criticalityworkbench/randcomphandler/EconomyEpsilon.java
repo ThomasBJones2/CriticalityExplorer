@@ -68,11 +68,16 @@ public class EconomyEpsilon implements EpsilonProbability{
 																																					location);
 		double median = criticalityEnsemble.get(inputSize).getMedian(scoreName, methodName);
 
-
-		int upCount = criticalityEnsemble.get(inputSize).getUpCount(scoreName, methodName);
-		int downCount = criticalityEnsemble.get(inputSize).getDownCount(scoreName, methodName);
-		double modifier = downCount==0?1.0:((double)upCount/(double)downCount);
-		median = median*modifier;
+    //These lines were to correct for the wrong number of values, however the story
+		//in the paper can probably allow for wrong number of values as long as we compare
+		//values to each other correctly
+		//
+		//
+		//
+		//int upCount = criticalityEnsemble.get(inputSize).getUpCount(scoreName, methodName);
+		//int downCount = criticalityEnsemble.get(inputSize).getDownCount(scoreName, methodName);
+		//double modifier = downCount==0?1.0:((double)upCount/(double)downCount);
+		//median = median*modifier;
 
 
 		if(criticalityEnsemble.get(inputSize).isValidLocation(scoreName,
@@ -80,8 +85,10 @@ public class EconomyEpsilon implements EpsilonProbability{
 																													location)){
 
 			if (criticality > median) {
-				upCount ++;
-				criticalityEnsemble.get(inputSize).setUpCount(scoreName,methodName,upCount);
+				//upCount ++;
+				//criticalityEnsemble.get(inputSize).setUpCount(scoreName,methodName,upCount);
+				
+				
 				//if(methodName.equals("InputObjects.NaiveMultiply.add"))
 			  //System.out.println(methodName + " " + scoreName + " " + 
 						//DataEnsemble.getCountFromLocation(location, methodName) + " " + 
@@ -89,8 +96,10 @@ public class EconomyEpsilon implements EpsilonProbability{
 				return avgProbability*ratioShift;
 			}
 			else{
-				downCount ++;
-				criticalityEnsemble.get(inputSize).setDownCount(scoreName,methodName,downCount);
+				//downCount ++;
+				//criticalityEnsemble.get(inputSize).setDownCount(scoreName,methodName,downCount);
+				
+				
 				return avgProbability*(2.0 - ratioShift);
 			}
 		}

@@ -67,14 +67,16 @@ public class RunId{
 		this.experiment = isExperiment;
 	}
 
+  public String toString(){
+	  return "\n\nrunName: " + runName + "\n" +
+      "errorful: " + errorful + "\n" +
+		  "errorPoint: " + errorPoint + "\n" +
+		  "threadId: " + threadId + "\n" + 
+		  "scoreName: " + scoreName + "\n\n";
+	}
+
 	public void print(){
-		System.out.println();
-		System.out.println("runName: " + runName);
-		System.out.println("errorful: " + errorful);
-		System.out.println("errorPoint: " + errorPoint);
-		System.out.println("threadId: " + threadId);
-		System.out.println("scoreName: " + scoreName);	
-		System.out.println();
+		System.out.println(this.toString());
 	}
 
 	@Override

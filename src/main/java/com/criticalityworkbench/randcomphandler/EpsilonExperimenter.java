@@ -54,13 +54,14 @@ public class EpsilonExperimenter extends Experimenter{
 			setProbabilityShape(probabilityShape);	
 			runExperiments(new EpsilonExperiment(probabilityShape));
 		}
+		System.out.println("Now Done with Epsilon Experimenter Experiments");
 	}
 
 	public void setProbabilityShape(EpsilonProbability probabilityShape){
 		RandomMethod.eProbability = probabilityShape;
 		RandomMethod.epsilonTest = true;
 
-		System.out.print("Getting Average Error on Epsilon Probability Distribution");
+		System.out.print("Getting Average Error on Epsilon Probability Distribution ");
 		probabilityShape.printName();	
 	}
 
@@ -124,9 +125,9 @@ public class EpsilonExperimenter extends Experimenter{
 				System.out.println(scoreName);
 			}
 
-
 			for(String scoreName : scoreNames) {
 				for(double probability = startProbability; probability <= 0.1; probability += 0.01){
+				  System.out.println("On scoreName: " + scoreName + " and probability " + probability);
 					resetThreading();
 
 
@@ -141,14 +142,12 @@ public class EpsilonExperimenter extends Experimenter{
 							System.out.println("Now on runtime: " + runTime);
 							probabilityShape.printCounts();
 						}
-						while(threadQueue.size() >= NUM_RUNS){}
+
+
+						while(threadQueue.size() >= numThreads*3){}
 						Experimenter exp = grabThisClass(
 							(int) runName, runTime, inputSize, true, "All", scoreName);
-						thePool.submit(exp);
-					}
-					thePool.shutdown();
-					while (!thePool.awaitTermination(60, TimeUnit.SECONDS)) {
-						System.out.println("Awaiting completion of threads.");
+						theFutures.add(thePool.submit(exp));
 					}
 				}
 			}

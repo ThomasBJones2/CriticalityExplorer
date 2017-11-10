@@ -15,7 +15,7 @@ public class NaiveMultiply
 
 	public static NaiveMultiply emptyObject(){return new NaiveMultiply();}
 
-	@Randomize
+	@Randomize_Decompose
   public void multiply(InputIntegers xy){
     multiply_helper(xy);
 	}
@@ -49,7 +49,7 @@ public class NaiveMultiply
 			theProduct = BigInteger.ZERO.subtract(theProduct);
 	}
 
-	//@Randomize
+	@Randomize
 	public BigInteger add(BigInteger a, BigInteger b){
 		BigInteger out = a.add(b);
 		return out;
@@ -63,7 +63,7 @@ public class NaiveMultiply
 		return out;
 	}
 
-	//@Randomize
+	@Randomize
 	public Boolean check(Boolean a){
 		return a;
 	}
