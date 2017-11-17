@@ -21,6 +21,9 @@ public class EconomyEpsilon implements EpsilonProbability{
 	EconomyEpsilon(String inputClassName, 
 		String experimentClassName, 
 		String experimentTypeName,
+		String rawDataOutputDirectory,
+		String imageRootDirectory,
+		List<String> fallibleMethods,
 		double ratioShift){
 
 		criticalityEnsemble = new HashMap<>();
@@ -30,10 +33,17 @@ public class EconomyEpsilon implements EpsilonProbability{
 			System.gc();		
 			DataExtractor theExtractor = new DataExtractor(inputClassName, 
 																			experimentClassName,
-																			Experimenter.criticalityExperimentName);
-			System.out.println("Reading in data");
-			theExtractor.readDataIn(inputSize);
-			System.out.println("Assembling Data Ensemble");
+																			Experimenter.criticalityExperimentName,
+																			rawDataOutputDirectory,
+                                      imageRootDirectory);
+     
+		  for(String fallibleMethod : fallibleMethods){
+				theExtractor.proxyMethodName = fallibleMethod;
+				System.out.println("Reading in data");
+				theExtractor.readDataIn(inputSize);
+				System.out.println("Assembling Data Ensemble");
+			}
+			
 			DataEnsemble<EnsTriple> nextEnsemble = 
 				new DataEnsemble<>(theExtractor.readInLocations, EnsTriple::new );
 			nextEnsemble.clearData();
@@ -45,23 +55,31 @@ public class EconomyEpsilon implements EpsilonProbability{
 			System.gc();		
 		}
 		this.ratioShift = ratioShift;
+		this.upCount = 0;
+		this.downCount = 0;
 	}
 
-
-
 	public int getUpCount(){
-		return criticalityEnsemble.get(inputSize).getUpCountSum();
+	  return upCount;
 	}
 
 	public int getDownCount(){
-		return criticalityEnsemble.get(inputSize).getDownCountSum();
+	  return downCount;
 	}
 
 	public void printCounts(){
-		criticalityEnsemble.get(inputSize).printCounts();
+		System.out.println("upCount " + upCount + " downCount " + downCount);
 	}
 
-	
+
+  public double getUpDownRatio(){
+      return (double)upCount/(double)downCount;
+	}
+
+  int upCount;
+	int downCount;
+
+
 	public double getProbability(String scoreName, String methodName, Location location){
 		double criticality = criticalityEnsemble.get(inputSize).getCriticality(scoreName, 
 																																					methodName, 
@@ -85,18 +103,18 @@ public class EconomyEpsilon implements EpsilonProbability{
 																													location)){
 
 			if (criticality > median) {
-				//upCount ++;
+				upCount ++;
 				//criticalityEnsemble.get(inputSize).setUpCount(scoreName,methodName,upCount);
 				
 				
 				//if(methodName.equals("InputObjects.NaiveMultiply.add"))
 			  //System.out.println(methodName + " " + scoreName + " " + 
-						//DataEnsemble.getCountFromLocation(location, methodName) + " " + 
-						//criticality + " " + median + " " + modifier);
+				//		DataEnsemble.getCountFromLocation(location, methodName) + " " + 
+				//		criticality + " " + median + " ");
 				return avgProbability*ratioShift;
 			}
 			else{
-				//downCount ++;
+				downCount ++;
 				//criticalityEnsemble.get(inputSize).setDownCount(scoreName,methodName,downCount);
 				
 				
@@ -109,6 +127,8 @@ public class EconomyEpsilon implements EpsilonProbability{
 
 	public void setProbability(double probability){
 		this.avgProbability = probability;
+		this.upCount = 0;
+		this.downCount = 0;
 	}
 
 	public int indexOf(int[] array, int val){

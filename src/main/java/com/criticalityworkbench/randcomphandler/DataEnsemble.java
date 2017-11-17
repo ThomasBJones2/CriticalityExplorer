@@ -20,6 +20,18 @@ public class DataEnsemble<T extends EnsTriple>{
 			System.out.println("EnsScore name: " + name);
 		}
 
+    public String toString(){
+			String out = "";
+			out += "name: " + name + " ";
+			for(EnsLocation el : locations)
+				out += el.toString();
+      return out; 
+		}
+
+	  void print(){
+        System.out.println(this.toString());
+		}
+
 		EnsLocation getLocation(DefinedLocation locLocation){
 			for(EnsLocation location : locations){
 				if(location.name.equals(locLocation.name))
@@ -45,6 +57,17 @@ public class DataEnsemble<T extends EnsTriple>{
 		String name;
 		double median = Double.MAX_VALUE;
 		ArrayList<T> triples = new ArrayList<>();
+
+    public String toString(){
+			String out = "";
+			out += "name: " + name + " ";
+			out += "median: " + median;
+      return out; 
+		}
+
+	  void print(){
+        System.out.println(this.toString());
+		}
 
 		int upCount = 0, downCount = 0;
 
@@ -229,7 +252,7 @@ public class DataEnsemble<T extends EnsTriple>{
 	}
 
 	double getCriticality(String scoreName, String methodName, Location location){
-		String newScoreName = "Absolute_Logarithm_Value";
+		String newScoreName = scoreName; //"Absolute_Logarithm_Value";
 		EnsScore score = getScore(newScoreName);
 		if(score != null) {
 			EnsLocation ensLocation = score.getLocation(methodName);
@@ -262,7 +285,7 @@ public class DataEnsemble<T extends EnsTriple>{
 	}
 
 	double getMedian(String scoreName, String methodName){
-		String newScoreName = "Absolute_Logarithm_Value";		
+		String newScoreName = scoreName; //"Absolute_Logarithm_Value";		
 
 		EnsScore score = getScore(newScoreName);
 		if(score != null) {

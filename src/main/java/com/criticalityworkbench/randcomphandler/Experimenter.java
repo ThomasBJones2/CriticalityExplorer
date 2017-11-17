@@ -19,6 +19,8 @@ public abstract class Experimenter implements Runnable{
 	public static final int RUNTIME_ERROR_POINTS = 10;
 	public static final int NUM_RUNS = 1000;
 
+  public static boolean in_proxy_experiment = false;
+
 	public static String criticalityExperimentName = 
 		"com.criticalityworkbench.randcomphandler.CriticalityExperimenter";
 
@@ -45,6 +47,9 @@ public abstract class Experimenter implements Runnable{
 
 	static String rawDataOutputDirectory = "./output/";
 
+  static String processedDataInputDirectory = "";
+	static String imageRootDirectory = "";
+
 	static List<String> fallibleMethods = new ArrayList<String>();
 
 	static CSVWriter outputWriter;
@@ -52,6 +57,8 @@ public abstract class Experimenter implements Runnable{
 	static CSVReader inputReader;
 
 	static String outputFile;
+	
+	static String proxyMethodName = "";
 
   static Writer writerForOutput = null;
 
@@ -107,6 +114,7 @@ public abstract class Experimenter implements Runnable{
         if(new_args[5].equals("Decompose")){
             RandomMethod.use_decompose = true;
 				} else {
+					  System.out.println("In runTimeHandler set use_decompose to False");
 					  RandomMethod.use_decompose = false;
 				}
 
@@ -248,6 +256,21 @@ public abstract class Experimenter implements Runnable{
 					RandomMethod.use_decompose = false;
 			}
 
+      if(args.length > 7)
+			  processedDataInputDirectory = args[7];
+			if(args.length > 8)
+				imageRootDirectory = args[8];
+			if(args.length > 9)
+				proxyMethodName = args[9];
+			
+			System.out.println("List of input arguments: ");
+			int v = 0;
+			for(String arg : args) {
+				System.out.println("argument " + v + ": " +arg);
+				v ++;
+			}
+			System.out.println();
+      
 
 
 			Experimenter.runIds = new ArrayList<>();		
@@ -338,7 +361,7 @@ public abstract class Experimenter implements Runnable{
 		} catch (Exception e){
 			Location theLocation = RandomMethod.getLocation(curId);
 			
-			System.out.println("printing the location!" + theLocation);
+			System.out.println("printing the location! " + theLocation);
 			theLocation.burnIn();
 			incrementNonSDCCount();
 			System.out.println("Non SDC error: " + errorful + 
@@ -359,6 +382,9 @@ public abstract class Experimenter implements Runnable{
 		}
 		RandomMethod.clearLocation(curId);
 		removeId(curId);
+		if(!sdcError){
+        System.out.println("no sdc error and made it here!");
+		}
 		return experiment;
 	}
 
@@ -402,6 +428,7 @@ public abstract class Experimenter implements Runnable{
 		correctObject = runObject(iObject1, correctObject, rand1, false);
 		errorObject = runObject(iObject2, errorObject, rand2, true);
 
+
 		if(experimentRunning) {
 			saveFinalResults(correctObject, errorObject);
 		}
@@ -428,7 +455,37 @@ public abstract class Experimenter implements Runnable{
 	static ArrayBlockingQueue<Runnable> threadQueue = null;
 	static ThreadPoolExecutor thePool = null;
 
-	static void resetThreading (){
+	static void resetThreading () throws InterruptedException{
+			threadQueue = 
+				new ArrayBlockingQueue<Runnable>(numThreads*3);
+			thePool = 
+				new ThreadPoolExecutor(numThreads,
+					numThreads,
+					0, 
+					TimeUnit.SECONDS,
+					threadQueue);
+      
+			long start_time = System.currentTimeMillis();
+		  long wait_time = start_time + MAX_RUN_TIME - System.currentTimeMillis();
+			for(long i = 0; i < wait_time; i += 1000){
+        boolean all_done = true;
+				for(Future<?> f : theFutures){
+          all_done &= f.isDone();
+				}
+				if(all_done)
+					i = wait_time;
+				System.out.println("reseting threads... " + i + " of " + wait_time + " " + all_done);
+			  Thread.sleep(1000);
+			}
+			thePool.shutdownNow(); 
+			RandomMethod.in_debug_termination = true;
+			for(Future<?> f : theFutures){
+		      f.cancel(true);
+			}
+			while (!thePool.awaitTermination(60, TimeUnit.SECONDS)) {
+				  System.out.println("Awaiting completion of threads in reset threading..." +
+							thePool.isTerminating());
+			}
 
 			threadQueue = 
 				new ArrayBlockingQueue<Runnable>(numThreads*3);
@@ -453,9 +510,16 @@ public abstract class Experimenter implements Runnable{
 
 			resetThreading();
 
+      String loc_proxy_name = "";
+			if(in_proxy_experiment){
+        	loc_proxy_name = proxyMethodName.split("[.]")[proxyMethodName.split("[.]").length - 2]
+					  + "." + proxyMethodName.split("[.]")[proxyMethodName.split("[.]").length - 1] + "_";
+			}
+
       outputFile = rawDataOutputDirectory + 
 				inputClassName.split("[.]")[inputClassName.split("[.]").length - 1] + "_" +
 				experimentClassName.split("[.]")[experimentClassName.split("[.]").length - 1] + "_" +
+				loc_proxy_name +
 				experimentTypeName.split("[.]")[experimentClassName.split("[.]").length - 1] + "_" +
 				inputSize + ".csv";
 
@@ -471,6 +535,7 @@ public abstract class Experimenter implements Runnable{
 
 			EF.readResultsAndResetExperiment(inputReader);
       long start_time = System.currentTimeMillis();
+			EF.setOutputWriter(outputWriter);
 			EF.runExperiment(inputSize, loopCount);
 		  long wait_time = start_time + MAX_RUN_TIME - System.currentTimeMillis();
 			for(long i = 0; i < wait_time; i += 1000){
@@ -529,10 +594,16 @@ public abstract class Experimenter implements Runnable{
 		Experiment correctObject, 
 		Experiment errorObject){
 
-
 		outputStringLock.writeLock().lock();
-		Score[] scores = errorObject.scores(correctObject);				
+
+    Score[] scores;
+    if(sdcError){
+		    scores = errorObject.scores(correctObject);			
+		} else {
+        scores = new Score[0];
+		}	
 		Score errorScore = null;		
+
 		if(!sdcError) {
 			errorScore = ScorePool.nullScore(nonSDCError);
 		}
@@ -547,7 +618,6 @@ public abstract class Experimenter implements Runnable{
 		String[] locationStrings = getLocationStrings(locLocation);
 		String[] scoreStrings = getScoreStrings(scores, errorScore);
 		
-
 		outputWriter.writeNext(concat(extras, concat(locationStrings, scoreStrings)));
 
 		try{
@@ -555,6 +625,7 @@ public abstract class Experimenter implements Runnable{
 		} catch (IOException e) {
 			System.out.println("There was a problem flushing the result printer to csv " + e);
 		}
+
 		outputStringLock.writeLock().unlock();
 	}
 
@@ -709,12 +780,19 @@ public abstract class Experimenter implements Runnable{
 				Experimenter exp = new CriticalityExperimenter(i, i, inputSize, false, "All", "All");
 				locFutures.add(locPool.submit(exp));
 			}
+
 			locPool.shutdown(); 
+			//RandomMethod.in_debug_termination = true;
+			//for(Future<?> f : locFutures){
+		  //    f.cancel(true);
+			//}
+
 			while (!locPool.awaitTermination(60, TimeUnit.SECONDS)) {
-				  System.out.println("Awaiting completion of threads." +
+				  System.out.println("Awaiting completion of threads in get runTimes" +
 							locPool.isTerminating());
 			}
-	
+			//RandomMethod.in_debug_termination = false;
+			
 			avgRunTime = (System.currentTimeMillis() - avgRunTime)/RUNTIME_ERROR_POINTS;
 			nearOut[loopCount] = new RunTimeTriple<Long>(Math.max(1, avgRunTime),
 					(long)RandomMethod.getMaxTimeCount());

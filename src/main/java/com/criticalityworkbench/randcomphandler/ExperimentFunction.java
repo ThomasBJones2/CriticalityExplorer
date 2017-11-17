@@ -1,6 +1,7 @@
 package com.criticalityworkbench.randcomphandler;
 
 import au.com.bytecode.opencsv.CSVReader;
+import au.com.bytecode.opencsv.CSVWriter;
 
 import java.util.*;
 import java.lang.reflect.*;
@@ -20,6 +21,8 @@ public interface ExperimentFunction{
 
 		public void translateLastState(String[] result);
 		public void resetExperiment();
+    
+		default public void setOutputWriter(CSVWriter outputWriter){}
 
 
 		default public String[] getLastState(List<String[]> results){

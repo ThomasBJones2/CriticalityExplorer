@@ -7,7 +7,7 @@ import java.math.BigInteger;
 import java.lang.Math;
 
 public class Matrix implements Input<Matrix>{
-	final int BIG_INT_SIZE = 50;
+	final int BIG_INT_SIZE = 10;
 
 	BigInteger[][] values;
   int size;

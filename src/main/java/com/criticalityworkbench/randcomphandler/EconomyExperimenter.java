@@ -12,6 +12,9 @@ public class EconomyExperimenter extends EpsilonExperimenter {
 		out.add(new EconomyEpsilon(inputClassName, 
 																experimentClassName, 
 																experimentTypeName,
+																processedDataInputDirectory,
+                                imageRootDirectory, 
+																fallibleMethods,
 																0.0));
 		return out;
 	}

@@ -8,6 +8,7 @@ import time
 import glob
 from multiprocessing import Pool
 import sys
+from shutil import copyfile
 
 IS_DEBUG = False #True
 
@@ -47,14 +48,15 @@ class RunCriticality(object):
     def create_run_time_command(self, 
             input_object = "InputMatrices", 
             experiment_object = "NaiveMatrixMultiply", 
-            experiment_size = "1"):
+            experiment_size = "1",
+            decompose = False):
         experimenter_name = "CriticalityExperimenter"
         out = "runTime " +\
                 self.input_objects_base_string + input_object + " " +\
                 self.input_objects_base_string + experiment_object + " " +\
                 self.rand_comp_base_string + experimenter_name + " " +\
                 experiment_size
-        if self.use_decompose:
+        if decompose:
             out += " Decompose"
         else:
             out += " BaseRandom"
@@ -126,6 +128,7 @@ class RunCriticality(object):
 
     def get_rtepafm_helper(self, result_string):
         names = []
+        print("result string is: " + result_string)
         for rs  in result_string.split('\\n'):
             if len(rs) > 1:
                 _, name, rt, ep = rs.split(':')
@@ -186,13 +189,15 @@ class RunCriticality(object):
     def get_criticality_file_name(self, 
             input_object,
             experiment_object,
-            experiment_size):
+            experiment_size,
+            proxy_method):
 
-            return str(input_object) + "_" +\
-                str(experiment_object) + "_" +\
-                "CriticalityExperimenter" + "_" +\
-                str(experiment_size) +\
-                ".csv"
+        return str(input_object) + "_" +\
+            str(experiment_object) + "_" +\
+            str(proxy_method) + "_" +\
+            'CriticalityExperimenter' + "_" +\
+            str(experiment_size) + ".csv"
+ 
 
     def run_single_criticality_error_point( 
                     self, 
@@ -278,26 +283,281 @@ class RunCriticality(object):
         return out
 
 
-    def run_criticality(self, 
+
+    def proxy_run(self, 
+        input_object,
+        experiment_object,
+        experiment_size,
+        proxy_directory,
+        fallible_methods_str,
+        criticality_directory,
+        proxy_method_name):
+        
+
+        print "\n\n\n\n\n"
+        print "Starting Proxy Run!"
+
+        ds = "BaseRandom"
+        f = self.build_results_file(        
+                input_object,
+                experiment_object,
+                experiment_size,
+                proxy_directory,
+                proxy_method_name,
+                'ProxyExperimenter',
+                )
+        print("looking at file " + f)
+        try:
+            os.remove(f)
+        except:
+            print("file " + str(f) + " did not exist!")
+        call(['java', 
+            '-cp', 
+            './target/CriticalityWorkbench-1.0-SNAPSHOT.jar', 
+            self.rand_comp_base_string + 'Experimenter',
+            self.input_objects_base_string + str(input_object),
+            self.input_objects_base_string + str(experiment_object),
+            self.rand_comp_base_string + 'ProxyExperimenter',
+            proxy_directory,
+            experiment_size,
+            fallible_methods_str,
+            ds,
+            criticality_directory,
+            self.proxy_image_root_directory,
+            self.input_objects_base_string + str(proxy_method_name),
+            ])
+ 
+
+    def economy_run(self, 
+        input_object,
+        experiment_object,
+        experiment_size,
+        economy_directory,
+        fallible_methods_str,
+        criticality_directory):
+
+        print "\n\n\n\n\n"
+        print "Starting Economy Run!"
+
+        if self.use_decompose:
+            ds = "Decompose"
+        else:
+            ds = "BaseRandom"
+        f = self.build_results_file(        
+                input_object,
+                experiment_object,
+                experiment_size,
+                economy_directory,
+                None,
+                'EconomyExperimenter',
+                )
+        print("looking at file " + f)
+        try:
+            os.remove(f)
+        except:
+            print("file " + str(f) + " did not exist!")
+        call(['java', 
+            '-cp', 
+            './target/CriticalityWorkbench-1.0-SNAPSHOT.jar', 
+            self.rand_comp_base_string + 'Experimenter',
+            self.input_objects_base_string + str(input_object),
+            self.input_objects_base_string + str(experiment_object),
+            self.rand_comp_base_string + 'EconomyExperimenter',
+            economy_directory,
+            experiment_size,
+            fallible_methods_str,
+            ds,
+            criticality_directory,
+            ])
+    
+    def build_results_file(self, 
+        input_object,
+        experiment_object,
+        experiment_size,
+        directory,
+        direct_method_name,
+        experiment_type):
+
+        if direct_method_name is None:
+            method_name = ""
+        else:
+            method_name = direct_method_name + "_"
+
+        return directory +\
+            input_object + "_" +\
+            experiment_object + "_" +\
+            method_name +\
+            experiment_type + "_" +\
+            experiment_size + ".csv"
+ 
+    def epsilon_run(self, 
+        input_object,
+        experiment_object,
+        experiment_size,
+        epsilon_directory,
+        fallible_methods_str):
+       
+
+        print "\n\n\n\n\n"
+        print "Starting Epsilon Run!"
+
+        if self.use_decompose:
+            ds = "Decompose"
+        else:
+            ds = "BaseRandom"
+        
+        f = self.build_results_file(        
+                input_object,
+                experiment_object,
+                experiment_size,
+                epsilon_directory,
+                None,
+                'EpsilonExperimenter'
+                )
+        print("looking at file " + f)
+        try:
+            os.remove(f)
+        except:
+            print("file " + str(f) + " did not exist!")
+        call(['java', 
+            '-cp', 
+            './target/CriticalityWorkbench-1.0-SNAPSHOT.jar', 
+            self.rand_comp_base_string + 'Experimenter',
+            self.input_objects_base_string + str(input_object),
+            self.input_objects_base_string + str(experiment_object),
+            self.rand_comp_base_string + 'EpsilonExperimenter',
+            epsilon_directory,
+            experiment_size,
+            fallible_methods_str,
+            ds
+            ])
+ 
+
+    def graph_run(self, 
+        input_object,
+        experiment_object,
+        experiment_size,
+        graph_directory,
+        processed_data_directory,
+        experimenter,
+        results_directory,
+        proxy_method_name = None):
+       
+        print "\n\n\n\n\n"
+        print "Starting Graph Run!"
+
+        if self.use_decompose:
+            decompose_val = "Decompose"
+        else:
+            decompose_val = "BaseRandom"
+
+
+        if proxy_method_name is not None:
+            call(['java', 
+                '-cp', 
+                './target/CriticalityWorkbench-1.0-SNAPSHOT.jar', 
+                self.rand_comp_base_string + 'GraphBuilder',
+                self.input_objects_base_string + str(input_object),
+                self.input_objects_base_string + str(experiment_object),
+                self.rand_comp_base_string + experimenter,
+                graph_directory,
+                results_directory,
+                experiment_size,
+                processed_data_directory,
+                proxy_method_name,
+                decompose_val,
+                ])
+ 
+        else:
+            call(['java', 
+                '-cp', 
+                './target/CriticalityWorkbench-1.0-SNAPSHOT.jar', 
+                self.rand_comp_base_string + 'GraphBuilder',
+                self.input_objects_base_string + str(input_object),
+                self.input_objects_base_string + str(experiment_object),
+                self.rand_comp_base_string + experimenter,
+                graph_directory,
+                results_directory,
+                experiment_size,
+                processed_data_directory,
+                "None",
+                decompose_val
+                ])
+
+    #TODO: use_decompose is used in a lot of broken ways in this object
+    def run_experiments(self, 
             input_object,
             experiment_object,
             experiment_size):
 
+        if not self.use_decompose:
+            base_fallible_methods_list = self.run_primary_experiments(
+                    input_object,
+                    experiment_object,
+                    experiment_size,
+                    self.use_decompose)
+        else:
+            _, _, base_fallible_methods_list = self.get_rt_ep_fml(
+            input_object,
+            experiment_object,
+            experiment_size,
+            False)
+
+
+        fallible_methods_list = self.run_primary_experiments(
+                input_object,
+                experiment_object,
+                experiment_size,
+                True)
+
+        base_fallible_methods_str = self.stringify_fallible_methods(base_fallible_methods_list)
+
+        if self.run_proxy:
+            self.proxy_run(input_object, 
+                    experiment_object, 
+                    experiment_size, 
+                    self.proxy_results_directory,
+                    base_fallible_methods_str,
+                    self.criticality_results_directory,
+                    self.proxy_method_name
+                    )
+
+
+            crit.graph_run(input_object, 
+                    experiment_object, 
+                    experiment_size, 
+                    self.proxy_graph_directory,
+                    self.processed_proxy_results_directory,
+                    'ProxyExperimenter',
+                    self.proxy_results_directory,
+                    self.proxy_method_name)
+
+    def get_rt_ep_fml(self,
+            input_object,
+            experiment_object,
+            experiment_size,
+            use_decompose):
+
         run_time_command = self.create_run_time_command( 
                 input_object, 
                 experiment_object, 
-                experiment_size)
+                experiment_size,
+                use_decompose)
+        
         print(run_time_command)
        
 
         run_time, error_points, fallible_methods_list = \
             self.get_run_time_error_points_and_fallible_methods(run_time_command)
+
         dpapx = float(2*60*1000)/float(run_time)
         print("fallible methods: " + str(fallible_methods_list))
         print("RunTime of: " + str(run_time) +\
                 " data points collected of (approx): " + str(dpapx) +\
                 " errorpoints of: " + str(error_points))
-      
+
+
+
         print(self.create_criticality_command( 
             input_object, 
             experiment_object, 
@@ -307,6 +567,24 @@ class RunCriticality(object):
             run_time,
             error_points,
             fallible_methods_list[0]))
+        return run_time, error_points, fallible_methods_list
+
+
+    def run_primary_experiments(self, 
+            input_object,
+            experiment_object,
+            experiment_size,
+            use_decompose):
+
+        self.use_decompose = use_decompose
+        run_time, error_points, fallible_methods_list = self.get_rt_ep_fml(
+            input_object,
+            experiment_object,
+            experiment_size,
+            use_decompose)
+
+
+        fallible_methods_str = self.stringify_fallible_methods(fallible_methods_list)
         if not self.dry_run: 
             max_eps_per_step = self.get_max_eps_per_step()
             pool = Pool(max_eps_per_step)
@@ -335,14 +613,19 @@ class RunCriticality(object):
             pool.join()
 
         results_directory = "./results/"
-        crit_file = self.get_criticality_file_name(
-                    input_object,
-                    experiment_object,
-                    experiment_size, 
-                    )
-        crit_file = os.path.join(results_directory, crit_file)
-        out_file = open(crit_file, 'w')
         for fm, fallible_method in enumerate(fallible_methods_list):
+            short_fallible_method = fallible_method.split('.')[-2] + "." +\
+                    fallible_method.split('.')[-1]
+            crit_file = self.get_criticality_file_name(
+                        input_object,
+                        experiment_object,
+                        experiment_size,
+                        short_fallible_method,
+                        )
+            crit_file = os.path.join(results_directory, crit_file)
+            out_file = open(crit_file, 'w')
+
+            print("Writing criticality results to: " + str(crit_file))
             for ep in range(0, self.get_max_eps(error_points)):
                 directory_name = "./raw_lambda_results/"
                 file_name = self.get_raw_criticality_file_name(
@@ -367,155 +650,56 @@ class RunCriticality(object):
                     f.close()
                 except:
                     pass
-        out_file.close()
+            out_file.close()
 
-        
-        fallible_methods_str = self.stringify_fallible_methods(fallible_methods_list)
-        self.epsilon_run(input_object, 
+
+            self.graph_run(input_object, 
                 experiment_object, 
                 experiment_size, 
-                self.epsilon_results_directory,
-                fallible_methods_str,
-                )
-        self.economy_run(input_object, 
-                experiment_object, 
-                experiment_size, 
-                self.economy_results_directory,
-                fallible_methods_str,
-                )
+                self.criticality_graph_directory,
+                self.processed_criticality_results_directory,
+                'CriticalityExperimenter',
+                self.criticality_results_directory,
+                short_fallible_method)
+
+
+        if self.run_economy: 
+            self.economy_run(input_object, 
+                    experiment_object, 
+                    experiment_size, 
+                    self.economy_results_directory,
+                    fallible_methods_str,
+                    self.criticality_results_directory,
+                    )
+
+            crit.graph_run(input_object, 
+                    experiment_object, 
+                    experiment_size, 
+                    self.economy_graph_directory,
+                    self.processed_economy_results_directory,
+                    'EconomyExperimenter',
+                    self.economy_results_directory)
+
+      
+        if self.run_epsilon:
+            self.epsilon_run(input_object, 
+                    experiment_object, 
+                    experiment_size, 
+                    self.epsilon_results_directory,
+                    fallible_methods_str,
+                    )
+            crit.graph_run(input_object, 
+                    experiment_object, 
+                    experiment_size, 
+                    self.epsilon_graph_directory,
+                    self.processed_epsilon_results_directory,
+                    'EpsilonExperimenter',
+                    self.epsilon_results_directory)
+
+        return fallible_methods_list
 
 
 
-
-    """
-    def composed_economy_epsilon_run(self, 
-        input_object,
-        experiment_object,
-        experiment_size,
-        criticality_graph_directory,
-        processed_data_directory):
-        
-        call(['java', 
-            '-cp', 
-            './target/CriticalityWorkbench-1.0-SNAPSHOT.jar', 
-            self.rand_comp_base_string + 'GraphBuilder',
-            self.input_objects_base_string + str(input_object),
-            self.input_objects_base_string + str(experiment_object),
-            self.rand_comp_base_string + 'CriticalityExperimenter',
-            criticality_graph_directory,
-            './results/',
-            experiment_size,
-            processed_data_directory,
-            ])
- 
-    """
-
-
-    def economy_run(self, 
-        input_object,
-        experiment_object,
-        experiment_size,
-        economy_directory,
-        fallible_methods_str):
-        
-        if self.use_decompose:
-            ds = "Decompose"
-        else:
-            ds = "BaseRandom"
-        f = self.build_e_file(        
-                input_object,
-                experiment_object,
-                experiment_size,
-                economy_directory
-                )
-        print("looking at file " + f)
-        try:
-            os.remove(f)
-        except:
-            print("file " + str(f) + " did not exist!")
-        call(['java', 
-            '-cp', 
-            './target/CriticalityWorkbench-1.0-SNAPSHOT.jar', 
-            self.rand_comp_base_string + 'Experimenter',
-            self.input_objects_base_string + str(input_object),
-            self.input_objects_base_string + str(experiment_object),
-            self.rand_comp_base_string + 'EconomyExperimenter',
-            economy_directory,
-            experiment_size,
-            fallible_methods_str,
-            ds
-            ])
-    
-    def build_e_file(self, 
-        input_object,
-        experiment_object,
-        experiment_size,
-        directory):
-
-        return directory +\
-            input_object + "_" +\
-            experiment_object + "_" +\
-            'EpsilonExperimenter' + "_" +\
-            experiment_size + ".csv"
-   
-    def epsilon_run(self, 
-        input_object,
-        experiment_object,
-        experiment_size,
-        epsilon_directory,
-        fallible_methods_str):
-        
-        if self.use_decompose:
-            ds = "Decompose"
-        else:
-            ds = "BaseRandom"
-        
-        f = self.build_e_file(        
-                input_object,
-                experiment_object,
-                experiment_size,
-                epsilon_directory
-                )
-        print("looking at file " + f)
-        try:
-            os.remove(f)
-        except:
-            print("file " + str(f) + " did not exist!")
-        call(['java', 
-            '-cp', 
-            './target/CriticalityWorkbench-1.0-SNAPSHOT.jar', 
-            self.rand_comp_base_string + 'Experimenter',
-            self.input_objects_base_string + str(input_object),
-            self.input_objects_base_string + str(experiment_object),
-            self.rand_comp_base_string + 'EpsilonExperimenter',
-            epsilon_directory,
-            experiment_size,
-            fallible_methods_str,
-            ds
-            ])
- 
-
-    def graph_run(self, 
-        input_object,
-        experiment_object,
-        experiment_size,
-        graph_directory,
-        processed_data_directory,
-        experimenter,
-        results_directory):
-        
-        call(['java', 
-            '-cp', 
-            './target/CriticalityWorkbench-1.0-SNAPSHOT.jar', 
-            self.rand_comp_base_string + 'GraphBuilder',
-            self.input_objects_base_string + str(input_object),
-            self.input_objects_base_string + str(experiment_object),
-            self.rand_comp_base_string + experimenter,
-            graph_directory,
-            results_directory,
-            experiment_size,
-            processed_data_directory,
-            ])
  
 
 
@@ -561,6 +745,18 @@ def create_argparser():
                         default='./economy_results/')
 
 
+    parser.add_argument('--proxy_graph_directory', type=str,
+                        help='the directory where we dump graphs', 
+                        default='./proxy_graphs/')
+    parser.add_argument('--processed_proxy_results_directory', type=str,
+                        help='the directory where we dump processed results', 
+                        default='./processed_proxy_results/')
+    parser.add_argument('--proxy_results_directory', type=str,
+                        help='the directory where we rough results', 
+                        default='./proxy_results/')
+    parser.add_argument('--proxy_method_name', type=str)
+
+
 
 
     parser.add_argument('--clear_raw_data', type=str, default ='n',
@@ -569,7 +765,13 @@ def create_argparser():
     parser.add_argument('--limited_command', type=str, default = '')
     parser.add_argument('--dry_run', type=str, default='y')
     parser.add_argument('--use_decompose', type=str, default='n')
-    
+    parser.add_argument('--create_proxy_data_files', type=str, default='n')
+
+
+    parser.add_argument('--run_proxy', type=str, default = 'y')
+    parser.add_argument('--run_epsilon', type=str, default='y')
+    parser.add_argument('--run_economy', type=str, default='y')
+ 
     
     return parser
 
@@ -585,18 +787,44 @@ if __name__ == "__main__":
     crit = RunCriticality()
     crit.dry_run = args.dry_run == 'y'
     crit.use_decompose = use_decompose
+    crit.proxy_method_name = args.proxy_method_name
+    crit.proxy_image_root_directory = args.proxy_graph_directory
 
-    criticality_graph_directory = args.criticality_graph_directory
-    criticality_results_directory = args.criticality_results_directory
-    processed_criticality_results_directory = args.processed_criticality_results_directory
+    crit.criticality_graph_directory = args.criticality_graph_directory
+    crit.criticality_results_directory = args.criticality_results_directory
+    crit.processed_criticality_results_directory = args.processed_criticality_results_directory
 
-    epsilon_graph_directory = args.epsilon_graph_directory
-    epsilon_results_directory = args.epsilon_results_directory
-    processed_epsilon_results_directory = args.processed_epsilon_results_directory
+    crit.epsilon_graph_directory = args.epsilon_graph_directory
+    crit.epsilon_results_directory = args.epsilon_results_directory
+    crit.processed_epsilon_results_directory = args.processed_epsilon_results_directory
 
-    economy_graph_directory = args.economy_graph_directory
-    economy_results_directory = args.economy_results_directory
-    processed_economy_results_directory = args.processed_economy_results_directory
+    crit.economy_graph_directory = args.economy_graph_directory
+    crit.economy_results_directory = args.economy_results_directory
+    crit.processed_economy_results_directory = args.processed_economy_results_directory
+
+    crit.proxy_graph_directory = args.proxy_graph_directory
+    crit.proxy_results_directory = args.proxy_results_directory
+    crit.processed_proxy_results_directory = args.processed_proxy_results_directory
+
+    crit.run_proxy = args.run_proxy == 'y'
+    crit.run_economy = args.run_economy == 'y'
+    crit.run_epsilon = args.run_epsilon == 'y'
+
+    if args.create_proxy_data_files == 'y':
+        file_name = input_object + "_" + experiment_object + "_CriticalityExperimenter_*"
+        file_names = "./results/" + file_name
+        print(file_names)
+        files = glob.glob(file_names)
+        for f in files:
+            current_size = f.split("_")[-1].split(".")[0]
+            new_f = "./results/" +\
+                    input_object + "_" +\
+                    experiment_object + "_" +\
+                    args.proxy_method_name + "_" +\
+                    "CriticalityExperimenter_" +\
+                    current_size + ".csv"
+            copyfile(f, new_f) 
+
 
 
     if args.clear_raw_data == 'y':
@@ -609,32 +837,6 @@ if __name__ == "__main__":
             os.remove(f)
     else:
         crit.set_timeouts()
-        crit.epsilon_results_directory = epsilon_results_directory
-        crit.economy_results_directory = economy_results_directory
-        crit.run_criticality(input_object, experiment_object, experiment_size)
-
-        crit.graph_run(input_object, 
-                experiment_object, 
-                experiment_size, 
-                criticality_graph_directory,
-                processed_criticality_results_directory,
-                'CriticalityExperimenter',
-                criticality_results_directory)
-
-        crit.graph_run(input_object, 
-                experiment_object, 
-                experiment_size, 
-                epsilon_graph_directory,
-                processed_epsilon_results_directory,
-                'EpsilonExperimenter',
-                epsilon_results_directory)
-
-        crit.graph_run(input_object, 
-                experiment_object, 
-                experiment_size, 
-                economy_graph_directory,
-                processed_economy_results_directory,
-                'EconomyExperimenter',
-                economy_results_directory)
+        crit.run_experiments(input_object, experiment_object, experiment_size)
 
 

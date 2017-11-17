@@ -8,6 +8,8 @@ import java.io.*;
 //This class is used to build graphs from raw experiment data files
 
 public class GraphBuilder extends DataExtractor {
+  boolean use_decompose = false;
+
 
 	public static void main(String[] args){
 		if(args[0].equals("h") || args[0].equals("H")){
@@ -35,6 +37,27 @@ public class GraphBuilder extends DataExtractor {
 				theBuilder.processedRootDirectory = args[6];
 			}
 
+			if(args.length >= 8){
+				if(!args[7].equals("None"))
+          theBuilder.proxyMethodName = args[7];
+			}
+
+      if(args.length >= 9){
+  			if(args[8].equals("Decompose")){
+            theBuilder.use_decompose = true;
+				} else {
+					  theBuilder.use_decompose = false;
+				}
+			}
+
+			System.out.println("List of input arguments in build graph: ");
+			int v = 0;
+			for(String arg : args) {
+				System.out.println("argument " + v + ": " +arg);
+				v ++;
+			}
+			System.out.println();
+  
 
 
 			for(int inputSize : Experimenter.inputSizes){
@@ -60,16 +83,20 @@ public class GraphBuilder extends DataExtractor {
 				f.delete();
 	}
 
-
 	private String createFile(String directory,
 			String scoreName,
 			String locationName,
 			int inputSize){
+		  
+		  String decompose_name = "BaseRandom";
+		  if(use_decompose)
+				decompose_name = "Decompose";
 			return directory +
 			      inputClassName.split("[.]")[inputClassName.split("[.]").length - 1] + "_" +
 					  experimentClassName.split("[.]")[experimentClassName.split("[.]").length - 1] + "_" +
             scoreName.split("[.]")[scoreName.split("[.]").length - 1] + "_on_" +
 						locationName + "_" +
+						decompose_name + "_" + 
 						inputSize;
 	}
 

@@ -10,12 +10,13 @@ import java.io.*;
 
 public class DataExtractor {
 
-	static ArrayList<Location> readInLocations = new ArrayList<>();
+	static ArrayList<Location> readInLocations = null; //new ArrayList<>();
 
 	String imageRootDirectory = "./output_images/";
 	String rawDataOutputDirectory = "./output/";
 	String processedRootDirectory = "./output_processed/";
 	String inputClassName, experimentClassName, experimentTypeName;
+  String proxyMethodName = "";
 
 	public static void main(String[] args){
 		if(args[0].equals("h") || args[0].equals("H")){
@@ -40,12 +41,40 @@ public class DataExtractor {
 		}
 	}
 
-	DataExtractor(String inputClassName, String experimentClassName, String experimentTypeName){
+	DataExtractor(String inputClassName, 
+			String experimentClassName, 
+			String experimentTypeName){
+
 			this.inputClassName = inputClassName; 
 			this.experimentClassName = experimentClassName;	
 			this.experimentTypeName = experimentTypeName;
 			((Experimenter)Experimenter.getNewObject(experimentTypeName)).dropZeros();
 	}
+
+	DataExtractor(String inputClassName, 
+			String experimentClassName, 
+			String experimentTypeName,
+			String rawDataOutputDirectory,
+			String imageRootDirectory){
+      this(inputClassName, experimentClassName, experimentTypeName);
+			this.rawDataOutputDirectory = rawDataOutputDirectory;
+			this.imageRootDirectory = imageRootDirectory;
+	}
+
+	DataExtractor(String inputClassName, 
+			String experimentClassName, 
+			String experimentTypeName,
+			String rawDataOutputDirectory,
+			String imageRootDirectory,
+			String proxyMethodName){
+      this(inputClassName, 
+					experimentClassName, 
+					experimentTypeName,
+					rawDataOutputDirectory,
+					imageRootDirectory);
+			this.proxyMethodName = proxyMethodName;
+	}
+
 
 	public static void printReadInData(){
 			for(Location location : readInLocations){
@@ -54,18 +83,31 @@ public class DataExtractor {
 	}
 
 
-	public void readDataIn(int inputSize){
+  public String createReadFile(int inputSize){
 		String ic = inputClassName.split("[.]")[inputClassName.split("[.]").length - 1];
 		String ec = experimentClassName.split("[.]")[experimentClassName.split("[.]").length - 1];
 		String et = experimentTypeName.split("[.]")[experimentTypeName.split("[.]").length - 1];
-		
-		String inputFile = rawDataOutputDirectory + 
-			ic + "_" +
+    String pmn = "";
+		if(proxyMethodName.split("[.]").length >= 2) 
+	      pmn = proxyMethodName.split("[.]")[proxyMethodName.split("[.]").length - 2] + "." + 
+					proxyMethodName.split("[.]")[proxyMethodName.split("[.]").length - 1] + "_";
+ 
+		return ic + "_" +
 			ec + "_" +
+			pmn + 
 			et + "_" + 
-			inputSize + ".csv";
-		
-		readInLocations = new ArrayList<>();
+			inputSize;
+	}
+
+
+	public void readDataIn(int inputSize){
+    String inputFile = rawDataOutputDirectory + createReadFile(inputSize) + ".csv";
+
+
+	  if(readInLocations == null)	
+		    readInLocations = new ArrayList<>();
+
+    System.out.println("readInLocations length: " + readInLocations.size());
 
 		try{
 			CSVReader inputReader = new CSVReader(new FileReader(new File(inputFile)));
@@ -74,7 +116,7 @@ public class DataExtractor {
 			
 			String[] location = inputReader.readNext();
 	
-			System.out.println("Reading in data at readDataIn()");
+			System.out.println("Reading in data at readDataIn() from file " + inputFile);
 			while(location != null){
 				if (!location[0].equals("#")){
 					Location nextLocation = Location.buildFromStringArray(location);

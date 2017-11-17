@@ -20,6 +20,9 @@ public aspect RandomMethod{
 
   public static boolean use_decompose = false;
 
+  public static boolean useProxyMethod = false;
+	public static String proxyMethodName = "";
+
 	public static void clearAspect(){
 		locations = new ArrayList<>();
 		timeCounts = new ArrayList<>();
@@ -189,6 +192,7 @@ public aspect RandomMethod{
 					getSignature().
 					getName();
 
+
 				Experimenter.addToFallibleMethods(methodName);
 
 				updateLocations(theLocation, curId, methodName, (AbstractLocation) targetObject);
@@ -235,7 +239,25 @@ public aspect RandomMethod{
 	}
 
 	Object around() : Randomize_Decompose(){
-		if(randomize && use_decompose){
+    if(randomize && useProxyMethod){
+			Object targetObject = thisJoinPoint.getTarget();    	
+			RunId curId = new RunId(Thread.currentThread().getId());
+			curId = Experimenter.getId(curId);
+
+			if(curId.getExperiment() == true){
+				Random rand = curId.getRand();
+				Location theLocation = getLocation(curId);
+
+				String methodName = thisJoinPointStaticPart.
+					getSignature().
+					getDeclaringTypeName()
+					+ "." + thisJoinPointStaticPart.
+					getSignature().
+					getName();
+				updateLocations(theLocation, curId, methodName, (AbstractLocation) targetObject);
+			}
+		}
+		if(randomize && use_decompose ){
 			Object targetObject = thisJoinPoint.getTarget();    	
 			final Object[] args = thisJoinPoint.getArgs();
 

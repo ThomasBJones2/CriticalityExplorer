@@ -1,6 +1,7 @@
 package com.criticalityworkbench.randcomphandler;
 
 import au.com.bytecode.opencsv.CSVReader;
+import au.com.bytecode.opencsv.CSVWriter;
 
 import java.util.*;
 import java.lang.reflect.*;
@@ -83,6 +84,16 @@ public class EpsilonExperimenter extends Experimenter{
 
 	public class EpsilonExperiment implements ExperimentFunction{
 		EpsilonProbability probabilityShape;
+    CSVWriter outputWriter;
+
+
+    public void setOutputWriter(CSVWriter outputWriter){
+        this.outputWriter = outputWriter;
+		}
+
+		double getUpDownRatio(){
+        return probabilityShape.getUpDownRatio();
+		}
 
 		double startProbability = 0.0;
 
@@ -130,7 +141,6 @@ public class EpsilonExperimenter extends Experimenter{
 				  System.out.println("On scoreName: " + scoreName + " and probability " + probability);
 					resetThreading();
 
-
 					probabilityShape.setProbability(probability);
 					String[] state = {"#", "probability: " + probability};
 					saveState(state);
@@ -140,7 +150,7 @@ public class EpsilonExperimenter extends Experimenter{
 						long runName = runTime + (long)(probability*10000.0*1000.0);
 						if(runName % 100 == 0){
 							System.out.println("Now on runtime: " + runTime);
-							probabilityShape.printCounts();
+							//probabilityShape.printCounts();
 						}
 
 
@@ -149,6 +159,19 @@ public class EpsilonExperimenter extends Experimenter{
 							(int) runName, runTime, inputSize, true, "All", scoreName);
 						theFutures.add(thePool.submit(exp));
 					}
+
+					resetThreading();
+					String[] upDownRatioString = new String[2];
+				  probabilityShape.printCounts();
+					System.out.println("The upDownRatio was: " + probabilityShape.getUpDownRatio());
+					upDownRatioString[0] = "#upDownRatio: " + probabilityShape.getUpDownRatio();
+					upDownRatioString[1] = "probability: " + probability;
+          try{
+					    outputWriter.writeNext(upDownRatioString);
+					} catch(Exception E){
+              System.out.println("Exception while trying to write ratio " + E);
+					}
+
 				}
 			}
 		}

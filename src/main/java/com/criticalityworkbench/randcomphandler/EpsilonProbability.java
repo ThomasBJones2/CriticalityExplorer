@@ -13,6 +13,8 @@ public interface EpsilonProbability {
 
 	public void printName(); 
 
+  default public double getUpDownRatio(){return 1.0;}
+
 	default public int getUpCount(){ return 0;}
 	default public int getDownCount(){ return 0;}
 	default public void printCounts(){}
