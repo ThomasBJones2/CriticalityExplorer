@@ -344,7 +344,8 @@ public aspect RandomMethod{
 
 			return m.invoke(targetObject, arguments);
 		} catch (IllegalAccessException e) {
-			System.out.println("RandomizedCall (RandomMethod.aj) IllegalAccessException " + e);
+			System.out.println("RandomizedCall (RandomMethod.aj) use_decompose : " + 
+					use_decompose + " IllegalAccessException " + e);
 		} catch (InvocationTargetException e) {
 
 			System.out.println("random methodName: " + randMethodName);
@@ -357,9 +358,11 @@ public aspect RandomMethod{
 			e.printStackTrace();
 			System.out.println("now also getting internal exception");
 			e.getTargetException().printStackTrace();
-			System.out.println("RandomizedCall (RandomMethod.aj) InvocationTargetException " + e);
+			System.out.println("RandomizedCall (RandomMethod.aj) use_decompose: " +
+					use_decompose + " InvocationTargetException " + e);
 		} catch (NoSuchMethodException e) {
-			System.out.println("RandomizedCall (RandomMethod.aj) NoSuchMethodException " + e);
+			System.out.println("RandomizedCall (RandomMethod.aj) use_decompose: " + 
+					use_decompose + " NoSuchMethodException " + e);
 		}
 		return null;
 	}

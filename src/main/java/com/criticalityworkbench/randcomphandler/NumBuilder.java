@@ -10,10 +10,8 @@ import java.io.*;
 public class NumBuilder extends DataExtractor {
 
 
-	String imageRootDirectory = "./output_images/";
-	String rawDataOutputDirectory = "./output/";
-	String processedRootDirectory = "./output_processed/";
-	String processedDataDirectory = "./FinalNums/";
+  boolean use_decompose = false;
+
 
 	public static void main(String[] args){
 		if(args[0].equals("h") || args[0].equals("H")){
@@ -27,9 +25,43 @@ public class NumBuilder extends DataExtractor {
 
 			NumBuilder theBuilder = new NumBuilder(args[0], args[1], args[2]);
 
-			if(args.length == 4){
-				theBuilder.processedDataDirectory = args[3];
+
+			if(args.length >= 5){
+				theBuilder.imageRootDirectory = args[3];
+				theBuilder.rawDataOutputDirectory = args[4];
 			}
+
+			if(args.length >= 6){
+				Experimenter.inputSizes = new int[1];
+				Experimenter.inputSizes[0] = Integer.parseInt(args[5]);
+			}
+
+			if(args.length >= 7){
+				theBuilder.processedRootDirectory = args[6];
+			}
+
+			if(args.length >= 8){
+				if(!args[7].equals("None"))
+          theBuilder.proxyMethodName = args[7];
+			}
+
+      if(args.length >= 9){
+  			if(args[8].equals("Decompose")){
+            theBuilder.use_decompose = true;
+				} else {
+					  theBuilder.use_decompose = false;
+				}
+			}
+
+			System.out.println("List of input arguments in build nums: ");
+			int v = 0;
+			for(String arg : args) {
+				System.out.println("argument " + v + ": " +arg);
+				v ++;
+			}
+			System.out.println();
+  
+
 
 			for(int inputSize : Experimenter.inputSizes){
 				theBuilder.readDataIn(inputSize);
@@ -54,32 +86,29 @@ public class NumBuilder extends DataExtractor {
 			return "";
 	}
 
-	private static String createDirectory(String directory,
-			String inputClassName, 
-			String experimentClassName, 
-			String experimentTypeName){
-			return directory + 
-						strip(inputClassName) + "-" +
-						strip(experimentClassName) + "-" +
-						strip(experimentTypeName) + "/";
-	}
 
-	private static String createFile(String directory,
-			String inputClassName, 
-			String experimentClassName, 
-			String experimentTypeName,
-			String locationName,
+	private String createFile(String directory,
 			String scoreName,
+			String locationName,
 			int inputSize){
-			return createDirectory(directory, 
-						inputClassName,
-						experimentClassName, 
-						experimentTypeName) +
-						locationName + "-" +
-						scoreName + "-" +
-						inputSize + ".csv";
+		  
+		  String decompose_name = "BaseRandom";
+		  if(use_decompose)
+				decompose_name = "Decompose";
+			String new_location;
+			if(locationName.split("[.]").length >= 2)
+          new_location = locationName.split("[.]")[locationName.split("[.]").length - 2] 
+					 	+ "." + locationName.split("[.]")[locationName.split("[.]").length - 1];
+			else
+				  new_location = locationName;
+			return directory +
+			      inputClassName.split("[.]")[inputClassName.split("[.]").length - 1] + "_" +
+					  experimentClassName.split("[.]")[experimentClassName.split("[.]").length - 1] + "_" +
+            scoreName.split("[.]")[scoreName.split("[.]").length - 1] + "_on_" +
+						new_location + "_" +
+						decompose_name + "_" + 
+						inputSize;
 	}
-
 
 
 
@@ -122,28 +151,15 @@ public class NumBuilder extends DataExtractor {
 				}
 		
 
-				String directoryName = createDirectory(processedDataDirectory, 
-					inputClassName, 
-					experimentClassName, 
-					experimentTypeName);
-
-				String fileName = createFile(processedDataDirectory, 
-					inputClassName, 
-					experimentClassName, 
-					experimentTypeName,
+				String fileName = createFile(processedRootDirectory, 
 					location.name, 
 					score.name,
-					inputSize);
-			
+					inputSize) + ".csv";
+
+				System.out.println("Printing num build processed results to: " +
+						fileName);
 				try{
-
-    			File directory = new File(String.valueOf(directoryName));
-    			if (! directory.exists()){
-        		directory.mkdir();
-        		// If you require it to make the entire directory path including parents,
-        		// use directory.mkdirs(); here instead.
-    			}
-
+          
 					CSVWriter outputWriter = new CSVWriter(new FileWriter(new File(fileName)), 
 						' ',
 						CSVWriter.NO_QUOTE_CHARACTER);

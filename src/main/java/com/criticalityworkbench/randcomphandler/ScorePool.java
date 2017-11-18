@@ -28,7 +28,7 @@ public class ScorePool{
 			double out = Math.log((newError.subtract(newCorrect)).abs().doubleValue() + 1.0);
 			return new Score(
 				out,
-				"Absolute_Logarithm_Value"); 
+				"Log_Absolute_Value"); 
 		}
 
 

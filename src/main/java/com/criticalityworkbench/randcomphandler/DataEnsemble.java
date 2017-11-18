@@ -95,12 +95,12 @@ public class DataEnsemble<T extends EnsTriple>{
 		}
 
 		
-		void replicate(double[] averages, int i, double value, int num_vals, int maxErrorPoints){
+		void replicate(Double[] averages, int i, double value, int num_vals, int maxErrorPoints){
 			for(int j = i; j < i + num_vals; j ++){
 				averages[j] = value;
 			}
 			for(int j = i + num_vals; j < i + maxErrorPoints; j ++){
-				averages[j] = 0;
+				averages[j] = null;
 			}
 		}
 
@@ -130,12 +130,30 @@ public class DataEnsemble<T extends EnsTriple>{
 			}
 			return out;
 		}
-	
+
+    double[] shrink_averages(Double averages[]){
+        int new_length = 0;
+				for(int i = 0; i < averages.length; i ++){
+            if(averages[i] != null)
+							new_length += 1;
+				}
+				double[] new_averages = new double[new_length];
+				int j = 0;
+				for(int i = 0; i < averages.length; i ++){
+            if(averages[i] != null){
+							new_averages[j] = averages[i]; 
+						  j ++;
+						}
+				}
+				return new_averages;
+
+		}
+
 		void calculateMedian(){
 
 			int maxErrorPoints = getMaxErrorPoints();
 
-			double[] averages = new double[triples.size()*maxErrorPoints];
+			Double[] averages = new Double[triples.size()*maxErrorPoints];
 			for(int i = 0; i < triples.size(); i ++){
 				replicate(averages, 
 					i*maxErrorPoints, 
@@ -146,13 +164,14 @@ public class DataEnsemble<T extends EnsTriple>{
 			//System.out.println("averages.length " + averages.length);
 			//averages = clearZeros(averages);
 			//System.out.println("averages.length " + averages.length);
+      double[] new_averages = shrink_averages(averages);
 
-
-			Arrays.sort(averages);
-			if (averages.length % 2 == 0 && averages.length >= 2){
-				median = (averages[averages.length/2] + averages[averages.length/2 - 1])/2.0;
-			} else if(averages.length % 2 == 1) {
-				median = averages[averages.length/2];
+			Arrays.sort(new_averages);
+			if (new_averages.length % 2 == 0 && new_averages.length >= 2){
+				median = (new_averages[new_averages.length/2] + 
+						new_averages[new_averages.length/2 - 1])/2.0;
+			} else if(new_averages.length % 2 == 1) {
+				median = new_averages[new_averages.length/2];
 			}
 
 		}

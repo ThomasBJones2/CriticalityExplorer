@@ -14,8 +14,21 @@ public class KaratsubaMultiply extends NaiveMultiply {
 
 	public static KaratsubaMultiply emptyObject(){return new KaratsubaMultiply();}
 
-	@Override
-	public void multiply(InputIntegers xy){
+	public void experiment(InputIntegers in){
+		multiply(in);
+	}
+
+	@Randomize_Decompose
+  public void multiply(InputIntegers xy){
+    multiply_helper_karatsuba(xy);
+	}
+
+	public void multiplyRand(Random rand, InputIntegers xy){
+		  multiply_helper_karatsuba(xy);
+		  theProduct = addRand(rand, BigInteger.ZERO, theProduct);
+	}
+
+	public void multiply_helper_karatsuba(InputIntegers xy){
 		BigInteger x = xy.getX();
 		BigInteger y = xy.getY();
 
@@ -32,6 +45,7 @@ public class KaratsubaMultiply extends NaiveMultiply {
 
 		if (smallerHalfSize <= 1) {
 			super.multiply(xy);
+
 		} else if(x.compareTo(BigInteger.ZERO) == 0 || y.compareTo(BigInteger.ZERO) == 0){
 			theProduct = BigInteger.ZERO;
 		} else {
@@ -124,9 +138,10 @@ public class KaratsubaMultiply extends NaiveMultiply {
 	}
 
 	public static void main(String[] args){
+		com.criticalityworkbench.randcomphandler.RandomMethod.randomize = false;
 		InputIntegers a = new InputIntegers(args[0], args[1]);	
 		NaiveMultiply bob = new KaratsubaMultiply();
-		bob.experiment(a);
+		bob.multiply(a);
 		System.out.println(a.getX().toString(10) + "X" + 
 				a.getY().toString(10) + 
 				" = " + bob.theProduct.doubleValue());

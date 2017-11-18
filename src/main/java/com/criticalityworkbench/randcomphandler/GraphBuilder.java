@@ -91,11 +91,17 @@ public class GraphBuilder extends DataExtractor {
 		  String decompose_name = "BaseRandom";
 		  if(use_decompose)
 				decompose_name = "Decompose";
+			String new_location;
+			if(locationName.split("[.]").length >= 2)
+          new_location = locationName.split("[.]")[locationName.split("[.]").length - 2] 
+					 	+ "." + locationName.split("[.]")[locationName.split("[.]").length - 1];
+			else
+				  new_location = locationName;
 			return directory +
 			      inputClassName.split("[.]")[inputClassName.split("[.]").length - 1] + "_" +
 					  experimentClassName.split("[.]")[experimentClassName.split("[.]").length - 1] + "_" +
             scoreName.split("[.]")[scoreName.split("[.]").length - 1] + "_on_" +
-						locationName + "_" +
+						new_location + "_" +
 						decompose_name + "_" + 
 						inputSize;
 	}

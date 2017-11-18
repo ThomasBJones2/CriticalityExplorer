@@ -17,15 +17,15 @@ public class NaiveMultiply
 
 	@Randomize_Decompose
   public void multiply(InputIntegers xy){
-    multiply_helper(xy);
+    multiply_helper_naive(xy);
 	}
 
 	public void multiplyRand(Random rand, InputIntegers xy){
-		  multiply_helper(xy);
+		  multiply_helper_naive(xy);
 		  theProduct = addRand(rand, BigInteger.ZERO, theProduct);
 	}
 
-	public void multiply_helper(InputIntegers xy){
+	public void multiply_helper_naive(InputIntegers xy){
 		BigInteger x = xy.getX();
 		BigInteger y = xy.getY();
 		

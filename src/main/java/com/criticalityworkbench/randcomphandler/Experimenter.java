@@ -103,6 +103,13 @@ public abstract class Experimenter implements Runnable{
 				return(null);
 			} else {	
 
+	      fallibleMethods = new ArrayList<String>();
+        proxyMethodName = "";
+				writerForOutput = null;
+        readerForInput = null;
+
+
+
 				inputClassName = new_args[1]; 
 				experimentClassName = new_args[2];	
 				experimentTypeName = new_args[3];
@@ -140,6 +147,14 @@ public abstract class Experimenter implements Runnable{
 				System.out.println("");
 				return(null);
 			} else {	
+
+	      fallibleMethods = new ArrayList<String>();
+        proxyMethodName = "";
+				writerForOutput = null;
+        readerForInput = null;
+
+
+
 
 				inputClassName = new_args[0]; 
 				experimentClassName = new_args[1];	
@@ -736,7 +751,8 @@ public abstract class Experimenter implements Runnable{
 		if(!fallibleMethods.contains(methodName) 
 				&& methodName != null && 
 				!methodName.equals("null")){
-			
+			System.out.println("Fallible method added! " + methodName + " use_decompose " +
+				 RandomMethod.use_decompose);	
 			fallibleMethods.add(new String(methodName));
 		}
 	}
@@ -808,28 +824,17 @@ public abstract class Experimenter implements Runnable{
 
 	static RunTimeTriple<Long>[][] runTimeBoost(RunTimeTriple<Long>[] rtt){
 		RunTimeTriple<Long>[][] out = new RunTimeTriple[fallibleMethods.size()][rtt.length];
+		System.out.println("fallibleMethods.size is: " + fallibleMethods.size());
 		for(int j = 0; j < fallibleMethods.size(); j ++){
 			for(int i = 0; i < rtt.length; i ++){
 				out[j][i] = new RunTimeTriple(rtt[i]);
 				out[j][i].name = fallibleMethods.get(j);
+				System.out.println(out[j][i].name);
 			}
 		}
 		return out;
 	}
 
-
-	public static List<String> getMethodsAnnotatedWith(
-			final Class<? extends Annotation> annotation) {
-
-		Reflections reflections = new Reflections("InputObjects", 
-				new MethodAnnotationsScanner());
-		Set<Method> methods = reflections.getMethodsAnnotatedWith(annotation);
-		List<String> out = new ArrayList<>();
-		for(Method method : methods){
-			out.add(method.getDeclaringClass() + "." + method.getName());
-		}
-		return out;
-	}
 
 
 }

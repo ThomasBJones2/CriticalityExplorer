@@ -450,39 +450,39 @@ class RunCriticality(object):
             decompose_val = "Decompose"
         else:
             decompose_val = "BaseRandom"
-
-
-        if proxy_method_name is not None:
-            call(['java', 
-                '-cp', 
-                './target/CriticalityWorkbench-1.0-SNAPSHOT.jar', 
-                self.rand_comp_base_string + 'GraphBuilder',
-                self.input_objects_base_string + str(input_object),
-                self.input_objects_base_string + str(experiment_object),
-                self.rand_comp_base_string + experimenter,
-                graph_directory,
-                results_directory,
-                experiment_size,
-                processed_data_directory,
-                proxy_method_name,
-                decompose_val,
-                ])
  
-        else:
-            call(['java', 
-                '-cp', 
-                './target/CriticalityWorkbench-1.0-SNAPSHOT.jar', 
-                self.rand_comp_base_string + 'GraphBuilder',
-                self.input_objects_base_string + str(input_object),
-                self.input_objects_base_string + str(experiment_object),
-                self.rand_comp_base_string + experimenter,
-                graph_directory,
-                results_directory,
-                experiment_size,
-                processed_data_directory,
-                "None",
-                decompose_val
-                ])
+        if proxy_method_name is None:
+            proxy_method_name = "None"
+        call(['java', 
+            '-cp', 
+            './target/CriticalityWorkbench-1.0-SNAPSHOT.jar', 
+            self.rand_comp_base_string + 'GraphBuilder',
+            self.input_objects_base_string + str(input_object),
+            self.input_objects_base_string + str(experiment_object),
+            self.rand_comp_base_string + experimenter,
+            graph_directory,
+            results_directory,
+            experiment_size,
+            processed_data_directory,
+            proxy_method_name,
+            decompose_val,
+            ])
+        
+        call(['java', 
+            '-cp', 
+            './target/CriticalityWorkbench-1.0-SNAPSHOT.jar', 
+            self.rand_comp_base_string + 'NumBuilder',
+            self.input_objects_base_string + str(input_object),
+            self.input_objects_base_string + str(experiment_object),
+            self.rand_comp_base_string + experimenter,
+            graph_directory,
+            results_directory,
+            experiment_size,
+            processed_data_directory,
+            proxy_method_name,
+            decompose_val,
+            ])
+
 
     #TODO: use_decompose is used in a lot of broken ways in this object
     def run_experiments(self, 
