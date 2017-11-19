@@ -91,16 +91,20 @@ public class NumBuilder extends DataExtractor {
 			String scoreName,
 			String locationName,
 			int inputSize){
+		  System.out.println("scoreName: " + scoreName);
+			System.out.println("locationName: " + locationName);
 		  
 		  String decompose_name = "BaseRandom";
 		  if(use_decompose)
 				decompose_name = "Decompose";
+			
 			String new_location;
 			if(locationName.split("[.]").length >= 2)
           new_location = locationName.split("[.]")[locationName.split("[.]").length - 2] 
 					 	+ "." + locationName.split("[.]")[locationName.split("[.]").length - 1];
 			else
 				  new_location = locationName;
+			
 			return directory +
 			      inputClassName.split("[.]")[inputClassName.split("[.]").length - 1] + "_" +
 					  experimentClassName.split("[.]")[experimentClassName.split("[.]").length - 1] + "_" +
@@ -152,8 +156,8 @@ public class NumBuilder extends DataExtractor {
 		
 
 				String fileName = createFile(processedRootDirectory, 
-					location.name, 
 					score.name,
+					location.name, 
 					inputSize) + ".csv";
 
 				System.out.println("Printing num build processed results to: " +

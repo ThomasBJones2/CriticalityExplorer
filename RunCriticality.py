@@ -483,55 +483,6 @@ class RunCriticality(object):
             decompose_val,
             ])
 
-
-    #TODO: use_decompose is used in a lot of broken ways in this object
-    def run_experiments(self, 
-            input_object,
-            experiment_object,
-            experiment_size):
-
-        if not self.use_decompose:
-            base_fallible_methods_list = self.run_primary_experiments(
-                    input_object,
-                    experiment_object,
-                    experiment_size,
-                    self.use_decompose)
-        else:
-            _, _, base_fallible_methods_list = self.get_rt_ep_fml(
-            input_object,
-            experiment_object,
-            experiment_size,
-            False)
-
-
-        fallible_methods_list = self.run_primary_experiments(
-                input_object,
-                experiment_object,
-                experiment_size,
-                True)
-
-        base_fallible_methods_str = self.stringify_fallible_methods(base_fallible_methods_list)
-
-        if self.run_proxy:
-            self.proxy_run(input_object, 
-                    experiment_object, 
-                    experiment_size, 
-                    self.proxy_results_directory,
-                    base_fallible_methods_str,
-                    self.criticality_results_directory,
-                    self.proxy_method_name
-                    )
-
-
-            crit.graph_run(input_object, 
-                    experiment_object, 
-                    experiment_size, 
-                    self.proxy_graph_directory,
-                    self.processed_proxy_results_directory,
-                    'ProxyExperimenter',
-                    self.proxy_results_directory,
-                    self.proxy_method_name)
-
     def get_rt_ep_fml(self,
             input_object,
             experiment_object,
@@ -569,6 +520,119 @@ class RunCriticality(object):
             fallible_methods_list[0]))
         return run_time, error_points, fallible_methods_list
 
+
+
+
+    def run_all_graphs(self, 
+            input_object,
+            experiment_object,
+            experiment_size):
+        
+        for dc in [False, True]:
+            self.use_decompose = dc
+
+            _, _, fallible_methods_list = self.get_rt_ep_fml(
+                input_object,
+                experiment_object,
+                experiment_size,
+                self.use_decompose)
+
+            print(str(self.use_decompose) + str(fallible_methods_list))   
+            results_directory = "./results/"
+            for fm, fallible_method in enumerate(fallible_methods_list):
+                short_fallible_method = fallible_method.split('.')[-2] + "." +\
+                        fallible_method.split('.')[-1]
+
+                self.graph_run(input_object, 
+                    experiment_object, 
+                    experiment_size, 
+                    self.criticality_graph_directory,
+                    self.processed_criticality_results_directory,
+                    'CriticalityExperimenter',
+                    self.criticality_results_directory,
+                    short_fallible_method)
+
+
+            if self.run_economy: 
+                self.graph_run(input_object, 
+                        experiment_object, 
+                        experiment_size, 
+                        self.economy_graph_directory,
+                        self.processed_economy_results_directory,
+                        'EconomyExperimenter',
+                        self.economy_results_directory)
+
+          
+            if self.run_epsilon:
+                self.graph_run(input_object, 
+                        experiment_object, 
+                        experiment_size, 
+                        self.epsilon_graph_directory,
+                        self.processed_epsilon_results_directory,
+                        'EpsilonExperimenter',
+                        self.epsilon_results_directory)
+
+  
+        if self.run_proxy:
+            self.use_decompose = False #Necessary to force outputs to BaseRandom
+            self.graph_run(input_object, 
+                    experiment_object, 
+                    experiment_size, 
+                    self.proxy_graph_directory,
+                    self.processed_proxy_results_directory,
+                    'ProxyExperimenter',
+                    self.proxy_results_directory,
+                    self.proxy_method_name)
+
+
+
+    #TODO: use_decompose is used in a lot of broken ways in this object
+    def run_experiments(self, 
+            input_object,
+            experiment_object,
+            experiment_size):
+
+        if not self.use_decompose:
+            base_fallible_methods_list = self.run_primary_experiments(
+                    input_object,
+                    experiment_object,
+                    experiment_size,
+                    self.use_decompose)
+        else:
+            _, _, base_fallible_methods_list = self.get_rt_ep_fml(
+            input_object,
+            experiment_object,
+            experiment_size,
+            False)
+
+
+        fallible_methods_list = self.run_primary_experiments(
+                input_object,
+                experiment_object,
+                experiment_size,
+                True)
+
+        base_fallible_methods_str = self.stringify_fallible_methods(base_fallible_methods_list)
+
+        if self.run_proxy:
+            self.use_decompose = False #Necessary to force outputs to BaseRandom
+            self.proxy_run(input_object, 
+                    experiment_object, 
+                    experiment_size, 
+                    self.proxy_results_directory,
+                    base_fallible_methods_str,
+                    self.criticality_results_directory,
+                    self.proxy_method_name
+                    )
+
+            self.graph_run(input_object, 
+                    experiment_object, 
+                    experiment_size, 
+                    self.proxy_graph_directory,
+                    self.processed_proxy_results_directory,
+                    'ProxyExperimenter',
+                    self.proxy_results_directory,
+                    self.proxy_method_name)
 
     def run_primary_experiments(self, 
             input_object,
@@ -672,7 +736,7 @@ class RunCriticality(object):
                     self.criticality_results_directory,
                     )
 
-            crit.graph_run(input_object, 
+            self.graph_run(input_object, 
                     experiment_object, 
                     experiment_size, 
                     self.economy_graph_directory,
@@ -688,7 +752,7 @@ class RunCriticality(object):
                     self.epsilon_results_directory,
                     fallible_methods_str,
                     )
-            crit.graph_run(input_object, 
+            self.graph_run(input_object, 
                     experiment_object, 
                     experiment_size, 
                     self.epsilon_graph_directory,
@@ -772,7 +836,8 @@ def create_argparser():
     parser.add_argument('--run_epsilon', type=str, default='y')
     parser.add_argument('--run_economy', type=str, default='y')
  
-    
+    parser.add_argument('--graphs_only', type=str, default = 'n')
+
     return parser
 
 
@@ -835,8 +900,10 @@ if __name__ == "__main__":
         files = glob.glob(file_names)
         for f in files:
             os.remove(f)
+    elif args.graphs_only == 'y':
+        crit.set_timeouts()
+        crit.run_all_graphs(input_object, experiment_object, experiment_size)
     else:
         crit.set_timeouts()
         crit.run_experiments(input_object, experiment_object, experiment_size)
-
 
