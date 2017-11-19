@@ -10,9 +10,6 @@ import java.io.*;
 public class NumBuilder extends DataExtractor {
 
 
-  boolean use_decompose = false;
-
-
 	public static void main(String[] args){
 		if(args[0].equals("h") || args[0].equals("H")){
 			System.out.println("Welcome to the NumberBuilding Service");

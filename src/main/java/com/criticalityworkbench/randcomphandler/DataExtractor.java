@@ -17,6 +17,7 @@ public class DataExtractor {
 	String processedRootDirectory = "./output_processed/";
 	String inputClassName, experimentClassName, experimentTypeName;
   String proxyMethodName = "";
+	boolean use_decompose = false; 
 
 	public static void main(String[] args){
 		if(args[0].equals("h") || args[0].equals("H")){
@@ -88,6 +89,9 @@ public class DataExtractor {
 		String ec = experimentClassName.split("[.]")[experimentClassName.split("[.]").length - 1];
 		String et = experimentTypeName.split("[.]")[experimentTypeName.split("[.]").length - 1];
     String pmn = "";
+		String decompose_name = "BaseRandom";
+		if(use_decompose)
+        decompose_name = "Decompose";
 		if(proxyMethodName.split("[.]").length >= 2) 
 	      pmn = proxyMethodName.split("[.]")[proxyMethodName.split("[.]").length - 2] + "." + 
 					proxyMethodName.split("[.]")[proxyMethodName.split("[.]").length - 1] + "_";
@@ -96,6 +100,7 @@ public class DataExtractor {
 			ec + "_" +
 			pmn + 
 			et + "_" + 
+			decompose_name + "_" +
 			inputSize;
 	}
 

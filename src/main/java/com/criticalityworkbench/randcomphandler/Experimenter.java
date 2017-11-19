@@ -531,11 +531,15 @@ public abstract class Experimenter implements Runnable{
 					  + "." + proxyMethodName.split("[.]")[proxyMethodName.split("[.]").length - 1] + "_";
 			}
 
+			String decomposeName = "BaseRandom";
+			if(RandomMethod.use_decompose)
+          decomposeName = "Decompose";
       outputFile = rawDataOutputDirectory + 
 				inputClassName.split("[.]")[inputClassName.split("[.]").length - 1] + "_" +
 				experimentClassName.split("[.]")[experimentClassName.split("[.]").length - 1] + "_" +
 				loc_proxy_name +
 				experimentTypeName.split("[.]")[experimentClassName.split("[.]").length - 1] + "_" +
+				decomposeName + "_" +
 				inputSize + ".csv";
 
 			if(writerForOutput == null)

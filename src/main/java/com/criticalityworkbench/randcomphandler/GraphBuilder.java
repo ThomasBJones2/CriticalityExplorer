@@ -8,8 +8,6 @@ import java.io.*;
 //This class is used to build graphs from raw experiment data files
 
 public class GraphBuilder extends DataExtractor {
-  boolean use_decompose = false;
-
 
 	public static void main(String[] args){
 		if(args[0].equals("h") || args[0].equals("H")){

@@ -192,10 +192,14 @@ class RunCriticality(object):
             experiment_size,
             proxy_method):
 
+        decompose_name = "BaseRandom"
+        if self.use_decompose:
+            decompose_name = "Decompose"
         return str(input_object) + "_" +\
             str(experiment_object) + "_" +\
             str(proxy_method) + "_" +\
             'CriticalityExperimenter' + "_" +\
+            decompose_name + "_" +\
             str(experiment_size) + ".csv"
  
 
@@ -305,6 +309,7 @@ class RunCriticality(object):
                 proxy_directory,
                 proxy_method_name,
                 'ProxyExperimenter',
+                ds
                 )
         print("looking at file " + f)
         try:
@@ -350,6 +355,7 @@ class RunCriticality(object):
                 economy_directory,
                 None,
                 'EconomyExperimenter',
+                ds,
                 )
         print("looking at file " + f)
         try:
@@ -376,7 +382,8 @@ class RunCriticality(object):
         experiment_size,
         directory,
         direct_method_name,
-        experiment_type):
+        experiment_type,
+        decompose_name):
 
         if direct_method_name is None:
             method_name = ""
@@ -388,6 +395,7 @@ class RunCriticality(object):
             experiment_object + "_" +\
             method_name +\
             experiment_type + "_" +\
+            decompose_name + "_" +\
             experiment_size + ".csv"
  
     def epsilon_run(self, 
@@ -412,7 +420,8 @@ class RunCriticality(object):
                 experiment_size,
                 epsilon_directory,
                 None,
-                'EpsilonExperimenter'
+                'EpsilonExperimenter',
+                ds
                 )
         print("looking at file " + f)
         try:
